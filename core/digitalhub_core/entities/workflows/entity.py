@@ -38,7 +38,6 @@ class Workflow(Entity):
         metadata: WorkflowMetadata,
         spec: WorkflowSpec,
         status: WorkflowStatus,
-        user: str | None = None,
     ) -> None:
         """
         Constructor.
@@ -59,8 +58,6 @@ class Workflow(Entity):
             Specification of the object.
         status : WorkflowStatus
             Status of the object.
-        user : str
-            Owner of the object.
         """
         super().__init__()
         self.project = project
@@ -71,7 +68,6 @@ class Workflow(Entity):
         self.metadata = metadata
         self.spec = spec
         self.status = status
-        self.user = user
 
         # Add attributes to be used in the to_dict method
         self._obj_attr.extend(["project", "name", "id", "key"])
@@ -144,73 +140,6 @@ class Workflow(Entity):
         return get_context(self.project)
 
     #############################
-    #  Workflow Methods
-    #############################
-
-    def run(
-        self,
-        labels: list[dict] | None = None,
-        env: list[dict] | None = None,
-        secrets: list[str] | None = None,
-        schedule: str | None = None,
-        inputs: dict | None = None,
-        outputs: dict | None = None,
-        parameters: dict | None = None,
-        values: list | None = None,
-        local_execution: bool = False,
-        **kwargs,
-    ) -> Run:
-        """
-        Run workflow.
-
-        Parameters
-        ----------
-        labels : list[dict]
-            The labels of the task.
-        env : list[dict]
-            The env variables of the task. Task parameter.
-        secrets : list[str]
-            The secrets of the task. Task parameter.
-        schedule : str
-            The schedule of the task. Task parameter.
-        inputs : dict
-            Workflow inputs. Run parameter.
-        outputs : dict
-            Workflow outputs. Run parameter.
-        parameters : dict
-            Workflow parameters. Run parameter.
-        values : list
-            Workflow values. Run parameter.
-        local_execution : bool
-            Flag to determine if object has local execution. Run parameter.
-        **kwargs
-            Keyword arguments passed to Task builder.
-
-        Returns
-        -------
-        Run
-            Run instance.
-        """
-
-        function = get_function(project=self.project, entity_name=self.name)
-
-        # Run function
-        run = function.run(
-            action="pipeline",
-            labels=labels,
-            env=env,
-            secrets=secrets,
-            schedule=schedule,
-            inputs=inputs,
-            outputs=outputs,
-            parameters=parameters,
-            values=values,
-            local_execution=local_execution,
-        )
-
-        return run
-
-    #############################
     #  Static interface methods
     #############################
 
@@ -241,7 +170,6 @@ class Workflow(Entity):
         metadata = build_metadata(kind, framework_runtime=kind, **obj.get("metadata", {}))
         spec = build_spec(kind, framework_runtime=kind, validate=validate, **obj.get("spec", {}))
         status = build_status(kind, framework_runtime=kind, **obj.get("status", {}))
-        user = obj.get("user")
         return {
             "project": project,
             "name": name,
@@ -250,7 +178,6 @@ class Workflow(Entity):
             "metadata": metadata,
             "spec": spec,
             "status": status,
-            "user": user,
         }
 
 

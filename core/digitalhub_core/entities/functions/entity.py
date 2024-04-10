@@ -41,7 +41,6 @@ class Function(Entity):
         metadata: FunctionMetadata,
         spec: FunctionSpec,
         status: FunctionStatus,
-        user: str | None = None,
     ) -> None:
         """
         Constructor.
@@ -62,8 +61,6 @@ class Function(Entity):
             Specification of the object.
         status : FunctionStatus
             Status of the object.
-        user : str
-            Owner of the object.
         """
         super().__init__()
         self.project = project
@@ -74,7 +71,6 @@ class Function(Entity):
         self.metadata = metadata
         self.spec = spec
         self.status = status
-        self.user = user
 
         # Add attributes to be used in the to_dict method
         self._obj_attr.extend(["project", "name", "id", "key"])
@@ -495,7 +491,6 @@ class Function(Entity):
         metadata = build_metadata(kind, framework_runtime=kind, **obj.get("metadata", {}))
         spec = build_spec(kind, framework_runtime=kind, validate=validate, **obj.get("spec", {}))
         status = build_status(kind, framework_runtime=kind, **obj.get("status", {}))
-        user = obj.get("user")
         return {
             "project": project,
             "name": name,
@@ -504,7 +499,6 @@ class Function(Entity):
             "metadata": metadata,
             "spec": spec,
             "status": status,
-            "user": user,
         }
 
 

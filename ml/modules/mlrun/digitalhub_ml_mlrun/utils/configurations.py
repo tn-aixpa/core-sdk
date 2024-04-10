@@ -14,7 +14,6 @@ from digitalhub_core.utils.generic_utils import (
     requests_chunk_download,
 )
 from digitalhub_core.utils.logger import LOGGER
-from digitalhub_core.utils.uri_utils import map_uri_scheme
 from mlrun import get_or_create_project
 
 if typing.TYPE_CHECKING:

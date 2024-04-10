@@ -53,9 +53,7 @@ class Metadata(ModelObj):
         self.labels = labels
         self.embedded = embedded
         self.created = created
-        self.created_by = created_by
         self.updated = updated
-        self.updated_by = updated_by
 
     @classmethod
     def from_dict(cls, obj: dict) -> "Metadata":

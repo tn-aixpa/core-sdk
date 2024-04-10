@@ -37,7 +37,6 @@ class Task(Entity):
         metadata: TaskMetadata,
         spec: TaskSpec,
         status: TaskStatus,
-        user: str | None = None,
     ) -> None:
         """
         Constructor.
@@ -56,8 +55,6 @@ class Task(Entity):
             Specification of the object.
         status : TaskStatus
             Status of the object.
-        user : str
-            Owner of the object.
         """
         super().__init__()
         self.project = project
@@ -67,7 +64,6 @@ class Task(Entity):
         self.metadata = metadata
         self.spec = spec
         self.status = status
-        self.user = user
 
         # Add attributes to be used in the to_dict method
         self._obj_attr.extend(["project", "id", "key"])
@@ -284,7 +280,6 @@ class Task(Entity):
             **obj.get("spec", {}),
         )
         status = build_status(kind, framework_runtime=kind.split("+")[0], **obj.get("status", {}))
-        user = obj.get("user")
         return {
             "project": project,
             "uuid": uuid,
@@ -292,7 +287,6 @@ class Task(Entity):
             "metadata": metadata,
             "spec": spec,
             "status": status,
-            "user": user,
         }
 
 

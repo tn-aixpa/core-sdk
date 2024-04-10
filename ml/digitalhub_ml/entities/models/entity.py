@@ -36,7 +36,6 @@ class Model(Entity):
         metadata: ModelMetadata,
         spec: ModelSpec,
         status: ModelStatus,
-        user: str | None = None,
     ) -> None:
         """
         Constructor.
@@ -57,8 +56,6 @@ class Model(Entity):
             Specification of the object.
         status : ModelStatus
             Status of the object.
-        user : str
-            Owner of the object.
         """
         super().__init__()
         self.project = project
@@ -69,7 +66,6 @@ class Model(Entity):
         self.metadata = metadata
         self.spec = spec
         self.status = status
-        self.user = user
 
         # Add attributes to be used in the to_dict method
         self._obj_attr.extend(["project", "name", "id", "key"])
@@ -175,7 +171,6 @@ class Model(Entity):
             **obj.get("spec", {}),
         )
         status = build_status(kind, layer_digitalhub="digitalhub_ml", **obj.get("status", {}))
-        user = obj.get("user")
         return {
             "project": project,
             "name": name,
@@ -184,7 +179,6 @@ class Model(Entity):
             "metadata": metadata,
             "spec": spec,
             "status": status,
-            "user": user,
         }
 
 

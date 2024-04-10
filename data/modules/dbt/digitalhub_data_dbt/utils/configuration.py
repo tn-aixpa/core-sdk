@@ -11,7 +11,6 @@ from digitalhub_core.utils.generic_utils import (
     requests_chunk_download,
 )
 from digitalhub_core.utils.logger import LOGGER
-from digitalhub_core.utils.uri_utils import map_uri_scheme
 from digitalhub_data_dbt.utils.env import (
     POSTGRES_DATABASE,
     POSTGRES_HOST,

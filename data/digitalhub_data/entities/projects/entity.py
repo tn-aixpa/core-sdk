@@ -156,7 +156,6 @@ class ProjectData(Project):
             **obj.get("spec", {}),
         )
         status = build_status(kind, layer_digitalhub="digitalhub_core", **obj.get("status", {}))
-        user = obj.get("user")
         local = obj.get("local", False)
         return {
             "name": name,
@@ -164,7 +163,6 @@ class ProjectData(Project):
             "metadata": metadata,
             "spec": spec,
             "status": status,
-            "user": user,
             "local": local,
         }
 

@@ -46,7 +46,6 @@ class Run(Entity):
         metadata: RunMetadata,
         spec: RunSpec,
         status: RunStatus,
-        user: str | None = None,
     ) -> None:
         """
         Constructor.
@@ -65,8 +64,6 @@ class Run(Entity):
             Specification of the object.
         status : RunStatus
             Status of the object.
-        user : str
-            Owner of the object.
         """
         super().__init__()
         self.project = project
@@ -76,7 +73,6 @@ class Run(Entity):
         self.metadata = metadata
         self.spec = spec
         self.status = status
-        self.user = user
 
         # Add attributes to be used in the to_dict method
         self._obj_attr.extend(["project", "id", "key"])
@@ -432,7 +428,6 @@ class Run(Entity):
             **obj.get("spec", {}),
         )
         status = build_status(kind, framework_runtime=kind.split("+")[0], **obj.get("status", {}))
-        user = obj.get("user")
         return {
             "project": project,
             "uuid": uuid,
@@ -440,7 +435,6 @@ class Run(Entity):
             "metadata": metadata,
             "spec": spec,
             "status": status,
-            "user": user,
         }
 
 

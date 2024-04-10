@@ -17,7 +17,7 @@ class Entity(ModelObj, metaclass=ABCMeta):
     """
 
     # Attributes to render as dict. Need to be expanded in subclasses.
-    _obj_attr = ["kind", "metadata", "spec", "status", "user"]
+    _obj_attr = ["kind", "metadata", "spec", "status"]
 
     @abstractmethod
     def save(self, update: bool = False) -> Entity:

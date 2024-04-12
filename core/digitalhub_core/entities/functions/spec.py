@@ -26,7 +26,6 @@ class SourceCodeStruct:
     def __init__(
         self,
         source: str | None = None,
-        handler: str | None = None,
         code: str | None = None,
         base64: str | None = None,
         lang: str | None = None,
@@ -38,8 +37,6 @@ class SourceCodeStruct:
         ----------
         source : str
             Source reference.
-        handler : str
-            Function entrypoint.
         code : str
             Source code (plain).
         base64 : str
@@ -48,7 +45,6 @@ class SourceCodeStruct:
             Source code language (hint).
         """
         self.source = source
-        self.handler = handler
         self.code = code
         self.base64 = base64
         self.lang = lang
@@ -65,8 +61,6 @@ class SourceCodeStruct:
         dict_ = {}
         if self.source is not None:
             dict_["source"] = self.source
-        if self.handler is not None:
-            dict_["handler"] = self.handler
         if self.base64 is not None:
             dict_["base64"] = self.base64
         if self.lang is not None:

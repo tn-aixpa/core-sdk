@@ -140,12 +140,14 @@ class Project(Entity):
         if not update:
             api = api_base_create("projects")
             new_obj = self._client.create_object(api, obj)
+            new_obj["local"] = self._client.is_local()
             self._update_attributes(new_obj)
             return self
 
         self.metadata.updated = obj["metadata"]["updated"] = get_timestamp()
         api = api_base_update("projects", self.id)
         new_obj = self._client.update_object(api, obj)
+        new_obj["local"] = self._client.is_local()
         self._update_attributes(new_obj)
         return self
 

@@ -293,7 +293,7 @@ class ClientDHCore(Client):
         # Prioritize token over user/password
         token = os.getenv("DIGITALHUB_CORE_TOKEN")
         if token is not None:
-            self._auth_type = "token"
+            self._auth_type = "oauth2"
             self._access_token = token
             return
 

@@ -21,9 +21,9 @@ jobs:
           - dockerfile: ./wrapper/nefertem/Dockerfile
             image: ghcr.io/${{ github.repository }}/wrapper-nefertem
             context: ./wrapper/nefertem/
-          - dockerfile: ./wrapper/kfp/Dockerfile
-            image: ghcr.io/${{ github.repository }}/wrapper-kfp
-            context: ./wrapper/kfp/
+          # - dockerfile: ./wrapper/kfp/Dockerfile
+          #   image: ghcr.io/${{ github.repository }}/wrapper-kfp
+          #   context: ./wrapper/kfp/
           # - dockerfile: ./wrapper/nefertem-frictionless/Dockerfile
           #   image: ghcr.io/${{ github.repository }}/wrapper-nefertem-frictionless
           #   context: ./wrapper/nefertem-frictionless/

@@ -106,7 +106,7 @@ executing==2.0.1
     # via stack-data
 fastjsonschema==2.19.1
     # via nbformat
-fire==0.6.0b0
+fire==0.5.0
     # via kfp
 fqdn==1.5.1
     # via jsonschema

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "digitalhub-core"
-version = "0.6.0b0"
+version = "0.5.1"
 description = "Python SDK for DHCore"
 readme = "README.md"
 authors = [
@@ -24,6 +24,7 @@ dependencies = [
     "pydantic~=1.10, >=1.10.8",
     "sqlalchemy~=1.4",
     "pyarrow>=10.0, <15",
+    "numpy<2",
     "requests~=2.31",
     "PyYAML",
 ]
@@ -65,7 +66,7 @@ line-length = 120
 convention = "numpy"
 
 [tool.bumpver]
-current_version = "0.6.0b0"
+current_version = "0.5.1"
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message  = "Bump version {old_version} -> {new_version}"
 commit          = false

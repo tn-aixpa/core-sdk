@@ -8,7 +8,7 @@ ARG DHUB_VERSION=
 WORKDIR /app/
 
 # Install runtime and requirements
-RUN pip install digitalhub_runtime_nefertem[local]==0.6.0b0
+RUN pip install digitalhub_runtime_nefertem[local]==0.5.0
 
 # Get nefertem
 ARG NEFERTEM_VERSION=2.0.6

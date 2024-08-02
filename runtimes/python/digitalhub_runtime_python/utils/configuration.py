@@ -33,41 +33,12 @@ def get_function_from_source(path: Path, source_spec: dict) -> Callable:
         Function.
     """
     try:
-        function_code = save_function_source(path, source_spec)
+        source_path = save_function_source(path, source_spec)
         handler_path, function_name = parse_handler(source_spec["handler"])
-        function_path = (function_code / handler_path).with_suffix(".py")
+        function_path = (source_path / handler_path).with_suffix(".py")
         return import_function(function_path, function_name)
     except Exception as e:
         msg = f"Some error occurred while getting function. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
-
-
-def get_init_function(path: Path, source_spec: dict) -> Callable:
-    """
-    Get function from source.
-
-    Parameters
-    ----------
-    path : Path
-        Path where to save the function source.
-    source_spec : dict
-        Funcrion source spec.
-
-    Returns
-    -------
-    Callable
-        Function.
-    """
-    try:
-        if "init_function" not in source_spec:
-            return
-        function_code = save_function_source(path, source_spec)
-        handler_path, _ = parse_handler(source_spec["handler"])
-        function_path = (function_code / handler_path).with_suffix(".py")
-        return import_function(function_path, source_spec["init_function"])
-    except Exception as e:
-        msg = f"Some error occurred while getting init function. Exception: {e.__class__}. Error: {e.args}"
         LOGGER.exception(msg)
         raise RuntimeError(msg) from e
 
@@ -203,7 +174,7 @@ def unzip(path: Path, filename: Path) -> None:
         raise RuntimeError(msg) from e
 
 
-def get_repository(path: Path, source: str) -> str:
+def get_repository(path: Path, source: str) -> None:
     """
     Get repository.
 
@@ -219,7 +190,7 @@ def get_repository(path: Path, source: str) -> str:
     None
     """
     try:
-        clone_repository(path, source)
+        clone_repository(source, path)
     except Exception as e:
         msg = f"Some error occurred while downloading function repo source. Exception: {e.__class__}. Error: {e.args}"
         LOGGER.exception(msg)

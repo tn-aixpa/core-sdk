@@ -15,9 +15,6 @@ jobs:
           - dockerfile: ./wrapper/dbt/Dockerfile
             image: ghcr.io/${{ github.repository }}/wrapper-dbt
             context: ./wrapper/dbt/
-          - dockerfile: ./wrapper/mlrun/Dockerfile
-            image: ghcr.io/${{ github.repository }}/wrapper-mlrun
-            context: ./wrapper/mlrun/
           - dockerfile: ./wrapper/nefertem/Dockerfile
             image: ghcr.io/${{ github.repository }}/wrapper-nefertem
             context: ./wrapper/nefertem/

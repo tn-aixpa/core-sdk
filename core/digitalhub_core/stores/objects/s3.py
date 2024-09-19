@@ -119,6 +119,9 @@ class S3Store(Store):
 
             self._download_file(key, dst_pth, client, bucket)
 
+        if len(trees)==1:
+            if dst.suffix == "":
+                return str(Path(dst, trees[0]))
         return str(dst)
 
     def upload(self, src: str | list[str], dst: str | None = None) -> list[tuple[str, str]]:
@@ -159,6 +162,8 @@ class S3Store(Store):
             for s in src:
                 self._check_local_src(s)
             src_is_dir = False
+            if len(src) == 1:
+                src = src[0]
 
         # If source is a directory, destination must be a partition
         if (src_is_dir or isinstance(src, list)) and not dst.endswith("/"):

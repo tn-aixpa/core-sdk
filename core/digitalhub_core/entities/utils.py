@@ -66,6 +66,8 @@ def eval_local_source(source: str | list[str]) -> None:
     None
     """
     if isinstance(source, list):
+        if not source:
+            raise ValueError("Empty list of sources.")
         source_is_local = all(check_local_path(s) for s in source)
         for s in source:
             if Path(s).is_dir():
@@ -169,7 +171,12 @@ def build_log_path_from_source(
     scheme = "zip+s3" if is_zip else "s3"
     path = f"{scheme}://{get_s3_bucket()}/{project}/{entity_type}/{name}/{uuid}"
 
-    if isinstance(source, list) or Path(source).is_dir():
+    if isinstance(source, list) and len(source) >= 1:
+        if len(source) > 1:
+            path += "/"
+        else:
+            path += f"/{Path(source[0]).name}"
+    elif Path(source).is_dir():
         path += "/"
     elif Path(source).is_file():
         path += f"/{Path(source).name}"

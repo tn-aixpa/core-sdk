@@ -1,0 +1,4 @@
+digitalhub[full]==0.8.0b2
+flake8
+pytest
+pytest-cov

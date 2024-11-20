@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 # Use env user as fallback in the API calls
 try:
@@ -13,7 +14,7 @@ except Exception:
 # but refresh token is only available once. Is it's used, we cannot
 # overwrite it with coder, so we need to store the new one in a file,
 # preserved for jupyter restart
-ENV_FILE = ".dhcore"
+ENV_FILE = Path.home() / ".dhcore"
 
 
 # API levels that are supported

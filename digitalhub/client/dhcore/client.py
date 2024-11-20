@@ -462,8 +462,6 @@ class ClientDHCore(Client):
         -------
         None
         """
-        # Load env from file
-        self._load_env()
 
         self._get_endpoints_from_env()
 
@@ -563,11 +561,22 @@ class ClientDHCore(Client):
         url = self._get_refresh_endpoint()
 
         # Call refresh token endpoint
-        response = self._call_refresh_token_endpoint(url)
+        try:
+            # Try token from env
+            refresh_token = os.getenv("DHCORE_REFRESH_TOKEN")
+            response = self._call_refresh_token_endpoint(url, refresh_token)
+
+            # Otherwise try token from file
+        except response.status_code == 401:
+            refresh_token = load_dotenv(ENV_FILE)["DHCORE_REFRESH_TOKEN"]
+            response = self._call_refresh_token_endpoint(url, refresh_token)
+
+        response.raise_for_status()
+        dict_response = response.json()
 
         # Read new access token and refresh token
-        self._access_token = response["access_token"]
-        self._refresh_token = response["refresh_token"]
+        self._access_token = dict_response["access_token"]
+        self._refresh_token = dict_response["refresh_token"]
 
         # Propagate new access token to env
         self._write_env()
@@ -593,7 +602,7 @@ class ClientDHCore(Client):
         self._raise_for_error(r)
         return r.json().get("token_endpoint")
 
-    def _call_refresh_token_endpoint(self, url: str) -> dict:
+    def _call_refresh_token_endpoint(self, url: str, refresh_token: str) -> Response:
         """
         Call the refresh token endpoint.
 
@@ -601,17 +610,14 @@ class ClientDHCore(Client):
         ----------
         url : str
             Refresh token endpoint.
+        refresh_token : str
+            Refresh token.
 
         Returns
         -------
-        dict
+        Response
             Response object.
         """
-        # Get refersh token from .core file to avoid concurrency
-        # in a shared workspace
-        self._load_env()
-        refresh_token = os.getenv("DHCORE_REFRESH_TOKEN")
-
         # Send request to get new access token
         payload = {
             "grant_type": "refresh_token",
@@ -619,20 +625,7 @@ class ClientDHCore(Client):
             "refresh_token": refresh_token,
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        r = request("POST", url, data=payload, headers=headers, timeout=60)
-        self._raise_for_error(r)
-        return r.json()
-
-    @staticmethod
-    def _load_env() -> None:
-        """
-        Load the env variables from the .dhcore file.
-
-        Returns
-        -------
-        None
-        """
-        load_dotenv(dotenv_path=ENV_FILE, override=True)
+        return request("POST", url, data=payload, headers=headers, timeout=60)
 
     def _write_env(self) -> None:
         """

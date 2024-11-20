@@ -45,7 +45,9 @@ def is_valid(built, kind):
     validate(instance=built, schema=schema)
     return True
 
-# Tests
+# Tests that each JSON file contained in the specified path can successfully be
+# used to generate an object through the factory, and that each generated object,
+# when exported to dict, validates (through jsonschema) against its kind's schema.
 class TestValidate:
     @pytest.mark.parametrize('file_name', list(entity_paths.keys()))
     def test_validate(self, file_name):

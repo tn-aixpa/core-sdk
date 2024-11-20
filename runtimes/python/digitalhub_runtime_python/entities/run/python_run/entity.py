@@ -5,8 +5,6 @@ import typing
 from typing import Any
 
 import requests
-from digitalhub_runtime_python.entities.run.python_run.utils import get_getter_for_material
-
 from digitalhub.entities._commons.enums import Relationship, State
 from digitalhub.entities._commons.utils import get_entity_type_from_key
 from digitalhub.entities.run._base.entity import Run
@@ -14,12 +12,14 @@ from digitalhub.factory.api import get_action_from_task_kind
 from digitalhub.utils.exceptions import EntityError
 from digitalhub.utils.logger import LOGGER
 
-if typing.TYPE_CHECKING:
-    from digitalhub_runtime_python.entities.run.python_run.spec import RunSpecPythonRun
-    from digitalhub_runtime_python.entities.run.python_run.status import RunStatusPythonRun
+from digitalhub_runtime_python.entities.run.python_run.utils import get_getter_for_material
 
+if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
     from digitalhub.entities._base.material.entity import MaterialEntity
+
+    from digitalhub_runtime_python.entities.run.python_run.spec import RunSpecPythonRun
+    from digitalhub_runtime_python.entities.run.python_run.status import RunStatusPythonRun
 
 
 class RunPythonRun(Run):
@@ -54,7 +54,11 @@ class RunPythonRun(Run):
         inputs = self.inputs(as_dict=True)
         if self.spec.local_execution:
             for _, v in inputs.items():
-                self.add_relationship(relation=Relationship.CONSUMES.value, source=self.key, dest=v.get("key"))
+                self.add_relationship(
+                    relation=Relationship.CONSUMES.value,
+                    source=self.key + f":{self.id}",
+                    dest=v.get("key"),
+                )
         self.save(update=True)
         self.spec.inputs = inputs
 

@@ -2,15 +2,8 @@ from __future__ import annotations
 
 import typing
 
-from digitalhub.entities._base.crud.crud import (
-    delete_entity,
-    get_unversioned_entity,
-    import_context_entity,
-    list_context_entities,
-    load_context_entity,
-    new_context_entity,
-)
 from digitalhub.entities._commons.enums import EntityTypes
+from digitalhub.entities._operations.processor import processor
 from digitalhub.utils.exceptions import EntityError
 
 if typing.TYPE_CHECKING:
@@ -60,7 +53,7 @@ def new_run(
     >>>               kind="python+run",
     >>>               task="task-string")
     """
-    return new_context_entity(
+    return processor.create_context_entity(
         project=project,
         kind=kind,
         uuid=uuid,
@@ -102,7 +95,7 @@ def get_run(
     >>> obj = get_run("my-run-id"
     >>>               project="my-project")
     """
-    return get_unversioned_entity(
+    return processor.read_context_entity(
         identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -131,7 +124,7 @@ def list_runs(project: str, **kwargs) -> list[Run]:
     >>> objs = list_runs(project="my-project")
     """
     # TODO more examples: search by function, latest for task and function
-    return list_context_entities(
+    return processor.list_context_entities(
         project=project,
         entity_type=ENTITY_TYPE,
         **kwargs,
@@ -156,7 +149,7 @@ def import_run(file: str) -> Run:
     -------
     >>> obj = import_run("my-run.yaml")
     """
-    return import_context_entity(file)
+    return processor.import_context_entity(file)
 
 
 def load_run(file: str) -> Run:
@@ -177,7 +170,7 @@ def load_run(file: str) -> Run:
     --------
     >>> obj = load_run("my-run.yaml")
     """
-    return load_context_entity(file)
+    return processor.load_context_entity(file)
 
 
 def update_run(entity: Run) -> Run:
@@ -198,7 +191,12 @@ def update_run(entity: Run) -> Run:
     --------
     >>> obj = update_run(obj)
     """
-    return entity.save(update=True)
+    return processor.update_context_entity(
+        project=entity.project,
+        entity_type=entity.ENTITY_TYPE,
+        entity_id=entity.id,
+        entity_dict=entity.to_dict(),
+    )
 
 
 def delete_run(
@@ -230,12 +228,10 @@ def delete_run(
     """
     if not identifier.startswith("store://") and project is None:
         raise EntityError("Specify entity key or entity ID combined with project")
-    return delete_entity(
+    return processor.delete_context_entity(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
         entity_id=identifier,
         **kwargs,
     )
-
-    # TODO read logs

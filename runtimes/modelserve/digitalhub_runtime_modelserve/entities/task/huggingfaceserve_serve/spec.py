@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from typing import Literal
-
+from digitalhub_runtime_modelserve.entities.task.huggingfaceserve_serve.models import (
+    Backend,
+    Dtype,
+    HuggingfaceTaskName,
+)
 from digitalhub_runtime_modelserve.entities.task.modelserve_serve.spec import (
     TaskSpecModelserveServe,
     TaskValidatorModelserveServe,
@@ -16,13 +19,13 @@ class TaskSpecHuggingfaceserveServe(TaskSpecModelserveServe):
     def __init__(
         self,
         function: str,
-        node_selector: dict | None = None,
-        volumes: list | None = None,
+        node_selector: list[dict] | None = None,
+        volumes: list[dict] | None = None,
         resources: dict | None = None,
         affinity: dict | None = None,
-        tolerations: list | None = None,
-        envs: list | None = None,
-        secrets: list | None = None,
+        tolerations: list[dict] | None = None,
+        envs: list[dict] | None = None,
+        secrets: list[str] | None = None,
         profile: str | None = None,
         huggingface_task_name: str | None = None,
         backend: str | None = None,
@@ -68,18 +71,12 @@ class TaskValidatorHuggingfaceserveServe(TaskValidatorModelserveServe):
     TaskValidatorHuggingfaceserveServe validator.
     """
 
-    huggingface_task_name: Literal[
-        "SEQUENCE_CLASSIFICATION",
-        "TOKEN_CLASSIFICATION",
-        "FILL_MASK",
-        "TEXT_GENERATION",
-        "TEXT2TEXT_GENERATION",
-    ] = None
+    huggingface_task_name: HuggingfaceTaskName = None
     """
     Huggingface task name.
     """
 
-    backend: Literal["AUTO", "VLLM", "HUGGINGFACE"] = None
+    backend: Backend = None
     """
     Backend type.
     """
@@ -104,7 +101,7 @@ class TaskValidatorHuggingfaceserveServe(TaskValidatorModelserveServe):
     The sequences will not be encoded with the special tokens relative to their model
     """
 
-    dtype: Literal["AUTO", "FLOAT32", "FLOAT16", "BFLOAT16", "FLOAT", "HALF"] = None
+    dtype: Dtype = None
     """
     Data type to load the weights in.
     """

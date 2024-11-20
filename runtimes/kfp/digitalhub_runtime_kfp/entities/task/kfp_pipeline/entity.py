@@ -5,10 +5,10 @@ import typing
 from digitalhub.entities.task._base.entity import Task
 
 if typing.TYPE_CHECKING:
+    from digitalhub.entities._base.entity.metadata import Metadata
+
     from digitalhub_runtime_kfp.entities.task.kfp_pipeline.spec import TaskSpecKfpPipeline
     from digitalhub_runtime_kfp.entities.task.kfp_pipeline.status import TaskStatusKfpPipeline
-
-    from digitalhub.entities._base.entity.metadata import Metadata
 
 
 class TaskKfpPipeline(Task):

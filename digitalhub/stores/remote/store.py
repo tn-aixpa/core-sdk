@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import requests
 
@@ -25,7 +26,7 @@ class RemoteStore(Store):
         self.config = config
 
     ##############################
-    # IO methods
+    # I/O methods
     ##############################
 
     def download(
@@ -96,7 +97,23 @@ class RemoteStore(Store):
         return []
 
     ##############################
-    # Private helper methods
+    # Datastore methods
+    ##############################
+
+    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
+        """
+        Method to write a dataframe to a file. Note that this method is not implemented
+        since the remote store is not meant to write dataframes.
+
+        Raises
+        ------
+        NotImplementedError
+            This method is not implemented.
+        """
+        raise NotImplementedError("Remote store does not support write_df.")
+
+    ##############################
+    # Helper methods
     ##############################
 
     @staticmethod

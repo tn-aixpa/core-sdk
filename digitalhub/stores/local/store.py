@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
+from typing import Any
 
+from digitalhub.readers.api import get_reader_by_object
 from digitalhub.stores._base.store import Store, StoreConfig
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_local
@@ -28,7 +30,7 @@ class LocalStore(Store):
         self.config = config
 
     ##############################
-    # IO methods
+    # I/O methods
     ##############################
 
     def download(
@@ -189,7 +191,40 @@ class LocalStore(Store):
         return dst
 
     ##############################
-    # Static methods
+    # Datastore methods
+    ##############################
+
+    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
+        """
+        Method to write a dataframe to a file. Kwargs are passed to df.to_parquet().
+        If destination is not provided, the dataframe is written to the default
+        store path with generated name.
+
+        Parameters
+        ----------
+        df : Any
+            The dataframe to write.
+        dst : str
+            The destination of the dataframe.
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        str
+            Path of written dataframe.
+        """
+        self.store._check_local_dst(dst)
+        self._validate_extension(Path(dst).suffix.removeprefix("."))
+
+        # Write dataframe
+        reader = get_reader_by_object(df)
+        reader.write_df(df, dst, extension=extension, **kwargs)
+
+        return dst
+
+    ##############################
+    # Helper methods
     ##############################
 
     @staticmethod

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from enum import Enum
+
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
@@ -206,3 +208,14 @@ class CorePort(BaseModel):
 
     port: int
     target_port: int
+
+
+class CoreServiceType(Enum):
+    """
+    CoreServiceType enum.
+    """
+
+    EXTERNAL_NAME = "ExternalName"
+    CLUSTER_IP = "ClusterIP"
+    NODE_PORT = "NodePort"
+    LOAD_BALANCER = "LoadBalancer"

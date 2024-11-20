@@ -12,6 +12,9 @@ class Signature(BaseModel):
     outputs: str = None
     params: str = None
 
+    def to_dict(self):
+        return self.model_dump()
+
 
 class Dataset(BaseModel):
     """
@@ -24,3 +27,6 @@ class Dataset(BaseModel):
     schema_: str = Field(default=None, alias="schema")
     source: str = None
     source_type: str = None
+
+    def to_dict(self):
+        return self.model_dump()

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import base64
+import importlib.util as imputil
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from zipfile import ZipFile
 
 import numpy as np
@@ -26,7 +27,7 @@ def get_timestamp() -> str:
     return datetime.now().astimezone().isoformat()
 
 
-def decode_string(string: str) -> str:
+def decode_base64_string(string: str) -> str:
     """
     Decode a string from base64.
 
@@ -181,3 +182,25 @@ def slugify_string(filename: str) -> str:
         The sanitized filename.
     """
     return slugify(filename, max_length=255)
+
+
+def import_function(path: Path, handler: str) -> Callable:
+    """
+    Import a function from a module.
+
+    Parameters
+    ----------
+    path : Path
+        Path where the function source is located.
+    handler : str
+        Function name.
+
+    Returns
+    -------
+    Callable
+        Function.
+    """
+    spec = imputil.spec_from_file_location(path.stem, path)
+    mod = imputil.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return getattr(mod, handler)

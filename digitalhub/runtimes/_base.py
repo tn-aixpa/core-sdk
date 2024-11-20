@@ -34,13 +34,6 @@ class Runtime:
         Execute run task.
         """
 
-    @staticmethod
-    @abstractmethod
-    def _get_executable(action: str) -> Callable:
-        """
-        Get executable from action.
-        """
-
     ##############################
     # Private methods
     ##############################

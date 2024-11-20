@@ -3,6 +3,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.context.context import Context
+from digitalhub.utils.exceptions import ContextError
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities.project._base.entity import Project
@@ -55,9 +56,7 @@ class ContextBuilder:
         """
         ctx = self._instances.get(project)
         if ctx is None:
-            raise ValueError(
-                f"Context '{project}' not found. Please get or create a project named '{project}' to access its objects."
-            )
+            raise ContextError(f"Context '{project}' not found. Get or create a project named '{project}'.")
         return ctx
 
     def remove(self, project: str) -> None:
@@ -74,21 +73,6 @@ class ContextBuilder:
         None
         """
         self._instances.pop(project, None)
-
-    def set(self, context: Context) -> None:
-        """
-        Set the context.
-
-        Parameters
-        ----------
-        context : Context
-            The context to set.
-
-        Returns
-        -------
-        None
-        """
-        self._instances[context.name] = context
 
 
 context_builder = ContextBuilder()

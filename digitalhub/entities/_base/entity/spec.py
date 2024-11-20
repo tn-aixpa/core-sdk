@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from digitalhub.entities._base._base.entity import Base
 
@@ -30,13 +30,18 @@ class Spec(Base):
         return cls(**obj)
 
 
-class SpecValidator(BaseModel, extra="ignore"):
+class SpecValidator(BaseModel):
     """
     A class representing the parameters of an entity.
     This base class is used to define the parameters of an entity
     specifications.and is used to validate the parameters passed
     to the constructor.
     """
+
+    model_config = ConfigDict(extra="ignore", use_enum_values=True)
+
+    def to_dict(self) -> dict:
+        return self.model_dump(by_alias=True, exclude_none=True)
 
 
 class MaterialSpec(Spec):

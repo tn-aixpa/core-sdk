@@ -3,15 +3,15 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities.function._base.entity import Function
-from digitalhub.utils.generic_utils import decode_string
+from digitalhub.utils.generic_utils import decode_base64_string
 from digitalhub.utils.io_utils import write_text
-from digitalhub.utils.uri_utils import map_uri_scheme
+from digitalhub.utils.uri_utils import has_local_scheme
 
 if typing.TYPE_CHECKING:
+    from digitalhub.entities._base.entity.metadata import Metadata
+
     from digitalhub_runtime_dbt.entities.function.dbt.spec import FunctionSpecDbt
     from digitalhub_runtime_dbt.entities.function.dbt.status import FunctionStatusDbt
-
-    from digitalhub.entities._base.entity.metadata import Metadata
 
 
 class FunctionDbt(Function):
@@ -50,14 +50,14 @@ class FunctionDbt(Function):
 
         # Check source
         source = self.spec.source.get("source")
-        if source is not None and map_uri_scheme(source) == "local":
+        if source is not None and has_local_scheme(source):
             # Check base64. If it is set, decode it in a local file
             # save in variable to restore on object after export
             base64 = self.spec.source.pop("base64", None)
             if base64 is not None:
                 # Write local file
                 src_pth = self._context().root / source
-                write_text(src_pth, decode_string(base64))
+                write_text(src_pth, decode_base64_string(base64))
 
                 # Export and restore base64, then return
                 pth = super().export()

@@ -23,7 +23,6 @@ class TaskBuilder(UnversionedBuilder, RuntimeEntityBuilder):
         kind: str,
         uuid: str | None = None,
         labels: list[str] | None = None,
-        function: str | None = None,
         **kwargs,
     ) -> Task:
         """
@@ -39,8 +38,6 @@ class TaskBuilder(UnversionedBuilder, RuntimeEntityBuilder):
             ID of the object.
         labels : list[str]
             List of labels.
-        function : str
-            Name of the executable associated with the task.
         **kwargs : dict
             Spec keyword arguments.
 
@@ -49,10 +46,14 @@ class TaskBuilder(UnversionedBuilder, RuntimeEntityBuilder):
         Task
             Object instance.
         """
-        if function is None:
-            raise EntityError("function must be provided")
+        # Check executable kind validity
+        fnc = kwargs.get("function", None)
+        wkf = kwargs.get("workflow", None)
+        executable = fnc if fnc is not None else wkf
+        if executable is None:
+            raise EntityError("Function or workflow must be provided")
+        self._check_kind_validity(executable)
 
-        self._check_kind_validity(function)
         uuid = self.build_uuid(uuid)
         metadata = self.build_metadata(
             project=project,
@@ -60,7 +61,6 @@ class TaskBuilder(UnversionedBuilder, RuntimeEntityBuilder):
             labels=labels,
         )
         spec = self.build_spec(
-            function=function,
             **kwargs,
         )
         status = self.build_status()
@@ -73,19 +73,19 @@ class TaskBuilder(UnversionedBuilder, RuntimeEntityBuilder):
             status=status,
         )
 
-    def _check_kind_validity(self, function: str) -> None:
+    def _check_kind_validity(self, executable: str) -> None:
         """
         Check kind validity.
 
         Parameters
         ----------
-        function : str
-            Function string.
+        executable : str
+            Executable string.
 
         Returns
         -------
         None
         """
-        function_kind = function.split("://")[0]
-        if self.EXECUTABLE_KIND != function_kind:
-            raise EntityError(f"Invalid task '{self.ENTITY_KIND}' for function kind '{function_kind}'")
+        exec_kind = executable.split("://")[0]
+        if self.EXECUTABLE_KIND != exec_kind:
+            raise EntityError(f"Invalid task '{self.ENTITY_KIND}' for executable kind '{exec_kind}'")

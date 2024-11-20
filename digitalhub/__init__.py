@@ -1,4 +1,3 @@
-from digitalhub.entities._base.crud.crud import search_entity
 from digitalhub.entities.artifact.crud import (
     delete_artifact,
     get_artifact,
@@ -47,8 +46,10 @@ from digitalhub.entities.project.crud import (
     get_or_create_project,
     get_project,
     import_project,
+    list_projects,
     load_project,
     new_project,
+    search_entity,
     update_project,
 )
 from digitalhub.entities.run.crud import delete_run, get_run, import_run, list_runs, load_run, new_run, update_run

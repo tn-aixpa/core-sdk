@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -9,6 +10,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.engine.row import LegacyRow
 from sqlalchemy.exc import SQLAlchemyError
 
+from digitalhub.readers.api import get_reader_by_object
 from digitalhub.stores._base.store import Store, StoreConfig
 from digitalhub.utils.exceptions import StoreError
 
@@ -45,7 +47,7 @@ class SqlStore(Store):
         self.config = config
 
     ##############################
-    # IO methods
+    # I/O methods
     ##############################
 
     def download(
@@ -125,7 +127,105 @@ class SqlStore(Store):
         return []
 
     ##############################
-    # Private helper methods
+    # Private I/O methods
+    ##############################
+
+    def _download_table(self, schema: str, table: str, dst: str) -> str:
+        """
+        Download a table from SQL based storage.
+
+        Parameters
+        ----------
+        schema : str
+            The origin schema.
+        table : str
+            The origin table.
+        dst : str
+            The destination path.
+
+        Returns
+        -------
+        str
+            The destination path.
+        """
+        engine = self._check_factory(schema=schema)
+
+        # Read the table from the database
+        sa_table = Table(table, MetaData(), autoload_with=engine)
+        query = sa_table.select()
+        with engine.begin() as conn:
+            result: list[LegacyRow] = conn.execute(query).fetchall()
+
+        # Parse the result
+        data = self._parse_result(result)
+
+        # Convert the result to a pyarrow table and
+        # write the pyarrow table to a Parquet file
+        arrow_table = pa.Table.from_pydict(data)
+        pq.write_table(arrow_table, dst)
+
+        engine.dispose()
+
+        return dst
+
+    ##############################
+    # Datastore methods
+    ##############################
+
+    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
+        """
+        Write a dataframe to a database. Kwargs are passed to df.to_sql().
+
+        Parameters
+        ----------
+        df : Any
+            The dataframe to write.
+        dst : str
+            The destination of the dataframe.
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        str
+            Path of written dataframe.
+        """
+        schema = self._get_schema(dst)
+        table = self._get_table_name(dst)
+        return self._upload_table(df, schema, table, **kwargs)
+
+    ##############################
+    # Private Datastore methods
+    ##############################
+
+    def _upload_table(self, df: Any, schema: str, table: str, **kwargs) -> str:
+        """
+        Upload a table to SQL based storage.
+
+        Parameters
+        ----------
+        df : DataFrame
+            The dataframe.
+        schema : str
+            Destination schema.
+        table : str
+            Destination table.
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        str
+            The SQL URI where the dataframe was saved.
+        """
+        reader = get_reader_by_object(df)
+        engine = self._check_factory()
+        reader.write_table(df, table, engine, schema, **kwargs)
+        engine.dispose()
+        return f"sql://{engine.url.database}/{schema}/{table}"
+
+    ##############################
+    # Helper methods
     ##############################
 
     def _get_connection_string(self) -> str:
@@ -269,44 +369,6 @@ class SqlStore(Store):
         except SQLAlchemyError:
             engine.dispose()
             raise StoreError("No access to db!")
-
-    def _download_table(self, schema: str, table: str, dst: str) -> str:
-        """
-        Download a table from SQL based storage.
-
-        Parameters
-        ----------
-        schema : str
-            The origin schema.
-        table : str
-            The origin table.
-        dst : str
-            The destination path.
-
-        Returns
-        -------
-        str
-            The destination path.
-        """
-        engine = self._check_factory(schema=schema)
-
-        # Read the table from the database
-        sa_table = Table(table, MetaData(), autoload_with=engine)
-        query = sa_table.select()
-        with engine.begin() as conn:
-            result: list[LegacyRow] = conn.execute(query).fetchall()
-
-        # Parse the result
-        data = self._parse_result(result)
-
-        # Convert the result to a pyarrow table and
-        # write the pyarrow table to a Parquet file
-        arrow_table = pa.Table.from_pydict(data)
-        pq.write_table(arrow_table, dst)
-
-        engine.dispose()
-
-        return dst
 
     @staticmethod
     def _parse_result(result: list[LegacyRow]) -> dict:

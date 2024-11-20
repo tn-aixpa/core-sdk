@@ -4,17 +4,16 @@ import typing
 from dataclasses import dataclass
 
 from dbt.cli.main import dbtRunnerResult
-from digitalhub_runtime_dbt.utils.env import get_connection
-from psycopg2 import sql
-
-from digitalhub.entities._commons.enums import Relationship, State
+from digitalhub.entities._commons.enums import EntityKinds, Relationship, State
 from digitalhub.factory.api import build_entity_from_params
 from digitalhub.utils.data_utils import build_data_preview, get_data_preview
 from digitalhub.utils.logger import LOGGER
+from psycopg2 import sql
+
+from digitalhub_runtime_dbt.utils.env import get_connection
 
 if typing.TYPE_CHECKING:
     from dbt.contracts.results import RunResult
-
     from digitalhub.entities.dataitem._base.entity import Dataitem
 
 
@@ -190,7 +189,7 @@ def create_dataitem_(result: ParsedResults, project: str, uuid: str, run_key: st
         kwargs = {}
         kwargs["project"] = project
         kwargs["name"] = result.name
-        kwargs["kind"] = "table"
+        kwargs["kind"] = EntityKinds.DATAITEM_TABLE.value
         kwargs["path"] = result.path
         kwargs["uuid"] = uuid
         kwargs["schema"] = get_schema(columns)
@@ -199,7 +198,8 @@ def create_dataitem_(result: ParsedResults, project: str, uuid: str, run_key: st
         dataitem = build_entity_from_params(**kwargs)
 
         # Update dataitem relationships with run key
-        dataitem.add_relationship(relation=Relationship.PRODUCEDBY.value, source=dataitem.key, dest=run_key)
+        dest = run_key + ":" + run_key.split("/")[-1]
+        dataitem.add_relationship(relation=Relationship.PRODUCEDBY.value, source=dataitem.key, dest=dest)
 
         # Update dataitem status with preview
         dataitem.status.preview = _get_data_preview(columns, data, rows_count)

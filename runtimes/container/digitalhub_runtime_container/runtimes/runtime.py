@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Callable
-
 from digitalhub.runtimes._base import Runtime
 
 
@@ -43,21 +41,4 @@ class RuntimeContainer(Runtime):
         dict
             Status of the executed run.
         """
-        raise RuntimeError("Cannot excute locally.")
-
-    @staticmethod
-    def _get_executable(action: str) -> Callable:
-        """
-        Select function according to action.
-
-        Parameters
-        ----------
-        action : str
-            Action to execute.
-
-        Returns
-        -------
-        Callable
-            Function to execute.
-        """
-        raise NotImplementedError
+        raise NotImplementedError("Local execution not implemented for Container runtime.")

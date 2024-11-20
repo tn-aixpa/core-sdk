@@ -57,7 +57,13 @@ class DataframeReaderPandas(DataframeReader):
     # Write methods
     ##############################
 
-    def write_df(self, df: pd.DataFrame, dst: str | BytesIO, extension: str | None = None, **kwargs) -> None:
+    def write_df(
+        self,
+        df: pd.DataFrame,
+        dst: str | BytesIO,
+        extension: str | None = None,
+        **kwargs,
+    ) -> None:
         """
         Write DataFrame as parquet.
 

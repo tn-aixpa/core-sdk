@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from digitalhub.entities.task._base.spec import TaskSpecK8s, TaskValidatorK8s
+from digitalhub.entities.task._base.spec import TaskSpecFunction, TaskValidatorFunction
+from pydantic import Field
 
 
-class TaskSpecContainerJob(TaskSpecK8s):
+class TaskSpecContainerJob(TaskSpecFunction):
     """
     TaskSpecContainerJob specifications.
     """
@@ -11,13 +12,13 @@ class TaskSpecContainerJob(TaskSpecK8s):
     def __init__(
         self,
         function: str,
-        node_selector: dict | None = None,
-        volumes: list | None = None,
+        node_selector: list[dict] | None = None,
+        volumes: list[dict] | None = None,
         resources: dict | None = None,
         affinity: dict | None = None,
-        tolerations: list | None = None,
-        envs: list | None = None,
-        secrets: list | None = None,
+        tolerations: list[dict] | None = None,
+        envs: list[dict] | None = None,
+        secrets: list[str] | None = None,
         profile: str | None = None,
         backoff_limit: int | None = None,
         schedule: str | None = None,
@@ -41,16 +42,16 @@ class TaskSpecContainerJob(TaskSpecK8s):
         self.fsGroup = fsGroup
 
 
-class TaskValidatorContainerJob(TaskValidatorK8s):
+class TaskValidatorContainerJob(TaskValidatorFunction):
     """
     TaskValidatorContainerJob validator.
     """
 
-    backoff_limit: int = None
+    backoff_limit: int = Field(default=None, ge=0)
     """Backoff limit."""
 
     schedule: str = None
     """Schedule."""
 
-    fsGroup: int = None
+    fsGroup: int = Field(default=None, ge=1)
     """FSGroup."""

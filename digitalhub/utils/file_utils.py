@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from digitalhub.utils.uri_utils import check_local_path
+from digitalhub.utils.uri_utils import has_local_scheme
 
 
 class FileInfo(BaseModel):
@@ -21,6 +21,9 @@ class FileInfo(BaseModel):
     size: int = None
     hash: str = None
     last_modified: str = None
+
+    def to_dict(self):
+        return self.model_dump()
 
 
 def calculate_blob_hash(data_path: str) -> str:
@@ -159,7 +162,7 @@ def get_file_info_from_local(path: str, src_path: str) -> None | dict:
             size=size,
             hash=hash,
             last_modified=last_modified,
-        ).model_dump()
+        ).to_dict()
     except Exception:
         return None
 
@@ -201,7 +204,7 @@ def get_file_info_from_s3(path: str, metadata: dict) -> None | dict:
             size=size,
             hash=file_hash,
             last_modified=last_modified,
-        ).model_dump()
+        ).to_dict()
     except Exception:
         return None
 
@@ -304,12 +307,12 @@ def eval_local_source(source: str | list[str]) -> None:
     if isinstance(source, list):
         if not source:
             raise ValueError("Empty list of sources.")
-        source_is_local = all(check_local_path(s) for s in source)
+        source_is_local = all(has_local_scheme(s) for s in source)
         for s in source:
             if Path(s).is_dir():
                 raise ValueError(f"Invalid source path: {s}. List of paths must be list of files, not directories.")
     else:
-        source_is_local = check_local_path(source)
+        source_is_local = has_local_scheme(source)
 
     if not source_is_local:
         raise ValueError("Invalid source path. Source must be a local path.")

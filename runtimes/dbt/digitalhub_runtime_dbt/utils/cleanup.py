@@ -3,10 +3,10 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from digitalhub_runtime_dbt.utils.env import get_connection
+from digitalhub.utils.logger import LOGGER
 from psycopg2 import sql
 
-from digitalhub.utils.logger import LOGGER
+from digitalhub_runtime_dbt.utils.env import get_connection
 
 
 def cleanup(tables: list[str], tmp_dir: Path) -> None:

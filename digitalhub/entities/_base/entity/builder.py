@@ -106,7 +106,12 @@ class EntityBuilder:
         Spec
             Spec object.
         """
-        return build_spec(self.ENTITY_SPEC_CLASS, self.ENTITY_SPEC_VALIDATOR, validate=validate, **kwargs)
+        return build_spec(
+            self.ENTITY_SPEC_CLASS,
+            self.ENTITY_SPEC_VALIDATOR,
+            validate=validate,
+            **kwargs,
+        )
 
     def build_status(self, **kwargs) -> Status:
         """

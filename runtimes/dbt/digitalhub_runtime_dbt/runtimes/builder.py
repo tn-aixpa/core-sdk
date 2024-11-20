@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from digitalhub_runtime_dbt.runtimes.runtime import RuntimeDbt
-
 from digitalhub.runtimes.builder import RuntimeBuilder
+
+from digitalhub_runtime_dbt.runtimes.runtime import RuntimeDbt
 
 
 class RuntimeDbtBuilder(RuntimeBuilder):

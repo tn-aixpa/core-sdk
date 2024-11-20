@@ -5,10 +5,10 @@ import typing
 from digitalhub_runtime_modelserve.entities.run.modelserve_run.entity import RunModelserveRun
 
 if typing.TYPE_CHECKING:
+    from digitalhub.entities._base.entity.metadata import Metadata
+
     from digitalhub_runtime_modelserve.entities.run.mlflowserve_run.spec import RunSpecMlflowserveRun
     from digitalhub_runtime_modelserve.entities.run.mlflowserve_run.status import RunStatusMlflowserveRun
-
-    from digitalhub.entities._base.entity.metadata import Metadata
 
 
 class RunMlflowserveRun(RunModelserveRun):

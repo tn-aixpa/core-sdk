@@ -5,9 +5,9 @@ import typing
 from pathlib import Path
 from typing import Any
 
-from digitalhub.datastores.api import get_datastore
 from digitalhub.entities.dataitem._base.entity import Dataitem
-from digitalhub.utils.uri_utils import check_local_path
+from digitalhub.stores.api import get_store
+from digitalhub.utils.uri_utils import has_local_scheme
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -72,7 +72,7 @@ class DataitemTable(Dataitem):
         if engine is None:
             engine = "pandas"
         try:
-            if check_local_path(self.spec.path):
+            if has_local_scheme(self.spec.path):
                 tmp_dir = None
                 data_path = self.spec.path
             else:
@@ -87,9 +87,7 @@ class DataitemTable(Dataitem):
                 checker = data_path
 
             extension = self._get_extension(checker, file_format)
-            datastore = get_datastore("")
-
-            return datastore.read_df(data_path, extension, engine, **kwargs)
+            return get_store("").read_df(data_path, extension, engine, **kwargs)
 
         except Exception as e:
             raise e
@@ -123,8 +121,7 @@ class DataitemTable(Dataitem):
         str
             Path to the written dataframe.
         """
-        datastore = get_datastore(self.spec.path)
-        return datastore.write_df(df, self.spec.path, extension=extension, **kwargs)
+        return get_store(self.spec.path).write_df(df, self.spec.path, extension=extension, **kwargs)
 
     @staticmethod
     def _clean_tmp_path(pth: Path | None, clean: bool) -> None:

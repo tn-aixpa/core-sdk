@@ -23,5 +23,5 @@ class UnversionedEntity(ContextEntity):
     ) -> None:
         super().__init__(project, kind, metadata, spec, status, user)
         self.id = uuid
+        self.name = uuid
         self.key = f"store://{project}/{self.ENTITY_TYPE}/{kind}/{uuid}"
-        self._obj_attr.extend(["id"])

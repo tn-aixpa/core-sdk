@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from digitalhub.entities._commons.enums import EntityKinds
 from digitalhub.entities.model._base.builder import ModelBuilder
 from digitalhub.entities.model.model.entity import ModelModel
 from digitalhub.entities.model.model.spec import ModelSpecModel, ModelValidatorModel
@@ -15,4 +16,4 @@ class ModelMlflowBuilder(ModelBuilder):
     ENTITY_SPEC_CLASS = ModelSpecModel
     ENTITY_SPEC_VALIDATOR = ModelValidatorModel
     ENTITY_STATUS_CLASS = ModelStatusModel
-    ENTITY_KIND = "model"
+    ENTITY_KIND = EntityKinds.MODEL_MODEL.value

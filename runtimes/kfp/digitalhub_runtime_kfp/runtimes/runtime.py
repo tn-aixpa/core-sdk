@@ -3,6 +3,11 @@ from __future__ import annotations
 import shutil
 from typing import Callable
 
+from digitalhub.context.api import get_context
+from digitalhub.runtimes._base import Runtime
+from digitalhub.utils.logger import LOGGER
+
+from digitalhub_runtime_kfp.entities._commons.enums import TaskActions
 from digitalhub_runtime_kfp.utils.configurations import (
     get_dhcore_workflow,
     get_kfp_pipeline,
@@ -10,10 +15,7 @@ from digitalhub_runtime_kfp.utils.configurations import (
     save_workflow_source,
 )
 from digitalhub_runtime_kfp.utils.functions import run_kfp_build
-
-from digitalhub.context.api import get_context
-from digitalhub.runtimes._base import Runtime
-from digitalhub.utils.logger import LOGGER
+from digitalhub_runtime_kfp.utils.outputs import build_status
 
 
 class RuntimeKfp(Runtime):
@@ -26,7 +28,6 @@ class RuntimeKfp(Runtime):
         ctx = get_context(self.project)
         self.runtime_dir = ctx.root / "runtime_kfp"
         self.runtime_dir.mkdir(parents=True, exist_ok=True)
-        self.function_source = None
 
     def build(self, workflow: dict, task: dict, run: dict) -> dict:
         """
@@ -34,8 +35,8 @@ class RuntimeKfp(Runtime):
 
         Parameters
         ----------
-        function : dict
-            The function.
+        workflow : dict
+            The workflow.
         task : dict
             The task.
         run : dict
@@ -63,7 +64,7 @@ class RuntimeKfp(Runtime):
         """
         LOGGER.info("Validating task.")
         action = self._validate_task(run)
-        executable = self._get_executable(action, run)
+        executable = self._get_executable(action)
 
         LOGGER.info(f"Starting task {action}.")
         spec = run.get("spec")
@@ -78,7 +79,7 @@ class RuntimeKfp(Runtime):
         results = self._execute(executable, kfp_workflow, workflow_args)
 
         LOGGER.info("Collecting outputs.")
-        status = self._collect_outputs(results)
+        status = build_status(results)
 
         LOGGER.info("Cleanup")
         self._cleanup()
@@ -87,7 +88,7 @@ class RuntimeKfp(Runtime):
         return status
 
     @staticmethod
-    def _get_executable(action: str, run: dict) -> Callable:
+    def _get_executable(action: str) -> Callable:
         """
         Select workflow according to action.
 
@@ -101,8 +102,8 @@ class RuntimeKfp(Runtime):
         Callable
             Workflow to execute.
         """
-        if action == "build":
-            return run_kfp_build(run)
+        if action == TaskActions.BUILD.value:
+            return run_kfp_build
         raise NotImplementedError
 
     ##############################
@@ -151,7 +152,6 @@ class RuntimeKfp(Runtime):
         tuple
             KFP pipeline to execute and parameters.
         """
-
         # Setup function source and specs
         LOGGER.info("Getting workflow source and specs.")
         dhcore_workflow = get_dhcore_workflow(spec.get("function"))
@@ -161,26 +161,6 @@ class RuntimeKfp(Runtime):
         # Create kfp project
         LOGGER.info("Creating KFP project and workflow.")
         return get_kfp_pipeline(dhcore_workflow.name, workflow_source, workflow_specs)
-
-    ##############################
-    # Outputs
-    ##############################
-
-    def _collect_outputs(self, results: dict) -> dict:
-        """
-        Collect outputs. Use the produced results directly
-
-        Parameters
-        ----------
-        results : RunObject
-            Execution results.
-
-        Returns
-        -------
-        dict
-            Status of the executed run.
-        """
-        return results
 
     ##############################
     # Cleanup

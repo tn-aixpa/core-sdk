@@ -3,16 +3,9 @@ from __future__ import annotations
 import time
 import typing
 
-from digitalhub.entities._base.crud.api_utils import (
-    list_entity_api_base,
-    list_entity_api_ctx,
-    logs_api,
-    read_entity_api_ctx,
-    resume_api,
-    stop_api,
-)
 from digitalhub.entities._base.unversioned.entity import UnversionedEntity
 from digitalhub.entities._commons.enums import EntityTypes, State
+from digitalhub.entities._operations.processor import processor
 from digitalhub.factory.api import (
     build_runtime,
     build_spec,
@@ -67,12 +60,9 @@ class Run(UnversionedEntity):
         executable = self._get_executable()
         task = self._get_task()
         new_spec = self._get_runtime().build(executable, task, self.to_dict())
-        self.spec = build_spec(
-            self.kind,
-            **new_spec,
-        )
+        self.spec = build_spec(self.kind, **new_spec)
         self._set_state(State.BUILT.value)
-        self.save()
+        self.save(update=True)
 
     def run(self) -> Run:
         """
@@ -142,17 +132,14 @@ class Run(UnversionedEntity):
 
     def logs(self) -> dict:
         """
-        Get object from backend.
-        Returns empty dictionary if context is local.
+        Get run logs.
 
         Returns
         -------
         dict
-            Logs from backend.
+            Run logs.
         """
-        if self._context().local:
-            return {}
-        return logs_api(self.project, self.ENTITY_TYPE, self.id)
+        return processor.read_run_logs(self.project, self.ENTITY_TYPE, self.id)
 
     def stop(self) -> None:
         """
@@ -162,8 +149,8 @@ class Run(UnversionedEntity):
         -------
         None
         """
-        if not self._context().local and not self.spec.local_execution:
-            return stop_api(self.project, self.ENTITY_TYPE, self.id)
+        if not self.spec.local_execution:
+            return processor.stop_run(self.project, self.ENTITY_TYPE, self.id)
 
     def resume(self) -> None:
         """
@@ -173,9 +160,8 @@ class Run(UnversionedEntity):
         -------
         None
         """
-        if not self._context().local and not self.spec.local_execution:
-            return resume_api(self.project, self.ENTITY_TYPE, self.id)
-        self.run()
+        if not self.spec.local_execution:
+            return processor.resume_run(self.project, self.ENTITY_TYPE, self.id)
 
     ##############################
     #  Helpers
@@ -268,16 +254,15 @@ class Run(UnversionedEntity):
             Executable (function or workflow) from backend.
         """
         exec_kind = get_executable_kind(self.kind)
-        entity_type = get_entity_type_from_kind(exec_kind)
-        splitted = self.spec.task.split("/")
-        exec_name = splitted[-1].split(":")[0]
-        exec_id = splitted[-1].split(":")[1]
-        return read_entity_api_ctx(
+        exec_type = get_entity_type_from_kind(exec_kind)
+        string_to_split = getattr(self.spec, exec_type)
+        exec_name, exec_id = string_to_split.split("://")[-1].split("/")[-1].split(":")
+        return processor.read_context_entity(
             exec_name,
-            entity_type=entity_type,
+            entity_type=exec_type,
             project=self.project,
             entity_id=exec_id,
-        )
+        ).to_dict()
 
     def _get_task(self) -> dict:
         """
@@ -289,18 +274,9 @@ class Run(UnversionedEntity):
         dict
             Task from backend.
         """
-        executable_kind = get_executable_kind(self.kind)
-        exec_string = f"{executable_kind}://{self.spec.task.split('://')[1]}"
-
-        # Local backend
-        if self._context().local:
-            tasks = list_entity_api_base(self._context().client, EntityTypes.TASK.value)
-            for i in tasks:
-                if i.get("spec").get("function") == exec_string:
-                    return i
-            raise EntityError("Task not found.")
-
-        # Remote backend
-        task_kind = self.spec.task.split("://")[0]
-        params = {"function": exec_string, "kind": task_kind}
-        return list_entity_api_ctx(self.project, EntityTypes.TASK.value, params=params)[0]
+        task_id = self.spec.task.split("://")[-1].split("/")[-1]
+        return processor.read_context_entity(
+            task_id,
+            entity_type=EntityTypes.TASK.value,
+            project=self.project,
+        ).to_dict()

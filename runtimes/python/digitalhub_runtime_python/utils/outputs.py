@@ -4,7 +4,7 @@ import pickle
 import typing
 from typing import Any
 
-from digitalhub.entities._commons.enums import Relationship, State
+from digitalhub.entities._commons.enums import EntityKinds, Relationship, State
 from digitalhub.entities.artifact._base.entity import Artifact
 from digitalhub.entities.artifact.crud import log_artifact
 from digitalhub.entities.dataitem._base.entity import Dataitem
@@ -41,6 +41,7 @@ def collect_outputs(results: Any, outputs: list[str], project_name: str, run_key
     results = listify_results(results)
 
     for idx, item in enumerate(results):
+        # Get mapping of outputs, if not found, create a new one
         try:
             name = outputs[idx]
         except IndexError:
@@ -50,16 +51,21 @@ def collect_outputs(results: Any, outputs: list[str], project_name: str, run_key
             objects[name] = item
 
         else:
+            # Recieve a dataframe object
             if f"{item.__class__.__module__}.{item.__class__.__name__}" in get_supported_dataframes():
                 obj = _log_dataitem(name, project_name, item)
 
+            # Recieve a digitalhub object
             elif isinstance(item, (Dataitem, Artifact, Model)):
                 obj = item
 
+            # Recieve a generic python object
             else:
                 obj = _log_artifact(name, project_name, item)
 
-            obj.add_relationship(relation=Relationship.PRODUCEDBY.value, source=obj.key, dest=run_key)
+            # Add relationship to object, update it
+            dest = run_key + ":" + run_key.split("/")[-1]
+            obj.add_relationship(relation=Relationship.PRODUCEDBY.value, source=obj.key, dest=dest)
             obj.save(update=True)
             objects[name] = obj
 
@@ -141,7 +147,7 @@ def _log_dataitem(name: str, project_name: str, data: Any) -> DataitemTable:
         return log_dataitem(
             project=project_name,
             name=name,
-            kind="table",
+            kind=EntityKinds.DATAITEM_TABLE.value,
             data=data,
         )
     except Exception as e:
@@ -176,7 +182,7 @@ def _log_artifact(name: str, project_name: str, data: Any) -> Artifact:
         return log_artifact(
             project=project_name,
             name=name,
-            kind="artifact",
+            kind=EntityKinds.ARTIFACT_ARTIFACT.value,
             source=pickle_file,
         )
 

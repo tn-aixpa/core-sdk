@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import typing
 
-from digitalhub.entities._base.crud.api_utils import get_data_api, set_data_api
 from digitalhub.entities._base.versioned.entity import VersionedEntity
 from digitalhub.entities._commons.enums import EntityTypes
+from digitalhub.entities._operations.processor import processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -51,11 +51,8 @@ class Secret(VersionedEntity):
         -------
         None
         """
-        if self._context().local:
-            raise NotImplementedError("set_secret() is not implemented for local projects.")
-
         obj = {self.name: value}
-        set_data_api(self.project, self.ENTITY_TYPE, obj)
+        processor.update_secret_data(self.project, self.ENTITY_TYPE, obj)
 
     def read_secret_value(self) -> dict:
         """
@@ -66,9 +63,6 @@ class Secret(VersionedEntity):
         str
             Value of the secret.
         """
-        if self._context().local:
-            raise NotImplementedError("read_secret() is not implemented for local projects.")
-
         params = {"keys": self.name}
-        data = get_data_api(self.project, self.ENTITY_TYPE, params=params)
+        data = processor.read_secret_data(self.project, self.ENTITY_TYPE, params=params)
         return data[self.name]

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from digitalhub.entities.function._base.builder import FunctionBuilder
+
 from digitalhub_runtime_python.entities._base.runtime_entity.builder import RuntimeEntityBuilderPython
+from digitalhub_runtime_python.entities._commons.enums import EntityKinds
 from digitalhub_runtime_python.entities.function.python.entity import FunctionPython
 from digitalhub_runtime_python.entities.function.python.spec import FunctionSpecPython, FunctionValidatorPython
 from digitalhub_runtime_python.entities.function.python.status import FunctionStatusPython
 from digitalhub_runtime_python.entities.function.python.utils import source_check, source_post_check
-
-from digitalhub.entities.function._base.builder import FunctionBuilder
 
 
 class FunctionPythonBuilder(FunctionBuilder, RuntimeEntityBuilderPython):
@@ -18,7 +19,7 @@ class FunctionPythonBuilder(FunctionBuilder, RuntimeEntityBuilderPython):
     ENTITY_SPEC_CLASS = FunctionSpecPython
     ENTITY_SPEC_VALIDATOR = FunctionValidatorPython
     ENTITY_STATUS_CLASS = FunctionStatusPython
-    ENTITY_KIND = "python"
+    ENTITY_KIND = EntityKinds.FUNCTION_PYTHON.value
 
     def build(
         self,

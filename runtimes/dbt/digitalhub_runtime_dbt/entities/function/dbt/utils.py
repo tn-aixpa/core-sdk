@@ -8,7 +8,9 @@ from digitalhub.utils.exceptions import EntityError
 from digitalhub.utils.file_utils import eval_text_type, eval_zip_type
 from digitalhub.utils.generic_utils import encode_source, encode_string
 from digitalhub.utils.s3_utils import get_s3_bucket
-from digitalhub.utils.uri_utils import map_uri_scheme
+from digitalhub.utils.uri_utils import has_local_scheme
+
+from digitalhub_runtime_dbt.entities.function.dbt.models import Lang
 
 if typing.TYPE_CHECKING:
     from digitalhub_runtime_dbt.entities.function.dbt.entity import FunctionDbt
@@ -86,7 +88,7 @@ def _check_params(
         source["handler"] = handler
 
     if lang is None:
-        source["lang"] = "sql"
+        source["lang"] = Lang.SQL.value
 
     if code_src is None and code is None and base64 is None:
         raise EntityError("Source must be provided.")
@@ -123,7 +125,7 @@ def source_post_check(exec: FunctionDbt) -> FunctionDbt:
         return exec
 
     # Check local source
-    if map_uri_scheme(code_src) == "local" and Path(code_src).is_file():
+    if has_local_scheme(code_src) and Path(code_src).is_file():
         # Check text
         if eval_text_type(code_src):
             exec.spec.source["base64"] = encode_source(code_src)

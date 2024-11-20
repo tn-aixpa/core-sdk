@@ -1,36 +1,45 @@
 from __future__ import annotations
 
 from digitalhub.entities._base.runtime_entity.builder import RuntimeEntityBuilder
+from digitalhub.entities.task._base.utils import build_task_actions
+
+from digitalhub_runtime_modelserve.entities._commons.enums import EntityKinds, TaskActions
 
 
 class RuntimeEntityBuilderMlflowserve(RuntimeEntityBuilder):
-    EXECUTABLE_KIND = "mlflowserve"
-    TASKS_KINDS = [
-        {
-            "kind": "mlflowserve+serve",
-            "action": "serve",
-        },
-    ]
-    RUN_KIND = "mlflowserve+run"
+    EXECUTABLE_KIND = EntityKinds.FUNCTION_MLFLOWSERVE.value
+    TASKS_KINDS = build_task_actions(
+        [
+            (
+                EntityKinds.TASK_MLFLOWSERVE_SERVE.value,
+                TaskActions.SERVE.value,
+            ),
+        ]
+    )
+    RUN_KIND = EntityKinds.RUN_MLFLOWSERVE.value
 
 
 class RuntimeEntityBuilderSklearnserve(RuntimeEntityBuilder):
-    EXECUTABLE_KIND = "sklearnserve"
-    TASKS_KINDS = [
-        {
-            "kind": "sklearnserve+serve",
-            "action": "serve",
-        },
-    ]
-    RUN_KIND = "sklearnserve+run"
+    EXECUTABLE_KIND = EntityKinds.FUNCTION_SKLEARNSERVE.value
+    TASKS_KINDS = build_task_actions(
+        [
+            (
+                EntityKinds.TASK_SKLEARNSERVE_SERVE.value,
+                TaskActions.SERVE.value,
+            ),
+        ]
+    )
+    RUN_KIND = EntityKinds.RUN_SKLEARNSERVE.value
 
 
 class RuntimeEntityBuilderHuggingfaceserve(RuntimeEntityBuilder):
-    EXECUTABLE_KIND = "huggingfaceserve"
-    TASKS_KINDS = [
-        {
-            "kind": "huggingfaceserve+serve",
-            "action": "serve",
-        },
-    ]
-    RUN_KIND = "huggingfaceserve+run"
+    EXECUTABLE_KIND = EntityKinds.FUNCTION_HUGGINGFACESERVE.value
+    TASKS_KINDS = build_task_actions(
+        [
+            (
+                EntityKinds.TASK_HUGGINGFACESERVE_SERVE.value,
+                TaskActions.SERVE.value,
+            ),
+        ]
+    )
+    RUN_KIND = EntityKinds.RUN_HUGGINGFACESERVE.value

@@ -11,16 +11,16 @@ from types import ModuleType
 from typing import Callable
 
 from digitalhub.entities.workflow.crud import get_workflow
-from digitalhub.utils.generic_utils import decode_string, extract_archive, requests_chunk_download
+from digitalhub.utils.generic_utils import decode_base64_string, extract_archive, requests_chunk_download
 from digitalhub.utils.git_utils import clone_repository
 from digitalhub.utils.logger import LOGGER
 from digitalhub.utils.s3_utils import get_bucket_and_key, get_s3_source
-from digitalhub.utils.uri_utils import map_uri_scheme
+from digitalhub.utils.uri_utils import has_git_scheme, has_remote_scheme, has_s3_scheme
 
 if typing.TYPE_CHECKING:
-    from digitalhub_runtime_kfp.entities.workflow.kfp.spec import WorkflowSpecKfp
-
     from digitalhub.entities.workflow._base.entity import Workflow
+
+    from digitalhub_runtime_kfp.entities.workflow.kfp.spec import WorkflowSpecKfp
 
 
 def get_dhcore_workflow(workflow_string: str) -> Workflow:
@@ -72,146 +72,38 @@ def save_workflow_source(path: Path, source_spec: dict) -> str:
     source = source_spec.get("source")
     handler = source_spec.get("handler")
 
-    scheme = None
-    if source is not None:
-        scheme = map_uri_scheme(source)
-
     # Base64
     if base64 is not None:
-        filename = "main.py"
-        if scheme == "local":
-            filename = Path(source).name
-
-        base64_path = path / filename
-        base64_path.write_text(decode_base64(base64))
-
-        if scheme is None or scheme == "local":
-            return base64_path
+        base64_path = path / "main.py"
+        base64_path.write_text(decode_base64_string(base64))
+        return base64_path
 
     # Git repo
-    if scheme == "git":
-        get_repository(path, source)
+    if has_git_scheme(source):
+        clone_repository(path, source)
 
     # Http(s) or s3 presigned urls
-    elif scheme == "remote":
+    elif has_remote_scheme(source):
         filename = path / "archive.zip"
-        get_remote_source(source, filename)
-        unzip(path, filename)
+        requests_chunk_download(source, filename)
+        extract_archive(path, filename)
 
     # S3 path
-    elif scheme == "s3":
+    elif has_s3_scheme(source):
         filename = path / "archive.zip"
         bucket, key = get_bucket_and_key(source)
         get_s3_source(bucket, key, filename)
-        unzip(path, filename)
+        extract_archive(path, filename)
 
     # Unsupported scheme
     else:
-        raise RuntimeError(f"Unsupported scheme: {scheme}")
+        raise RuntimeError("Unable to collect source.")
 
     if ":" in handler:
         handler = handler.split(":")[0].split(".")
         return str(Path(path, *handler).with_suffix(".py"))
     else:
         return str(path.with_suffix(".py"))
-
-
-def get_remote_source(source: str, filename: Path) -> None:
-    """
-    Get remote source.
-
-    Parameters
-    ----------
-    source : str
-        HTTP(S) or S3 presigned URL.
-    filename : Path
-        Path where to save the workflow source.
-
-    Returns
-    -------
-    str
-        Workflow code.
-    """
-    try:
-        requests_chunk_download(source, filename)
-    except Exception as e:
-        msg = f"Some error occurred while downloading function source. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
-
-
-def unzip(path: Path, filename: Path) -> None:
-    """
-    Extract an archive.
-
-    Parameters
-    ----------
-    path : Path
-        Path where to extract the archive.
-    filename : Path
-        Path to the archive.
-
-    Returns
-    -------
-    None
-    """
-
-    try:
-        extract_archive(path, filename)
-    except Exception as e:
-        msg = f"Source must be a valid zipfile. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
-
-
-def get_repository(path: Path, source: str) -> str:
-    """
-    Get repository.
-
-    Parameters
-    ----------
-    path : Path
-        Path where to save the workflow source.
-    source : str
-        Git repository URL in format git://<url>.
-
-    Returns
-    -------
-    None
-    """
-    try:
-        clone_repository(path, source)
-    except Exception as e:
-        msg = f"Some error occurred while downloading workflow repo source. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
-
-
-def decode_base64(base64: str) -> str:
-    """
-    Decode base64 encoded code.
-
-    Parameters
-    ----------
-    base64 : str
-        The encoded code.
-
-    Returns
-    -------
-    str
-        The decoded code.
-
-    Raises
-    ------
-    RuntimeError
-        Error while decoding code.
-    """
-    try:
-        return decode_string(base64)
-    except Exception as e:
-        msg = f"Some error occurred while decoding workflow source. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
 
 
 def parse_workflow_specs(spec: WorkflowSpecKfp) -> dict:
@@ -240,7 +132,7 @@ def parse_workflow_specs(spec: WorkflowSpecKfp) -> dict:
         raise RuntimeError(msg)
 
 
-def get_kfp_pipeline(name: str, workflow_source: str, workflow_specs: dict) -> dict:
+def get_kfp_pipeline(name: str, workflow_source: str, workflow_specs: dict) -> Callable:
     """
     Get KFP pipeline.
 
@@ -255,7 +147,7 @@ def get_kfp_pipeline(name: str, workflow_source: str, workflow_specs: dict) -> d
 
     Returns
     -------
-    dict
+    Callable
         KFP pipeline.
     """
     try:

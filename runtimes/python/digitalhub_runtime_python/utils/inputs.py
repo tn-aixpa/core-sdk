@@ -56,10 +56,7 @@ def get_entity_inputs(inputs: dict) -> dict[str, Entity]:
         Dictionary of inputs.
     """
     try:
-        inputs_objects = {}
-        for k, v in inputs.items():
-            inputs_objects[k] = build_entity_from_dict(v)
-        return inputs_objects
+        return {k: build_entity_from_dict(v) for k, v in inputs.items()}
     except Exception as e:
         msg = f"Error during inputs collection. Exception: {e.__class__}. Error: {e.args}"
         LOGGER.exception(msg)

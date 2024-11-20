@@ -37,7 +37,7 @@ class Dataitem(MaterialEntity):
         self.status: DataitemStatus
 
     ##############################
-    #  Private helper methods
+    #  Helper methods
     ##############################
 
     @staticmethod

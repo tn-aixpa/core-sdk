@@ -3,8 +3,8 @@ from __future__ import annotations
 import typing
 
 from digitalhub.context.api import get_context
-from digitalhub.entities._base.crud.api_utils import create_entity_api_ctx, read_entity_api_ctx, update_entity_api_ctx
 from digitalhub.entities._base.entity.entity import Entity
+from digitalhub.entities._operations.processor import processor
 from digitalhub.utils.generic_utils import get_timestamp
 from digitalhub.utils.io_utils import write_yaml
 
@@ -27,7 +27,11 @@ class ContextEntity(Entity):
     ) -> None:
         super().__init__(kind, metadata, spec, status, user)
         self.project = project
-        self._obj_attr.extend(["project"])
+        self.name: str
+        self.id: str
+
+        # Different behaviour for versioned and unversioned
+        self._obj_attr.extend(["project", "id", "name"])
 
     ##############################
     #  Save / Refresh / Export
@@ -47,37 +51,26 @@ class ContextEntity(Entity):
         ContextEntity
             Entity saved.
         """
-        obj = self.to_dict()
-        if not update:
-            return self._save(obj)
-        return self._update(obj)
+        if update:
+            return self._update()
+        return self._save()
 
-    def _save(self, obj: dict) -> ContextEntity:
+    def _save(self) -> ContextEntity:
         """
         Save entity into backend.
-
-        Parameters
-        ----------
-        obj : dict
-            Object instance as dictionary.
 
         Returns
         -------
         ContextEntity
             Entity saved.
         """
-        new_obj = create_entity_api_ctx(self.project, self.ENTITY_TYPE, obj)
+        new_obj = processor.create_context_entity(_entity=self)
         self._update_attributes(new_obj)
         return self
 
-    def _update(self, obj: dict) -> ContextEntity:
+    def _update(self) -> ContextEntity:
         """
         Update entity in backend.
-
-        Parameters
-        ----------
-        obj : dict
-            Object instance as dictionary.
 
         Returns
         -------
@@ -85,8 +78,8 @@ class ContextEntity(Entity):
             Entity updated.
         """
         if self._context().local:
-            self.metadata.updated = obj["metadata"]["updated"] = get_timestamp()
-        new_obj = update_entity_api_ctx(self.project, self.ENTITY_TYPE, self.id, obj)
+            self.metadata.updated = self.metadata.updated = get_timestamp()
+        new_obj = processor.update_context_entity(self.project, self.ENTITY_TYPE, self.id, self.to_dict())
         self._update_attributes(new_obj)
         return self
 
@@ -113,7 +106,7 @@ class ContextEntity(Entity):
         ContextEntity
             Entity refreshed.
         """
-        new_obj = read_entity_api_ctx(self.key)
+        new_obj = processor.read_context_entity(self.key)
         self._update_attributes(new_obj)
         return self
 

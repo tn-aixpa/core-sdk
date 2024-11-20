@@ -5,10 +5,10 @@ import typing
 from digitalhub.entities.function._base.entity import Function
 
 if typing.TYPE_CHECKING:
+    from digitalhub.entities._base.entity.metadata import Metadata
+
     from digitalhub_runtime_modelserve.entities.function.modelserve.spec import FunctionSpecModelserve
     from digitalhub_runtime_modelserve.entities.function.modelserve.status import FunctionStatusModelserve
-
-    from digitalhub.entities._base.entity.metadata import Metadata
 
 
 class FunctionModelserve(Function):

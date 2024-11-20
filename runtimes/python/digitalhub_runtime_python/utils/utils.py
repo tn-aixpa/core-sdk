@@ -52,7 +52,6 @@ def handler(outputs: list[str] | None = None) -> Callable:
             Any
                 Function outputs.
             """
-
             # Initialize outputs
             nonlocal outputs
 

@@ -4,7 +4,6 @@ import time
 import typing
 
 import requests
-
 from digitalhub.entities._commons.enums import State
 from digitalhub.entities.run._base.entity import Run
 from digitalhub.factory.api import get_action_from_task_kind
@@ -12,10 +11,10 @@ from digitalhub.utils.exceptions import EntityError
 from digitalhub.utils.logger import LOGGER
 
 if typing.TYPE_CHECKING:
+    from digitalhub.entities._base.entity.metadata import Metadata
+
     from digitalhub_runtime_container.entities.run.container_run.spec import RunSpecContainerRun
     from digitalhub_runtime_container.entities.run.container_run.status import RunStatusContainerRun
-
-    from digitalhub.entities._base.entity.metadata import Metadata
 
 
 class RunContainerRun(Run):

@@ -13,13 +13,14 @@ class RunSpecContainerRun(RunSpec):
         task: str,
         local_execution: bool = False,
         function: str | None = None,
-        node_selector: dict | None = None,
-        volumes: list | None = None,
+        workflow: str | None = None,
+        node_selector: list[dict] | None = None,
+        volumes: list[dict] | None = None,
         resources: dict | None = None,
         affinity: dict | None = None,
-        tolerations: list | None = None,
-        envs: list | None = None,
-        secrets: list | None = None,
+        tolerations: list[dict] | None = None,
+        envs: list[dict] | None = None,
+        secrets: list[str] | None = None,
         profile: str | None = None,
         source: dict | None = None,
         image: str | None = None,
@@ -39,6 +40,7 @@ class RunSpecContainerRun(RunSpec):
             task,
             local_execution,
             function,
+            workflow,
             node_selector,
             volumes,
             resources,
@@ -89,4 +91,5 @@ class RunValidatorContainerRun(RunValidator):
     # Task build
     instructions: list[str] = None
 
+    # Shared task
     fsGroup: int = None

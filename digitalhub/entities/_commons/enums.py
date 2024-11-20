@@ -26,6 +26,7 @@ class Relationship(Enum):
 
     PRODUCEDBY = "produced_by"
     CONSUMES = "consumes"
+    RUN_OF = "run_of"
 
 
 class State(Enum):
@@ -54,3 +55,49 @@ class State(Enum):
     STOPPED = "STOPPED"
     SUCCESS = "SUCCESS"
     UNKNOWN = "UNKNOWN"
+
+
+class ApiCategories(Enum):
+    """
+    Entity categories.
+    """
+
+    BASE = "base"
+    CONTEXT = "context"
+
+
+class BackendOperations(Enum):
+    """
+    Backend operations.
+    """
+
+    CREATE = "create"
+    READ = "read"
+    UPDATE = "update"
+    DELETE = "delete"
+    LIST = "list"
+    LIST_FIRST = "list_first"
+    STOP = "stop"
+    RESUME = "resume"
+    DATA = "data"
+    FILES = "files"
+    LOGS = "logs"
+    SEARCH = "search"
+    SHARE = "share"
+
+
+class EntityKinds(Enum):
+    """
+    Entity kinds.
+    """
+
+    PROJECT_PROJECT = "project"
+    ARTIFACT_ARTIFACT = "artifact"
+    DATAITEM_DATAITEM = "dataitem"
+    DATAITEM_TABLE = "table"
+    DATAITEM_ICEBERG = "iceberg"
+    MODEL_MODEL = "model"
+    MODEL_MLFLOW = "mlflow"
+    MODEL_HUGGINGFACE = "huggingface"
+    MODEL_SKLEARN = "sklearn"
+    SECRET_SECRET = "secret"

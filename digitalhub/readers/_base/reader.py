@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from typing import Any
 
 
-class DataframeReader(metaclass=ABCMeta):
+class DataframeReader:
     """
     Dataframe reader abstract class.
     """

@@ -5,7 +5,7 @@ import typing
 from digitalhub.entities._base.unversioned.entity import UnversionedEntity
 from digitalhub.entities._commons.enums import EntityTypes
 from digitalhub.entities.run.crud import delete_run, get_run, new_run
-from digitalhub.factory.api import build_entity_from_params
+from digitalhub.factory.api import get_entity_type_from_kind, get_executable_kind
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -62,6 +62,9 @@ class Task(UnversionedEntity):
         Run
             Run object.
         """
+        exec_kind = get_executable_kind(self.kind)
+        exec_type = get_entity_type_from_kind(exec_kind)
+        kwargs[exec_type] = getattr(self.spec, exec_type)
         return self.new_run(
             project=self.project,
             task=self._get_task_string(),
@@ -79,8 +82,7 @@ class Task(UnversionedEntity):
         str
             Task string.
         """
-        splitted = self.spec.function.split("://")
-        return f"{self.kind}://{splitted[1]}"
+        return f"{self.kind}://{self.project}/{self.id}"
 
     ##############################
     # CRUD Methods for Run
@@ -100,8 +102,6 @@ class Task(UnversionedEntity):
         Run
             Run object.
         """
-        if kwargs["local_execution"]:
-            return build_entity_from_params(**kwargs)
         return new_run(**kwargs)
 
     def get_run(self, entity_key: str) -> Run:

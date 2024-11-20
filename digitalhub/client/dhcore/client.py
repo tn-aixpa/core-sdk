@@ -11,6 +11,7 @@ from requests import request
 from requests.exceptions import HTTPError, JSONDecodeError, RequestException
 
 from digitalhub.client._base.client import Client
+from digitalhub.client.dhcore.api_builder import ClientDHCoreApiBuilder
 from digitalhub.client.dhcore.env import ENV_FILE, FALLBACK_USER, MAX_API_LEVEL, MIN_API_LEVEL
 from digitalhub.client.dhcore.models import BasicAuth, OAuth2TokenAuth
 from digitalhub.utils.exceptions import (
@@ -45,6 +46,9 @@ class ClientDHCore(Client):
 
     def __init__(self, config: dict | None = None) -> None:
         super().__init__()
+
+        # API builder
+        self._api_builder = ClientDHCoreApiBuilder()
 
         # Endpoints
         self._endpoint_core: str | None = None

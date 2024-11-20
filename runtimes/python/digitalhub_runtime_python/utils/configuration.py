@@ -1,14 +1,18 @@
 from __future__ import annotations
 
-import importlib.util as imputil
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Union
 
-from digitalhub.utils.generic_utils import decode_string, extract_archive, requests_chunk_download
+from digitalhub.utils.generic_utils import (
+    decode_base64_string,
+    extract_archive,
+    import_function,
+    requests_chunk_download,
+)
 from digitalhub.utils.git_utils import clone_repository
 from digitalhub.utils.logger import LOGGER
 from digitalhub.utils.s3_utils import get_bucket_and_key, get_s3_source
-from digitalhub.utils.uri_utils import map_uri_scheme
+from digitalhub.utils.uri_utils import has_git_scheme, has_local_scheme, has_remote_scheme, has_s3_scheme
 
 
 def get_function_from_source(path: Path, source_spec: dict) -> Callable:
@@ -38,19 +42,54 @@ def get_function_from_source(path: Path, source_spec: dict) -> Callable:
         raise RuntimeError(msg) from e
 
 
-def parse_handler(handler: str) -> tuple:
+def get_function_source(source_spec: dict) -> Path:
+    """
+    Get function source.
+
+    Parameters
+    ----------
+    source : dict
+        Function source.
+
+    Returns
+    -------
+    Path
+        Path to function source.
+    """
+    path = Path("/shared")
+
+    # Get relevant information
+    base64 = source_spec.get("base64")
+    source = source_spec.get("source")
+    handler = source_spec.get("handler")
+
+    handler_path, _ = parse_handler(handler)
+
+    # Check base64. If it is set, it means
+    # that the source comes from a local file
+    if base64 is not None:
+        if has_local_scheme(source):
+            return path / handler_path / Path(source)
+        raise RuntimeError("Source is not a local file.")
+
+    if handler_path != Path(""):
+        return path / handler_path.with_suffix(".py")
+    raise RuntimeError("Must provide handler path in handler in form <root>.<dir>.<module>:<function_name>.")
+
+
+def parse_handler(handler: str) -> tuple[Path, str]:
     """
     Parse handler.
 
     Parameters
     ----------
     handler : str
-        Function handler
+        Function handler.
 
     Returns
     -------
-    str
-        Function handler.
+    tuple[Path, str]
+        Handler path and function name.
     """
     parsed = handler.split(":")
     if len(parsed) == 1:
@@ -81,166 +120,62 @@ def save_function_source(path: Path, source_spec: dict) -> Path:
     base64 = source_spec.get("base64")
     source = source_spec.get("source")
 
-    scheme = None
-    if source is not None:
-        scheme = map_uri_scheme(source)
-
     # Base64
     if base64 is not None:
-        filename = "main.py"
-        if scheme == "local":
-            filename = Path(source).name
-
-        base64_path = path / filename
-        base64_path.write_text(decode_base64(base64))
-
-        if scheme is None or scheme == "local":
-            return base64_path
+        base64_path = path / "main.py"
+        base64_path.write_text(decode_base64_string(base64))
+        return base64_path
 
     # Git repo
-    if scheme == "git":
-        get_repository(path, source)
+    if has_git_scheme(source):
+        clone_repository(path, source)
 
     # Http(s) or s3 presigned urls
-    elif scheme == "remote":
+    elif has_remote_scheme(source):
         filename = path / "archive.zip"
-        get_remote_source(source, filename)
-        unzip(path, filename)
+        requests_chunk_download(source, filename)
+        extract_archive(path, filename)
 
     # S3 path
-    elif scheme == "s3":
+    elif has_s3_scheme(source):
         filename = path / "archive.zip"
         bucket, key = get_bucket_and_key(source)
         get_s3_source(bucket, key, filename)
-        unzip(path, filename)
+        extract_archive(path, filename)
 
     # Unsupported scheme
     else:
-        raise RuntimeError(f"Unsupported scheme: {scheme}")
+        raise RuntimeError("Unable to collect source.")
 
     return path
 
 
-def get_remote_source(source: str, filename: Path) -> None:
+def import_function_and_init(source: dict) -> tuple[Callable, Union[Callable, None]]:
     """
-    Get remote source.
+    Import function from source.
 
     Parameters
     ----------
-    source : str
-        HTTP(S) or S3 presigned URL.
-    filename : Path
-        Path where to save the function source.
+    source : dict
+        Function source.
 
     Returns
     -------
-    str
-        Function code.
-    """
-    try:
-        requests_chunk_download(source, filename)
-    except Exception as e:
-        msg = f"Some error occurred while downloading function source. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
-
-
-def unzip(path: Path, filename: Path) -> None:
-    """
-    Extract an archive.
-
-    Parameters
-    ----------
-    path : Path
-        Path where to extract the archive.
-    filename : Path
-        Path to the archive.
-
-    Returns
-    -------
-    None
+    tuple
+        Function and init function.
     """
 
-    try:
-        extract_archive(path, filename)
-    except Exception as e:
-        msg = f"Source must be a valid zipfile. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
+    # Get function source
+    function_path = get_function_source(source)
+    _, handler_name = parse_handler(source.get("handler"))
 
+    # Import function
+    fnc = import_function(function_path, handler_name)
 
-def get_repository(path: Path, source: str) -> None:
-    """
-    Get repository.
+    # Get init function
+    init_fnc: Callable | None = None
+    init_handler: str | None = source.get("init_function")
+    if init_handler is not None:
+        init_fnc = import_function(function_path, init_handler)
 
-    Parameters
-    ----------
-    path : Path
-        Path where to save the function source.
-    source : str
-        Git repository URL in format git://<url>.
-
-    Returns
-    -------
-    None
-    """
-    try:
-        clone_repository(source, path)
-    except Exception as e:
-        msg = f"Some error occurred while downloading function repo source. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
-
-
-def decode_base64(base64: str) -> str:
-    """
-    Decode base64 encoded code.
-
-    Parameters
-    ----------
-    base64 : str
-        The encoded code.
-
-    Returns
-    -------
-    str
-        The decoded code.
-
-    Raises
-    ------
-    RuntimeError
-        Error while decoding code.
-    """
-    try:
-        return decode_string(base64)
-    except Exception as e:
-        msg = f"Some error occurred while decoding function source. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
-
-
-def import_function(path: Path, handler: str) -> Callable:
-    """
-    Import a function from a module.
-
-    Parameters
-    ----------
-    path : Path
-        Path where the function source is located.
-    handler : str
-        Function name.
-
-    Returns
-    -------
-    Callable
-        Function.
-    """
-    try:
-        spec = imputil.spec_from_file_location(path.stem, path)
-        mod = imputil.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        return getattr(mod, handler)
-    except Exception as e:
-        msg = f"Some error occurred while importing function. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
+    return fnc, init_fnc

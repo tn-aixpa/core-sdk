@@ -52,9 +52,11 @@ class RunBuilder(UnversionedBuilder, RuntimeEntityBuilder):
         Run
             Object instance.
         """
+        # Check task validity
         if task is None:
             raise EntityError("Missing task in run spec")
         self._check_kind_validity(task)
+
         uuid = self.build_uuid(uuid)
         metadata = self.build_metadata(
             project=project,

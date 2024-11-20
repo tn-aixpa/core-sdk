@@ -2,53 +2,13 @@ from __future__ import annotations
 
 import json
 import os
-import threading
 from contextlib import contextmanager
 
+import digitalhub as dh
 from kfp import dsl
 from kubernetes import client as k8s_client
 
-import digitalhub as dh
-
-# Variable to track the current project reference without affecting the code
-current_project = None
-
 label_prefix = "kfp-digitalhub-runtime-"
-
-
-def set_current_project(val: str) -> None:
-    """
-    Set the current project for the context of the pipeline.
-    The current project is used implicitly in pipeline workflows without
-    specifying the project explicitly.
-
-    Parameters
-    ----------
-    val : str
-        Project name.
-
-    Returns
-    -------
-    None
-    """
-    global current_project
-    current_project = threading.local()
-    # store the project name in the thread local storage
-    current_project.val = val
-
-
-def unset_current_project() -> None:
-    """
-    Remove the current project from the pipeline context
-    This is used to reset the current project to the default (None) for testing
-    or other cases where the current project should not be used anymore.
-
-    Returns
-    -------
-    None
-    """
-    global current_project
-    current_project = None
 
 
 @contextmanager
@@ -60,27 +20,6 @@ def pipeline_context():
 
 
 class PipelineContext:
-    def __init__(self) -> None:
-        """
-        Initialize the pipeline context
-
-        This function initializes the pipeline context by retrieving the project
-        from DHCore using the currently defined project name. If no project
-        is defined, an exception is raised.
-
-        Raises
-        ------
-        Exception
-            If the current project is not defined.
-        """
-        global current_project
-        if current_project is not None:
-            # Retrieve the project object from DHCore using the project name
-            self._project = dh.get_project(current_project.val)
-        else:
-            # If the current project is not defined, raise an exception
-            raise Exception("Current project is not defined")
-
     def step(
         self,
         name: str,
@@ -114,7 +53,7 @@ class PipelineContext:
         function : str
             The name of the function to execute. Either function or workflow must be provided.
         workflow : str
-            The name of the workflow to execute. Either function or workflow must be provided.
+            The Args workflow to execute. Either function or workflow must be provided.
         action : str
             The name of the action to execute. May be omitted in case of workflow execution (defaulting to 'pipeline').
         node_selector : list[dict]
@@ -143,11 +82,11 @@ class PipelineContext:
         dsl.ContainerOp
             A KFP ContainerOp for the step.
         """
-
         WORKFLOW_IMAGE = os.environ.get("DHCORE_WORKFLOW_IMAGE")
         KFPMETA_DIR = os.environ.get("KFPMETA_OUT_DIR", "/tmp")
         DHCORE_ENDPOINT = os.environ.get("DHCORE_ENDPOINT", "http://localhost:8080/")
         DHCORE_ISSUER = os.environ.get("DHCORE_ISSUER", "http://localhost:8080/")
+        PROJECT = os.environ.get("PROJECT_NAME")
 
         props = {
             "node_selector": node_selector,
@@ -167,11 +106,11 @@ class PipelineContext:
             raise RuntimeError("Either function or workflow must be provided.")
 
         if function is not None:
-            function_object = dh.get_function(function, project=self._project.name)
+            function_object = dh.get_function(function, project=PROJECT)
             if function_object is None:
                 raise RuntimeError(f"Function {function} not found")
         elif workflow is not None:
-            workflow_object = dh.get_workflow(workflow, project=self._project.name)
+            workflow_object = dh.get_workflow(workflow, project=PROJECT)
             if workflow_object is None:
                 raise RuntimeError(f"Workflow {workflow} not found")
             if action is None:
@@ -191,7 +130,7 @@ class PipelineContext:
             "python",
             "step.py",
             "--project",
-            self._project.name,
+            PROJECT,
             "--function" if function is not None else "--workflow",
             function if function is not None else workflow,
             "--function_id" if function is not None else "--workflow_id",
@@ -232,7 +171,7 @@ class PipelineContext:
             command=cmd,
             file_outputs=file_outputs,
         )
-        cop.add_pod_label(label_prefix + "project", self._project.name)
+        cop.add_pod_label(label_prefix + "project", PROJECT)
         if function is not None:
             cop.add_pod_label(label_prefix + "function", function)
             cop.add_pod_label(label_prefix + "function_id", function_object.id)

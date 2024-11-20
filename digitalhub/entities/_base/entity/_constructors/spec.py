@@ -29,5 +29,5 @@ def build_spec(spec_cls: Spec, spec_validator: SpecValidator, validate: bool = T
         Spec object.
     """
     if validate:
-        kwargs = spec_validator(**kwargs).model_dump(by_alias=True, exclude_none=True)
+        kwargs = spec_validator(**kwargs).to_dict()
     return spec_cls(**kwargs)

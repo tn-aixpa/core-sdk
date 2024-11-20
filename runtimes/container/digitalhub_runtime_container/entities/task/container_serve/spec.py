@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from digitalhub.entities.task._base.models import CorePort
-from digitalhub.entities.task._base.spec import TaskSpecK8s, TaskValidatorK8s
+from digitalhub.entities.task._base.models import CorePort, CoreServiceType
+from digitalhub.entities.task._base.spec import TaskSpecFunction, TaskValidatorFunction
+from pydantic import Field
 
 
-class TaskSpecContainerServe(TaskSpecK8s):
+class TaskSpecContainerServe(TaskSpecFunction):
     """
     TaskSpecContainerServe specifications.
     """
@@ -12,13 +13,13 @@ class TaskSpecContainerServe(TaskSpecK8s):
     def __init__(
         self,
         function: str,
-        node_selector: dict | None = None,
-        volumes: list | None = None,
+        node_selector: list[dict] | None = None,
+        volumes: list[dict] | None = None,
         resources: dict | None = None,
         affinity: dict | None = None,
-        tolerations: list | None = None,
-        envs: list | None = None,
-        secrets: list | None = None,
+        tolerations: list[dict] | None = None,
+        envs: list[dict] | None = None,
+        secrets: list[str] | None = None,
         profile: str | None = None,
         replicas: int | None = None,
         service_ports: list | None = None,
@@ -44,19 +45,19 @@ class TaskSpecContainerServe(TaskSpecK8s):
         self.fsGroup = fsGroup
 
 
-class TaskValidatorContainerServe(TaskValidatorK8s):
+class TaskValidatorContainerServe(TaskValidatorFunction):
     """
     TaskValidatorContainerServe validator.
     """
 
-    replicas: int = None
-    """Replicas."""
+    replicas: int = Field(default=None, ge=0)
+    """Number of replicas."""
+
+    service_type: CoreServiceType = Field(default=CoreServiceType.NODE_PORT.value)
+    """Service type."""
 
     service_ports: list[CorePort] = None
     """Service ports mapper."""
 
-    service_type: str = None
-    """Service type."""
-
-    fsGroup: int = None
+    fsGroup: int = Field(default=None, ge=1)
     """FSGroup."""

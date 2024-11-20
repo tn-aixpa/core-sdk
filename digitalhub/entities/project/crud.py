@@ -2,20 +2,13 @@ from __future__ import annotations
 
 import typing
 
-from digitalhub.client.api import build_client, get_client
-from digitalhub.context.api import delete_context
-from digitalhub.entities._base.crud.api_utils import (
-    delete_entity_api_base,
-    read_entity_api_base,
-    update_entity_api_base,
-)
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities.project.utils import project_scaffolding
-from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
-from digitalhub.utils.exceptions import BackendError, EntityAlreadyExistsError, EntityError, EntityNotExistsError
-from digitalhub.utils.io_utils import read_yaml
+from digitalhub.entities._operations.processor import processor
+from digitalhub.entities.project.utils import setup_project
+from digitalhub.utils.exceptions import BackendError
 
 if typing.TYPE_CHECKING:
+    from digitalhub.entities._base.context.entity import ContextEntity
     from digitalhub.entities.project._base.entity import Project
 
 
@@ -63,20 +56,19 @@ def new_project(
     --------
     >>> obj = new_project("my-project")
     """
-    build_client(local, config)
     if context is None:
-        context = name
-    obj = build_entity_from_params(
+        context = "./"
+    obj = processor.create_project_entity(
         name=name,
         kind="project",
         description=description,
         labels=labels,
         local=local,
+        config=config,
         context=context,
         **kwargs,
     )
-    obj.save()
-    return project_scaffolding(obj, setup_kwargs)
+    return setup_project(obj, setup_kwargs)
 
 
 def get_project(
@@ -111,12 +103,14 @@ def get_project(
     --------
     >>> obj = get_project("my-project")
     """
-    build_client(local, config)
-    client = get_client(local)
-    obj = read_entity_api_base(client, ENTITY_TYPE, name, **kwargs)
-    obj["local"] = local
-    project = build_entity_from_dict(obj)
-    return project_scaffolding(project, setup_kwargs)
+    obj = processor.read_project_entity(
+        entity_type=ENTITY_TYPE,
+        entity_name=name,
+        local=local,
+        config=config,
+        **kwargs,
+    )
+    return setup_project(obj, setup_kwargs)
 
 
 def import_project(
@@ -148,23 +142,8 @@ def import_project(
     --------
     >>> obj = import_project("my-project.yaml")
     """
-    build_client(local, config)
-    dict_obj: dict = read_yaml(file)
-    dict_obj["local"] = local
-    obj = build_entity_from_dict(dict_obj)
-    obj = project_scaffolding(obj, setup_kwargs)
-
-    try:
-        obj.save()
-    except EntityAlreadyExistsError:
-        raise EntityError(f"Entity {obj.name} already exists. If you want to update it, use load instead.")
-
-    # Import related entities
-    obj._import_entities(dict_obj)
-
-    obj.refresh()
-
-    return obj
+    obj = processor.import_project_entity(file=file, local=local, config=config)
+    return setup_project(obj, setup_kwargs)
 
 
 def load_project(
@@ -196,23 +175,27 @@ def load_project(
     --------
     >>> obj = load_project("my-project.yaml")
     """
-    build_client(local, config)
-    dict_obj: dict = read_yaml(file)
-    dict_obj["local"] = local
-    obj = build_entity_from_dict(dict_obj)
-    obj = project_scaffolding(obj, setup_kwargs)
+    obj = processor.load_project_entity(file=file, local=local, config=config)
+    return setup_project(obj, setup_kwargs)
 
-    try:
-        obj.save(update=True)
-    except EntityNotExistsError:
-        obj.save()
 
-    # Load related entities
-    obj._load_entities(dict_obj)
+def list_projects(local: bool = False, **kwargs) -> list[Project]:
+    """
+    List projects in backend.
 
-    obj.refresh()
+    Parameters
+    ----------
+    local : bool
+        Flag to determine if backend is local.
+    **kwargs : dict
+        Parameters to pass to the API call.
 
-    return obj
+    Returns
+    -------
+    list
+        List of objects.
+    """
+    return processor.list_project_entities(local=local, **kwargs)
 
 
 def get_or_create_project(
@@ -265,7 +248,7 @@ def get_or_create_project(
         )
 
 
-def update_project(entity: Project, local: bool = False, **kwargs) -> Project:
+def update_project(entity: Project, **kwargs) -> Project:
     """
     Update object. Note that object spec are immutable.
 
@@ -273,8 +256,6 @@ def update_project(entity: Project, local: bool = False, **kwargs) -> Project:
     ----------
     entity : Project
         Object to update.
-    local : bool
-        Flag to determine if backend is local.
     **kwargs : dict
         Parameters to pass to the API call.
 
@@ -287,9 +268,13 @@ def update_project(entity: Project, local: bool = False, **kwargs) -> Project:
     --------
     >>> obj = update_project(obj)
     """
-    client = get_client(local)
-    obj = update_entity_api_base(client, ENTITY_TYPE, entity.name, entity.to_dict(), **kwargs)
-    return build_entity_from_dict(obj)
+    return processor.update_project_entity(
+        entity_type=entity.ENTITY_TYPE,
+        entity_name=entity.name,
+        entity_dict=entity.to_dict(),
+        local=entity.local,
+        **kwargs,
+    )
 
 
 def delete_project(
@@ -309,8 +294,7 @@ def delete_project(
     cascade : bool
         Flag to determine if delete is cascading.
     clean_context : bool
-        Flag to determine if context will be deleted. If a context is deleted,
-        all its objects are unreacheable.
+        Flag to determine if context will be deleted.
     local : bool
         Flag to determine if backend is local.
     **kwargs : dict
@@ -325,8 +309,68 @@ def delete_project(
     --------
     >>> delete_project("my-project")
     """
-    client = get_client(local)
-    obj = delete_entity_api_base(client, ENTITY_TYPE, name, cascade=cascade, **kwargs)
-    if clean_context:
-        delete_context(name)
-    return obj
+    return processor.delete_project_entity(
+        entity_type=ENTITY_TYPE,
+        entity_name=name,
+        local=local,
+        cascade=cascade,
+        clean_context=clean_context,
+        **kwargs,
+    )
+
+
+def search_entity(
+    project_name: str,
+    query: str | None = None,
+    entity_types: list[str] | None = None,
+    name: str | None = None,
+    kind: str | None = None,
+    created: str | None = None,
+    updated: str | None = None,
+    description: str | None = None,
+    labels: list[str] | None = None,
+    **kwargs,
+) -> list[ContextEntity]:
+    """
+    Search objects from backend.
+
+    Parameters
+    ----------
+    project_name : str
+        Project name.
+    query : str
+        Search query.
+    entity_types : list[str]
+        Entity types.
+    name : str
+        Entity name.
+    kind : str
+        Entity kind.
+    created : str
+        Entity creation date.
+    updated : str
+        Entity update date.
+    description : str
+        Entity description.
+    labels : list[str]
+        Entity labels.
+    **kwargs : dict
+        Parameters to pass to the API call.
+
+        Returns
+        -------
+        list[ContextEntity]
+            List of object instances.
+    """
+    return processor.search_entity(
+        project_name,
+        query=query,
+        entity_types=entity_types,
+        name=name,
+        kind=kind,
+        created=created,
+        updated=updated,
+        description=description,
+        labels=labels,
+        **kwargs,
+    )

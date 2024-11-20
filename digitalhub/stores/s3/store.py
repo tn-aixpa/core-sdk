@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
-from typing import Type
+from typing import Any, Type
 from urllib.parse import urlparse
 
 import boto3
 import botocore.client  # pylint: disable=unused-import
 from botocore.exceptions import ClientError
 
+from digitalhub.readers.api import get_reader_by_object
 from digitalhub.stores._base.store import Store, StoreConfig
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
@@ -46,7 +47,7 @@ class S3Store(Store):
         self.config = config
 
     ##############################
-    # IO methods
+    # I/O methods
     ##############################
 
     def download(
@@ -141,7 +142,6 @@ class S3Store(Store):
         list[tuple[str, str]]
             Returns the list of destination and source paths of the uploaded artifacts.
         """
-
         # Destination handling
 
         # If no destination is provided, build key from source
@@ -410,7 +410,36 @@ class S3Store(Store):
         client.put_object(Bucket=bucket, Key=key, Body=fileobj.getvalue())
 
     ##############################
-    # Private helper methods
+    # Datastore methods
+    ##############################
+
+    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
+        """
+        Write a dataframe to S3 based storage. Kwargs are passed to df.to_parquet().
+
+        Parameters
+        ----------
+        df : Any
+            The dataframe.
+        dst : str
+            The destination path on S3 based storage.
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        str
+            The S3 path where the dataframe was saved.
+        """
+        fileobj = BytesIO()
+        reader = get_reader_by_object(df)
+        reader.write_df(df, fileobj, extension=extension, **kwargs)
+
+        key = self._get_key(dst)
+        return self.upload_fileobject(fileobj, key)
+
+    ##############################
+    # Helper methods
     ##############################
 
     def _get_bucket(self) -> str:

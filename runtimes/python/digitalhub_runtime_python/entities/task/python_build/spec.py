@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from digitalhub.entities.task._base.spec import TaskSpecK8s, TaskValidatorK8s
+from digitalhub.entities.task._base.spec import TaskSpecFunction, TaskValidatorFunction
 
 
-class TaskSpecPythonBuild(TaskSpecK8s):
+class TaskSpecPythonBuild(TaskSpecFunction):
     """TaskSpecPythonBuild specifications."""
 
     def __init__(
         self,
         function: str,
-        node_selector: dict | None = None,
-        volumes: list | None = None,
+        node_selector: list[dict] | None = None,
+        volumes: list[dict] | None = None,
         resources: dict | None = None,
         affinity: dict | None = None,
-        tolerations: list | None = None,
-        envs: list | None = None,
-        secrets: list | None = None,
+        tolerations: list[dict] | None = None,
+        envs: list[dict] | None = None,
+        secrets: list[str] | None = None,
         profile: str | None = None,
         instructions: list | None = None,
         **kwargs,
@@ -35,7 +35,7 @@ class TaskSpecPythonBuild(TaskSpecK8s):
         self.instructions = instructions
 
 
-class TaskValidatorPythonBuild(TaskValidatorK8s):
+class TaskValidatorPythonBuild(TaskValidatorFunction):
     """
     TaskValidatorPythonBuild validator.
     """

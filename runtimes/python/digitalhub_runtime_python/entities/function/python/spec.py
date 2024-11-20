@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import Literal
-
-from digitalhub_runtime_python.entities.function.python.models import SourceValidator
-
 from digitalhub.entities.function._base.spec import FunctionSpec, FunctionValidator
+
+from digitalhub_runtime_python.entities.function.python.models import PythonVersion, SourceValidator
 
 
 class FunctionSpecPython(FunctionSpec):
@@ -34,10 +32,10 @@ class FunctionValidatorPython(FunctionValidator):
     FunctionValidatorPython validator.
     """
 
-    source: SourceValidator = None
+    source: SourceValidator
     """Source code validator"""
 
-    python_version: Literal["PYTHON3_9", "PYTHON3_10", "PYTHON3_11"]
+    python_version: PythonVersion
     "Python version"
 
     image: str = None
@@ -46,5 +44,5 @@ class FunctionValidatorPython(FunctionValidator):
     base_image: str = None
     "Base image used to build the image where the function will be executed"
 
-    requirements: list = None
+    requirements: list[str] = None
     "Requirements list to be installed in the image where the function will be executed"

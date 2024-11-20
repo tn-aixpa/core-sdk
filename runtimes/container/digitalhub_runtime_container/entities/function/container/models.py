@@ -9,16 +9,16 @@ class SourceValidator(BaseModel):
     """
 
     source: str = None
-    "Pointer to source code"
+    "Pointer to source code."
 
     handler: str = None
-    "Function entrypoint"
+    "Function entrypoint."
 
     code: str = None
-    "Source code (plain text)"
+    "Source code (plain text)."
 
     base64: str = None
-    "Source code (base64 encoded)"
+    "Source code (base64 encoded)."
 
     lang: str = None
-    "Source code language (hint)"
+    "Source code language (hint)."

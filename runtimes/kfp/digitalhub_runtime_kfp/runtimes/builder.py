@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from digitalhub_runtime_kfp.runtimes.runtime import RuntimeKfp
-
 from digitalhub.runtimes.builder import RuntimeBuilder
+
+from digitalhub_runtime_kfp.runtimes.runtime import RuntimeKfp
 
 
 class RuntimeKfpBuilder(RuntimeBuilder):

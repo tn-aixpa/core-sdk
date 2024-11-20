@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import typing
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 from digitalhub.entities._base._base.entity import Base
-from digitalhub.factory.api import build_entity_from_dict
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -12,7 +11,7 @@ if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.status import Status
 
 
-class Entity(Base, metaclass=ABCMeta):
+class Entity(Base):
     """
     Abstract class for entities.
 
@@ -56,7 +55,7 @@ class Entity(Base, metaclass=ABCMeta):
         Abstract refresh method.
         """
 
-    def _update_attributes(self, obj: dict) -> None:
+    def _update_attributes(self, obj: Entity) -> None:
         """
         Update attributes.
 
@@ -69,11 +68,10 @@ class Entity(Base, metaclass=ABCMeta):
         -------
         None
         """
-        new_obj = build_entity_from_dict(obj)
-        self.metadata = new_obj.metadata
-        self.spec = new_obj.spec
-        self.status = new_obj.status
-        self.user = new_obj.user
+        self.metadata = obj.metadata
+        self.spec = obj.spec
+        self.status = obj.status
+        self.user = obj.user
 
     @abstractmethod
     def export(self) -> str:

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from digitalhub_runtime_kfp.entities.workflow.kfp.models import SourceValidator
-
 from digitalhub.entities.workflow._base.spec import WorkflowSpec, WorkflowValidator
+
+from digitalhub_runtime_kfp.entities.workflow.kfp.models import BuildValidator, SourceValidator
 
 
 class WorkflowSpecKfp(WorkflowSpec):
@@ -13,15 +13,17 @@ class WorkflowSpecKfp(WorkflowSpec):
     def __init__(
         self,
         source: dict | None = None,
+        build: dict | None = None,
         image: str | None = None,
         tag: str | None = None,
         workflow: str | None = None,
     ) -> None:
         super().__init__()
 
+        self.source = source
+        self.build = build
         self.image = image
         self.tag = tag
-        self.source = source
         self.workflow = workflow
 
 
@@ -30,8 +32,11 @@ class WorkflowValidatorKfp(WorkflowValidator):
     WorkflowValidatorKfp validator.
     """
 
-    source: SourceValidator = None
+    source: SourceValidator
     """Source code validator."""
+
+    build: BuildValidator = None
+    """Build validator."""
 
     image: str = None
     """Name of the Workflow's container image."""

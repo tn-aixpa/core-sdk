@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from digitalhub_runtime_container.entities.function.container.models import SourceValidator
-
 from digitalhub.entities.function._base.spec import FunctionSpec, FunctionValidator
+
+from digitalhub_runtime_container.entities.function.container.models import SourceValidator
 
 
 class FunctionSpecContainer(FunctionSpec):

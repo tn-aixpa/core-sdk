@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 
 from digitalhub.client._base.client import Client
+from digitalhub.client.local.api_builder import ClientLocalApiBuilder
 from digitalhub.utils.exceptions import BackendError
 
 
@@ -22,6 +23,7 @@ class ClientLocal(Client):
 
     def __init__(self) -> None:
         super().__init__()
+        self._api_builder = ClientLocalApiBuilder()
         self._db: dict[str, dict[str, dict]] = {}
 
     ##############################

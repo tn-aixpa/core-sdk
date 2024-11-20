@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from digitalhub.entities._commons.enums import EntityKinds
 from digitalhub.entities.artifact._base.builder import ArtifactBuilder
 from digitalhub.entities.artifact.artifact.entity import ArtifactArtifact
 from digitalhub.entities.artifact.artifact.spec import ArtifactSpecArtifact, ArtifactValidatorArtifact
@@ -15,4 +16,4 @@ class ArtifactArtifactBuilder(ArtifactBuilder):
     ENTITY_SPEC_CLASS = ArtifactSpecArtifact
     ENTITY_SPEC_VALIDATOR = ArtifactValidatorArtifact
     ENTITY_STATUS_CLASS = ArtifactStatusArtifact
-    ENTITY_KIND = "artifact"
+    ENTITY_KIND = EntityKinds.ARTIFACT_ARTIFACT.value

@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import typing
 
-from digitalhub.client.api import check_client_exists, get_client
+from digitalhub.client.api import get_client
 
 if typing.TYPE_CHECKING:
     from digitalhub.client.dhcore.client import ClientDHCore
@@ -55,8 +55,7 @@ def set_dhcore_env(
     if client_id is not None:
         os.environ["DHCORE_CLIENT_ID"] = client_id
 
-    if check_client_exists(local=False):
-        update_client_from_env()
+    update_client_from_env()
 
 
 def update_client_from_env() -> None:

@@ -26,6 +26,3 @@ class VersionedEntity(ContextEntity):
         self.name = name
         self.id = uuid
         self.key = f"store://{project}/{self.ENTITY_TYPE}/{kind}/{name}:{uuid}"
-
-        # Add attributes to be used in the to_dict method
-        self._obj_attr.extend(["name", "id"])

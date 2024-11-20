@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from digitalhub.entities.function._base.builder import FunctionBuilder
+
 from digitalhub_runtime_container.entities._base.runtime_entity.builder import RuntimeEntityBuilderContainer
+from digitalhub_runtime_container.entities._commons.enums import EntityKinds
 from digitalhub_runtime_container.entities.function.container.entity import FunctionContainer
 from digitalhub_runtime_container.entities.function.container.spec import (
     FunctionSpecContainer,
@@ -8,8 +11,6 @@ from digitalhub_runtime_container.entities.function.container.spec import (
 )
 from digitalhub_runtime_container.entities.function.container.status import FunctionStatusContainer
 from digitalhub_runtime_container.entities.function.container.utils import source_check, source_post_check
-
-from digitalhub.entities.function._base.builder import FunctionBuilder
 
 
 class FunctionContainerBuilder(FunctionBuilder, RuntimeEntityBuilderContainer):
@@ -21,7 +22,7 @@ class FunctionContainerBuilder(FunctionBuilder, RuntimeEntityBuilderContainer):
     ENTITY_SPEC_CLASS = FunctionSpecContainer
     ENTITY_SPEC_VALIDATOR = FunctionValidatorContainer
     ENTITY_STATUS_CLASS = FunctionStatusContainer
-    ENTITY_KIND = "container"
+    ENTITY_KIND = EntityKinds.FUNCTION_CONTAINER.value
 
     def build(
         self,

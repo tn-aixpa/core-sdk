@@ -3,6 +3,13 @@ from __future__ import annotations
 import typing
 from typing import Callable
 
+from digitalhub.context.api import get_context
+from digitalhub.entities._base.entity._constructors.uuid import build_uuid
+from digitalhub.factory.api import build_entity_from_dict
+from digitalhub.runtimes._base import Runtime
+from digitalhub.utils.logger import LOGGER
+
+from digitalhub_runtime_dbt.entities._commons.enums import TaskActions
 from digitalhub_runtime_dbt.utils.cleanup import cleanup
 from digitalhub_runtime_dbt.utils.configuration import (
     generate_dbt_profile_yml,
@@ -16,15 +23,8 @@ from digitalhub_runtime_dbt.utils.functions import transform
 from digitalhub_runtime_dbt.utils.inputs import materialize_dataitem
 from digitalhub_runtime_dbt.utils.outputs import build_status, create_dataitem_, parse_results
 
-from digitalhub.context.api import get_context
-from digitalhub.entities._base.entity._constructors.uuid import build_uuid
-from digitalhub.factory.api import build_entity_from_dict
-from digitalhub.runtimes._base import Runtime
-from digitalhub.utils.logger import LOGGER
-
 if typing.TYPE_CHECKING:
     from dbt.contracts.results import RunResult
-
     from digitalhub.entities.dataitem._base.entity import Dataitem
 
 
@@ -131,7 +131,7 @@ class RuntimeDbt(Runtime):
         Callable
             Function to execute.
         """
-        if action == "transform":
+        if action == TaskActions.TRANSFORM.value:
             return transform
         raise NotImplementedError
 

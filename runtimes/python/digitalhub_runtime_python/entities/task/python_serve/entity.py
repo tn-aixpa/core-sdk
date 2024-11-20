@@ -5,10 +5,10 @@ import typing
 from digitalhub.entities.task._base.entity import Task
 
 if typing.TYPE_CHECKING:
+    from digitalhub.entities._base.entity.metadata import Metadata
+
     from digitalhub_runtime_python.entities.task.python_serve.spec import TaskSpecPythonServe
     from digitalhub_runtime_python.entities.task.python_serve.status import TaskStatusPythonServe
-
-    from digitalhub.entities._base.entity.metadata import Metadata
 
 
 class TaskPythonServe(Task):

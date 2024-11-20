@@ -237,7 +237,12 @@ def parser():
     parser.add_argument("--workflow", type=str, help="Workflow name", required=False, default=None)
     parser.add_argument("--workflow_id", type=str, help="Workflow ID", required=False, default=None)
     parser.add_argument("--action", type=str, help="Action type", required=False, default=None)
-    parser.add_argument("--jsonprops", type=str, help="Function execution properties in JSON format", required=False)
+    parser.add_argument(
+        "--jsonprops",
+        type=str,
+        help="Function execution properties in JSON format",
+        required=False,
+    )
     parser.add_argument("--parameters", type=str, help="Function parameters", required=False)
     parser.add_argument("-a", type=str, action="append", help="Function args", required=False)
     parser.add_argument("-ie", action="append", type=str, help="Input entity property", required=False)

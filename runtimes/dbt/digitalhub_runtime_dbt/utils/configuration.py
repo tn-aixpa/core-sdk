@@ -2,6 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from digitalhub.utils.generic_utils import decode_base64_string, extract_archive, requests_chunk_download
+from digitalhub.utils.git_utils import clone_repository
+from digitalhub.utils.logger import LOGGER
+from digitalhub.utils.s3_utils import get_bucket_and_key, get_s3_source
+from digitalhub.utils.uri_utils import has_git_scheme, has_remote_scheme, has_s3_scheme
+
 from digitalhub_runtime_dbt.utils.env import (
     POSTGRES_DATABASE,
     POSTGRES_HOST,
@@ -10,11 +16,6 @@ from digitalhub_runtime_dbt.utils.env import (
     POSTGRES_SCHEMA,
     POSTGRES_USER,
 )
-
-from digitalhub.utils.generic_utils import decode_string, extract_archive, requests_chunk_download
-from digitalhub.utils.git_utils import clone_repository
-from digitalhub.utils.logger import LOGGER
-from digitalhub.utils.s3_utils import get_bucket_and_key, get_s3_source
 
 ##############################
 # Templates
@@ -189,134 +190,34 @@ def save_function_source(path: Path, source_spec: dict) -> str:
     code = source_spec.get("code")
     base64 = source_spec.get("base64")
     source = source_spec.get("source")
-    handler = source_spec.get("handler")
+    handler: str = source_spec.get("handler")
 
     if code is not None:
         return code
 
     if base64 is not None:
-        return decode_base64(base64)
-
-    scheme = source.split("://")[0]
+        return decode_base64_string(base64)
 
     # Http(s) or s3 presigned urls
-    if scheme in ["http", "https"]:
+    if has_remote_scheme(source):
         filename = path / "archive.zip"
-        get_remote_source(source, filename)
-        unzip(path, filename)
-        return (path / handler).read_text()
+        requests_chunk_download(source, filename)
+        extract_archive(path, filename)
 
     # Git repo
-    if scheme == "git+https":
+    if has_git_scheme(source):
         path = path / "repository"
-        get_repository(path, source)
-        return (path / handler).read_text()
+        clone_repository(path, source)
 
     # S3 path
-    if scheme == "zip+s3":
+    if has_s3_scheme(source):
         filename = path / "archive.zip"
         bucket, key = get_bucket_and_key(source)
         get_s3_source(bucket, key, filename)
-        unzip(path, filename)
+        extract_archive(path, filename)
+
+    if handler is not None:
         return (path / handler).read_text()
 
     # Unsupported scheme
-    raise RuntimeError(f"Unsupported scheme: {scheme}")
-
-
-def get_remote_source(source: str, filename: Path) -> None:
-    """
-    Get remote source.
-
-    Parameters
-    ----------
-    source : str
-        HTTP(S) or S3 presigned URL.
-    filename : Path
-        Path where to save the function source.
-
-    Returns
-    -------
-    str
-        Function code.
-    """
-    try:
-        requests_chunk_download(source, filename)
-    except Exception as e:
-        msg = f"Some error occurred while downloading function source. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
-
-
-def unzip(path: Path, filename: Path) -> None:
-    """
-    Extract an archive.
-
-    Parameters
-    ----------
-    path : Path
-        Path where to extract the archive.
-    filename : Path
-        Path to the archive.
-
-    Returns
-    -------
-    None
-    """
-
-    try:
-        extract_archive(path, filename)
-    except Exception as e:
-        msg = f"Source must be a valid zipfile. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
-
-
-def get_repository(path: Path, source: str) -> str:
-    """
-    Get repository.
-
-    Parameters
-    ----------
-    path : Path
-        Path where to save the function source.
-    source : str
-        Git repository URL in format git://<url>.
-
-    Returns
-    -------
-    None
-    """
-    try:
-        clone_repository(path, source)
-    except Exception as e:
-        msg = f"Some error occurred while downloading function repo source. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
-
-
-def decode_base64(base64: str) -> str:
-    """
-    Decode base64 encoded code.
-
-    Parameters
-    ----------
-    base64 : str
-        The encoded code.
-
-    Returns
-    -------
-    str
-        The decoded code.
-
-    Raises
-    ------
-    RuntimeError
-        Error while decoding code.
-    """
-    try:
-        return decode_string(base64)
-    except Exception as e:
-        msg = f"Some error occurred while decoding function source. Exception: {e.__class__}. Error: {e.args}"
-        LOGGER.exception(msg)
-        raise RuntimeError(msg) from e
+    raise RuntimeError("Unable to collect source.")

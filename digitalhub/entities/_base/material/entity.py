@@ -3,8 +3,8 @@ from __future__ import annotations
 import typing
 from pathlib import Path
 
-from digitalhub.entities._base.crud.api_utils import files_info_get_api, files_info_put_api
 from digitalhub.entities._base.versioned.entity import VersionedEntity
+from digitalhub.entities._operations.processor import processor
 from digitalhub.stores.api import get_store
 
 if typing.TYPE_CHECKING:
@@ -48,23 +48,20 @@ class MaterialEntity(VersionedEntity):
         MaterialEntity
             Entity saved.
         """
-        obj = self.to_dict()
-
+        # Evaluate files info list length
         files = None
         if self.status.files is not None and len(self.status.files) > 5 and not self._context().local:
-            files = obj["status"].pop("files")
+            files = self.status.files
+            self.status.files = []
 
-        if not update:
-            new_obj: MaterialEntity = self._save(obj)
-        else:
-            new_obj: MaterialEntity = self._update(obj)
+        obj: MaterialEntity = super().save(update)
 
         # Handle files info
         if files is not None:
-            files_info_put_api(self.project, self.ENTITY_TYPE, self.id, files)
+            processor.update_files_info(self.project, self.ENTITY_TYPE, self.id, files)
             self.add_files_info(files)
 
-        return new_obj
+        return obj
 
     ##############################
     # I/O Methods
@@ -241,7 +238,7 @@ class MaterialEntity(VersionedEntity):
         None
         """
         if not self._context().local and not self.status.files:
-            files = files_info_get_api(
+            files = processor.read_files_info(
                 project=self.project,
                 entity_type=self.ENTITY_TYPE,
                 entity_id=self.id,

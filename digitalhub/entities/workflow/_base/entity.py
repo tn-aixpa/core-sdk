@@ -41,7 +41,13 @@ class Workflow(ExecutableEntity):
     #  Workflow Methods
     ##############################
 
-    def run(self, action: str | None = None, **kwargs) -> Run:
+    def run(
+        self,
+        action: str,
+        wait: bool = True,
+        log_info: bool = True,
+        **kwargs,
+    ) -> Run:
         """
         Run workflow.
 
@@ -49,6 +55,7 @@ class Workflow(ExecutableEntity):
         ----------
         action : str
             Action to execute.
+
         **kwargs : dict
             Keyword arguments passed to Run builder.
 
@@ -57,9 +64,6 @@ class Workflow(ExecutableEntity):
         Run
             Run instance.
         """
-        if action is None:
-            action = "pipeline"
-
         # Get task and run kind
         task_kind = get_task_kind_from_action(self.kind, action)
         run_kind = get_run_kind(self.kind)
@@ -71,4 +75,8 @@ class Workflow(ExecutableEntity):
         if self._context().local:
             raise BackendError("Cannot run workflow with local backend.")
 
-        return task.run(run_kind, local_execution=False, **kwargs)
+        # Run task
+        run = task.run(run_kind, local_execution=True, **kwargs)
+        if wait:
+            return run.wait(log_info=log_info)
+        return run

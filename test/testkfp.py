@@ -22,7 +22,10 @@ di = project.new_dataitem(name="employees", kind="table", path=url)
 function = project.get_function(entity_name="test-kfp")
 if function is None:
     function = project.new_function(
-        name="test-kfp", kind="kfp", source={"source": "test/testkfp_pipeline.py"}, handler="myhandler"
+        name="test-kfp",
+        kind="kfp",
+        source={"source": "test/testkfp_pipeline.py"},
+        handler="myhandler",
     )
 
 

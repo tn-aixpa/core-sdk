@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from digitalhub.entities._base.entity.builder import EntityBuilder
-from digitalhub.entities._commons.enums import EntityTypes
+from digitalhub.entities._commons.enums import EntityKinds, EntityTypes
 from digitalhub.entities.project._base.entity import Project
 from digitalhub.entities.project._base.spec import ProjectSpec, ProjectValidator
 from digitalhub.entities.project._base.status import ProjectStatus
@@ -17,7 +17,7 @@ class ProjectProjectBuilder(EntityBuilder):
     ENTITY_SPEC_CLASS = ProjectSpec
     ENTITY_SPEC_VALIDATOR = ProjectValidator
     ENTITY_STATUS_CLASS = ProjectStatus
-    ENTITY_KIND = "project"
+    ENTITY_KIND = EntityKinds.PROJECT_PROJECT.value
 
     def build(
         self,

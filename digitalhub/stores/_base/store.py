@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Literal
+from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
+from digitalhub.readers.api import get_reader_by_engine
 from digitalhub.utils.exceptions import StoreError
-from digitalhub.utils.uri_utils import map_uri_scheme
+from digitalhub.utils.uri_utils import Scheme, has_local_scheme
 
 
-class Store(metaclass=ABCMeta):
+class Store:
     """
     Store abstract class.
     """
@@ -35,7 +36,7 @@ class Store(metaclass=ABCMeta):
         self.type = store_type
 
     ##############################
-    # IO methods
+    # I/O methods
     ##############################
 
     @abstractmethod
@@ -63,6 +64,46 @@ class Store(metaclass=ABCMeta):
         """
 
     ##############################
+    # Datastore methods
+    ##############################
+
+    @abstractmethod
+    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
+        """
+        Write DataFrame as parquet or csv.
+        """
+
+    def read_df(
+        self,
+        path: str | list[str],
+        extension: str,
+        engine: str | None = None,
+        **kwargs,
+    ) -> Any:
+        """
+        Read DataFrame from path.
+
+        Parameters
+        ----------
+        path : str | list[str]
+            Path(s) to read DataFrame from.
+        extension : str
+            Extension of the file.
+        engine : str
+            Dataframe engine (pandas, polars, etc.).
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        Any
+            DataFrame.
+        """
+        reader = get_reader_by_engine(engine)
+        self._validate_extension(extension)
+        return reader.read_df(path, extension, **kwargs)
+
+    ##############################
     # Helpers methods
     ##############################
 
@@ -84,7 +125,7 @@ class Store(metaclass=ABCMeta):
         StoreError
             If the source is not a local path.
         """
-        if map_uri_scheme(src) != "local":
+        if not has_local_scheme(src):
             raise StoreError(f"Source '{src}' is not a local path.")
 
     def _check_local_dst(self, dst: str) -> None:
@@ -105,7 +146,7 @@ class Store(metaclass=ABCMeta):
         StoreError
             If the destination is not a local path.
         """
-        if map_uri_scheme(dst) != "local":
+        if not has_local_scheme(dst):
             raise StoreError(f"Destination '{dst}' is not a local path.")
 
     def _check_overwrite(self, dst: Path, overwrite: bool) -> None:
@@ -164,11 +205,35 @@ class Store(metaclass=ABCMeta):
         tmpdir = mkdtemp()
         return Path(tmpdir)
 
+    @staticmethod
+    def _validate_extension(extension: str) -> None:
+        """
+        Validate extension.
+
+        Parameters
+        ----------
+        extension : str
+            Extension of the file.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        ValueError
+            If extension is not supported.
+        """
+        if extension not in ["csv", "parquet", "file"]:
+            raise ValueError(f"Extension {extension} not supported.")
+
 
 class StoreConfig(BaseModel):
     """
     Store configuration base class.
     """
+
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class StoreParameters(BaseModel):
@@ -176,10 +241,12 @@ class StoreParameters(BaseModel):
     Store configuration class.
     """
 
+    model_config = ConfigDict(use_enum_values=True)
+
     name: str
     """Store id."""
 
-    type: Literal["local", "s3", "remote", "sql"]
+    type: Scheme
     """Store type to instantiate."""
 
     config: StoreConfig = None

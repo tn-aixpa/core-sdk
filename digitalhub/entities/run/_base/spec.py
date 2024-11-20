@@ -12,19 +12,21 @@ class RunSpec(Spec):
         task: str,
         local_execution: bool = False,
         function: str | None = None,
-        node_selector: dict | None = None,
-        volumes: list | None = None,
+        workflow: str | None = None,
+        node_selector: list[dict] | None = None,
+        volumes: list[dict] | None = None,
         resources: dict | None = None,
         affinity: dict | None = None,
-        tolerations: list | None = None,
-        envs: list | None = None,
-        secrets: list | None = None,
+        tolerations: list[dict] | None = None,
+        envs: list[dict] | None = None,
+        secrets: list[str] | None = None,
         profile: str | None = None,
         **kwargs,
     ) -> None:
         self.task = task
         self.local_execution = local_execution
         self.function = function
+        self.workflow = workflow
         self.node_selector = node_selector
         self.volumes = volumes
         self.resources = resources
@@ -40,10 +42,12 @@ class RunValidator(SpecValidator, K8s):
     RunValidator validator.
     """
 
+    # Task parameters
     function: str = None
-    """The function associated with the run."""
+    workflow: str = None
 
-    task: str = None
+    # Run parameters
+    task: str
     """The task string associated with the run."""
 
     local_execution: bool = False

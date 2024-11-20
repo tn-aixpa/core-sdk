@@ -126,7 +126,11 @@ factory = ReaderFactory()
 try:
     from digitalhub.readers.pandas.builder import ReaderBuilderPandas
 
-    factory.add_builder(ReaderBuilderPandas.ENGINE, ReaderBuilderPandas.DATAFRAME_CLASS, ReaderBuilderPandas())
+    factory.add_builder(
+        ReaderBuilderPandas.ENGINE,
+        ReaderBuilderPandas.DATAFRAME_CLASS,
+        ReaderBuilderPandas(),
+    )
     factory.set_default(ReaderBuilderPandas.ENGINE)
 
 except ImportError:

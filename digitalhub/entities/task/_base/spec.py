@@ -7,27 +7,51 @@ from digitalhub.entities.task._base.models import K8s
 class TaskSpec(Spec):
     """TaskSpec specifications."""
 
-    def __init__(self, function: str) -> None:
-        self.function = function
 
-
-class TaskSpecK8s(TaskSpec):
-    """TaskSpecK8s specifications."""
+class TaskSpecFunction(TaskSpec):
+    """TaskSpecFunction specifications."""
 
     def __init__(
         self,
         function: str,
-        node_selector: dict | None = None,
-        volumes: list | None = None,
+        node_selector: list[dict] | None = None,
+        volumes: list[dict] | None = None,
         resources: dict | None = None,
         affinity: dict | None = None,
-        tolerations: list | None = None,
-        envs: list | None = None,
-        secrets: list | None = None,
+        tolerations: list[dict] | None = None,
+        envs: list[dict] | None = None,
+        secrets: list[str] | None = None,
         profile: str | None = None,
         **kwargs,
     ) -> None:
-        super().__init__(function)
+        self.function = function
+        self.node_selector = node_selector
+        self.volumes = volumes
+        self.resources = resources
+        self.affinity = affinity
+        self.tolerations = tolerations
+        self.envs = envs
+        self.secrets = secrets
+        self.profile = profile
+
+
+class TaskSpecWorkflow(TaskSpec):
+    """TaskSpecWorkflow specifications."""
+
+    def __init__(
+        self,
+        workflow: str,
+        node_selector: list[dict] | None = None,
+        volumes: list[dict] | None = None,
+        resources: dict | None = None,
+        affinity: dict | None = None,
+        tolerations: list[dict] | None = None,
+        envs: list[dict] | None = None,
+        secrets: list[str] | None = None,
+        profile: str | None = None,
+        **kwargs,
+    ) -> None:
+        self.workflow = workflow
         self.node_selector = node_selector
         self.volumes = volumes
         self.resources = resources
@@ -43,11 +67,18 @@ class TaskValidator(SpecValidator):
     TaskValidator validator.
     """
 
+
+class TaskValidatorFunction(TaskValidator, K8s):
+    """
+    TaskValidatorFunction validator.
+    """
+
     function: str
-    """Function string."""
 
 
-class TaskValidatorK8s(TaskValidator, K8s):
+class TaskValidatorWorkflow(TaskValidator, K8s):
     """
-    TaskValidatorK8s validator.
+    TaskValidatorWorkflow validator.
     """
+
+    workflow: str

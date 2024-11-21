@@ -284,22 +284,21 @@ class S3Store(Store):
         """
         client, bucket = self._check_factory()
 
+        # Get list of files
         src_pth = Path(src)
         files = [i for i in src_pth.rglob("*") if i.is_file()]
+
+        # Build keys
         keys = []
         for i in files:
-            if src_pth.is_absolute():
-                i = i.relative_to(src_pth)
+            i = i.relative_to(src_pth)
             keys.append(f"{dst}{i}")
 
         # Upload files
         paths = []
-        for i in zip(files, keys):
-            f, k = i
+        for f, k in zip(files, keys):
             self._upload_file(f, k, client, bucket)
-            if src_pth.is_absolute():
-                f = f.relative_to(src_pth)
-            paths.append((k, str(f)))
+            paths.append((k, str(f.relative_to(src_pth))))
         return paths
 
     def _upload_file_list(self, src: list[str], dst: str) -> list[tuple[str, str]]:
@@ -328,8 +327,7 @@ class S3Store(Store):
 
         # Upload files
         paths = []
-        for i in zip(files, keys):
-            f, k = i
+        for f, k in zip(files, keys):
             self._upload_file(f, k, client, bucket)
             paths.append((k, Path(f).name))
         return paths

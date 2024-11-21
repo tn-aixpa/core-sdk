@@ -5,13 +5,14 @@ import json
 import os
 import typing
 from urllib.parse import urlparse
+from warnings import warn
 
 from dotenv import load_dotenv, set_key
 from requests import request
 from requests.exceptions import HTTPError, JSONDecodeError, RequestException
 
 from digitalhub.client._base.client import Client
-from digitalhub.client.dhcore.env import ENV_FILE, FALLBACK_USER, MAX_API_LEVEL, MIN_API_LEVEL
+from digitalhub.client.dhcore.env import ENV_FILE, FALLBACK_USER, MAX_API_LEVEL, MIN_API_LEVEL, LIB_VERSION
 from digitalhub.client.dhcore.models import BasicAuth, OAuth2TokenAuth
 from digitalhub.utils.exceptions import (
     BackendError,
@@ -332,6 +333,8 @@ class ClientDHCore(Client):
             core_api_level = int(response.headers["X-Api-Level"])
             if not (MIN_API_LEVEL <= core_api_level <= MAX_API_LEVEL):
                 raise BackendError("Backend API level not supported.")
+            if LIB_VERSION < core_api_level:
+                warn("Backend API level is higher than library version. You should consider updating the library.")
 
     def _raise_for_error(self, response: Response) -> None:
         """

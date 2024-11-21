@@ -20,3 +20,4 @@ ENV_FILE = Path.home() / ".dhcore"
 # API levels that are supported
 MAX_API_LEVEL = 20
 MIN_API_LEVEL = 8
+LIB_VERSION = 8

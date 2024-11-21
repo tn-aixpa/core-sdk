@@ -23,4 +23,4 @@ def build_uuid(uuid: str | None = None) -> str:
         if slugify_string(uuid) != uuid:
             raise ValueError(f"Invalid ID: {uuid}. Must pass slugified ID.")
         return uuid
-    return str(uuid4())
+    return uuid4().hex

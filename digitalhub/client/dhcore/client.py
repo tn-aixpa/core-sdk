@@ -7,7 +7,7 @@ import typing
 from urllib.parse import urlparse
 from warnings import warn
 
-from dotenv import load_dotenv, set_key
+from dotenv import get_key, set_key
 from requests import request
 from requests.exceptions import HTTPError, JSONDecodeError, RequestException
 
@@ -572,7 +572,7 @@ class ClientDHCore(Client):
 
             # Otherwise try token from file
         except response.status_code == 401:
-            refresh_token = load_dotenv(ENV_FILE)["DHCORE_REFRESH_TOKEN"]
+            refresh_token = get_key(ENV_FILE, "DHCORE_REFRESH_TOKEN")
             response = self._call_refresh_token_endpoint(url, refresh_token)
 
         response.raise_for_status()

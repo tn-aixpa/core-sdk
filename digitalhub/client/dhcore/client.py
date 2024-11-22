@@ -560,7 +560,7 @@ class ClientDHCore(Client):
         -------
         None
         """
-                # Call issuer and get endpoint for
+        # Call issuer and get endpoint for
         # refreshing access token
         url = self._get_refresh_endpoint()
 

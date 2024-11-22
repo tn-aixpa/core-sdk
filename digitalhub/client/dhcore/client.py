@@ -488,7 +488,8 @@ class ClientDHCore(Client):
         self._get_auth_from_env()
 
         # Propagate access and refresh token to env file
-        self._write_env()
+        if not ENV_FILE.exists():
+            self._write_env()
 
     def _get_endpoints_from_env(self) -> None:
         """

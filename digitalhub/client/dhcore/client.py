@@ -560,18 +560,17 @@ class ClientDHCore(Client):
         -------
         None
         """
-        # Call issuer and get endpoint for
+                # Call issuer and get endpoint for
         # refreshing access token
         url = self._get_refresh_endpoint()
 
         # Call refresh token endpoint
-        try:
-            # Try token from env
-            refresh_token = os.getenv("DHCORE_REFRESH_TOKEN")
-            response = self._call_refresh_token_endpoint(url, refresh_token)
+        # Try token from env
+        refresh_token = os.getenv("DHCORE_REFRESH_TOKEN")
+        response = self._call_refresh_token_endpoint(url, refresh_token)
 
-            # Otherwise try token from file
-        except response.status_code == 401:
+        # Otherwise try token from file
+        if response.status_code in (400, 401, 403):
             refresh_token = get_key(ENV_FILE, "DHCORE_REFRESH_TOKEN")
             response = self._call_refresh_token_endpoint(url, refresh_token)
 

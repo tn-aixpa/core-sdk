@@ -1,0 +1,433 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$defs" : {
+    "ArrayField" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/Serializable"
+      },
+      "title" : "array"
+    },
+    "Artifact" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "title" : "fields.id.title",
+          "description" : "fields.id.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "kind" : {
+          "type" : "string",
+          "title" : "fields.kind.title",
+          "description" : "fields.kind.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "metadata" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.metadata.title",
+          "description" : "fields.metadata.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.metadata.item.title",
+            "description" : "fields.metadata.item.description"
+          }
+        },
+        "name" : {
+          "type" : "string",
+          "title" : "fields.name.title",
+          "description" : "fields.name.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "project" : {
+          "type" : "string",
+          "title" : "fields.project.title",
+          "description" : "fields.project.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "spec" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.spec.title",
+          "description" : "fields.spec.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.spec.item.title",
+            "description" : "fields.spec.item.description"
+          }
+        },
+        "status" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.status.title",
+          "description" : "fields.status.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.status.item.title",
+            "description" : "fields.status.item.description"
+          }
+        },
+        "user" : {
+          "type" : "string",
+          "title" : "fields.user.title",
+          "description" : "fields.user.description"
+        }
+      },
+      "required" : [ "kind", "name", "project" ]
+    },
+    "BooleanField" : {
+      "type" : "boolean",
+      "title" : "boolean"
+    },
+    "DataItem" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "title" : "fields.id.title",
+          "description" : "fields.id.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "kind" : {
+          "type" : "string",
+          "title" : "fields.kind.title",
+          "description" : "fields.kind.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "metadata" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.metadata.title",
+          "description" : "fields.metadata.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.metadata.item.title",
+            "description" : "fields.metadata.item.description"
+          }
+        },
+        "name" : {
+          "type" : "string",
+          "title" : "fields.name.title",
+          "description" : "fields.name.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "project" : {
+          "type" : "string",
+          "title" : "fields.project.title",
+          "description" : "fields.project.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "spec" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.spec.title",
+          "description" : "fields.spec.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.spec.item.title",
+            "description" : "fields.spec.item.description"
+          }
+        },
+        "status" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.status.title",
+          "description" : "fields.status.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.status.item.title",
+            "description" : "fields.status.item.description"
+          }
+        },
+        "user" : {
+          "type" : "string",
+          "title" : "fields.user.title",
+          "description" : "fields.user.description"
+        }
+      },
+      "required" : [ "kind", "name", "project" ]
+    },
+    "Function" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "title" : "fields.id.title",
+          "description" : "fields.id.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "kind" : {
+          "type" : "string",
+          "title" : "fields.kind.title",
+          "description" : "fields.kind.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "metadata" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.metadata.title",
+          "description" : "fields.metadata.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.metadata.item.title",
+            "description" : "fields.metadata.item.description"
+          }
+        },
+        "name" : {
+          "type" : "string",
+          "title" : "fields.name.title",
+          "description" : "fields.name.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "project" : {
+          "type" : "string",
+          "title" : "fields.project.title",
+          "description" : "fields.project.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "spec" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.spec.title",
+          "description" : "fields.spec.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.spec.item.title",
+            "description" : "fields.spec.item.description"
+          }
+        },
+        "status" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.status.title",
+          "description" : "fields.status.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.status.item.title",
+            "description" : "fields.status.item.description"
+          }
+        },
+        "user" : {
+          "type" : "string",
+          "title" : "fields.user.title",
+          "description" : "fields.user.description"
+        }
+      },
+      "required" : [ "kind", "name", "project" ]
+    },
+    "Map_String.Serializable_" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "$ref" : "#/$defs/Serializable"
+      }
+    },
+    "Model" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "title" : "fields.id.title",
+          "description" : "fields.id.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "kind" : {
+          "type" : "string",
+          "title" : "fields.kind.title",
+          "description" : "fields.kind.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "metadata" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.metadata.title",
+          "description" : "fields.metadata.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.metadata.item.title",
+            "description" : "fields.metadata.item.description"
+          }
+        },
+        "name" : {
+          "type" : "string",
+          "title" : "fields.name.title",
+          "description" : "fields.name.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "project" : {
+          "type" : "string",
+          "title" : "fields.project.title",
+          "description" : "fields.project.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "spec" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.spec.title",
+          "description" : "fields.spec.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.spec.item.title",
+            "description" : "fields.spec.item.description"
+          }
+        },
+        "status" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.status.title",
+          "description" : "fields.status.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.status.item.title",
+            "description" : "fields.status.item.description"
+          }
+        },
+        "user" : {
+          "type" : "string",
+          "title" : "fields.user.title",
+          "description" : "fields.user.description"
+        }
+      },
+      "required" : [ "kind", "name", "project" ]
+    },
+    "NumberField" : {
+      "type" : "number",
+      "title" : "number"
+    },
+    "ObjectField" : {
+      "type" : "object",
+      "title" : "object"
+    },
+    "Serializable" : {
+      "anyOf" : [ {
+        "$ref" : "#/$defs/StringField"
+      }, {
+        "$ref" : "#/$defs/NumberField"
+      }, {
+        "$ref" : "#/$defs/BooleanField"
+      }, {
+        "$ref" : "#/$defs/ObjectField"
+      }, {
+        "$ref" : "#/$defs/ArrayField"
+      } ],
+      "title" : "object"
+    },
+    "StringField" : {
+      "type" : "string",
+      "title" : "string"
+    },
+    "Workflow" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "title" : "fields.id.title",
+          "description" : "fields.id.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "kind" : {
+          "type" : "string",
+          "title" : "fields.kind.title",
+          "description" : "fields.kind.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "metadata" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.metadata.title",
+          "description" : "fields.metadata.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.metadata.item.title",
+            "description" : "fields.metadata.item.description"
+          }
+        },
+        "name" : {
+          "type" : "string",
+          "title" : "fields.name.title",
+          "description" : "fields.name.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "project" : {
+          "type" : "string",
+          "title" : "fields.project.title",
+          "description" : "fields.project.description",
+          "pattern" : "^[a-zA-Z0-9._+-]+$"
+        },
+        "spec" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.spec.title",
+          "description" : "fields.spec.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.spec.item.title",
+            "description" : "fields.spec.item.description"
+          }
+        },
+        "status" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.status.title",
+          "description" : "fields.status.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.status.item.title",
+            "description" : "fields.status.item.description"
+          }
+        },
+        "user" : {
+          "type" : "string",
+          "title" : "fields.user.title",
+          "description" : "fields.user.description"
+        }
+      },
+      "required" : [ "kind", "name", "project" ]
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "artifacts" : {
+      "title" : "fields.artifacts.title",
+      "description" : "fields.artifacts.description",
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/Artifact",
+        "title" : "fields.artifacts.item.title",
+        "description" : "fields.artifacts.item.description"
+      }
+    },
+    "dataitems" : {
+      "title" : "fields.dataitems.title",
+      "description" : "fields.dataitems.description",
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/DataItem",
+        "title" : "fields.dataitems.item.title",
+        "description" : "fields.dataitems.item.description"
+      }
+    },
+    "functions" : {
+      "title" : "fields.functions.title",
+      "description" : "fields.functions.description",
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/Function",
+        "title" : "fields.functions.item.title",
+        "description" : "fields.functions.item.description"
+      }
+    },
+    "models" : {
+      "title" : "fields.models.title",
+      "description" : "fields.models.description",
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/Model",
+        "title" : "fields.models.item.title",
+        "description" : "fields.models.item.description"
+      }
+    },
+    "source" : {
+      "type" : "string",
+      "title" : "fields.source.title",
+      "description" : "fields.source.description"
+    },
+    "workflows" : {
+      "title" : "fields.workflows.title",
+      "description" : "fields.workflows.description",
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/Workflow",
+        "title" : "fields.workflows.item.title",
+        "description" : "fields.workflows.item.description"
+      }
+    }
+  },
+  "title" : "specs.project.title",
+  "description" : "specs.project.description"
+}

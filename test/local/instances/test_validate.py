@@ -6,8 +6,8 @@ import json
 from jsonschema import validate
 from digitalhub.factory.factory import factory
 
-entities_path = "./entity_specs"
-schemas_path = "/path/to/digitalhub-core/schemas/specs"
+entities_path = "test/local/instances/entities"
+schemas_path = "test/local/instances/schemas"
 
 # Build dict: kind -> path to schema file
 schemas = {}
@@ -15,7 +15,7 @@ for path_to_schema in glob(f"{schemas_path}/**/*.json", recursive=True):
     kind = Path(path_to_schema).stem
     schemas[kind] = path_to_schema
 
-# Build dict: name of file to validate -> full path to file}
+# Build dict: name of file to validate -> full path to file
 entity_paths = {}
 for path_to_file in glob(f"{entities_path}/**/*.json", recursive=True):
     file_name = os.path.basename(path_to_file)

@@ -1,0 +1,27 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "type" : "object",
+  "properties" : {
+    "image" : {
+      "type" : "string",
+      "title" : "fields.container.image.title",
+      "description" : "fields.container.image.description",
+      "pattern" : "^seldonio\\/mlserver?:.*-mlflow$"
+    },
+    "model_name" : {
+      "type" : "string",
+      "title" : "fields.modelserve.modelname.title",
+      "description" : "fields.modelserve.modelname.description",
+      "default" : "model"
+    },
+    "path" : {
+      "type" : "string",
+      "title" : "fields.path.title",
+      "description" : "fields.mlflow.path.description",
+      "pattern" : "^(store://([^/]+)/model/mlflow/.*)|.*\\/$|.*\\.zip$"
+    }
+  },
+  "required" : [ "path" ],
+  "title" : "specs.mlflowserve.title",
+  "description" : "specs.mlflowserve.description"
+}

@@ -1,0 +1,129 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$defs" : {
+    "ArrayField" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/Serializable"
+      },
+      "title" : "array"
+    },
+    "BooleanField" : {
+      "type" : "boolean",
+      "title" : "boolean"
+    },
+    "Field" : {
+      "type" : "object",
+      "properties" : {
+        "constraints" : {
+          "$ref" : "#/$defs/Map_String.Serializable_",
+          "title" : "fields.constraints.title",
+          "description" : "fields.constraints.description",
+          "additionalProperties" : {
+            "$ref" : "#/$defs/Serializable",
+            "title" : "fields.constraints.item.title",
+            "description" : "fields.constraints.item.description"
+          }
+        },
+        "description" : {
+          "type" : "string",
+          "title" : "fields.description.title",
+          "description" : "fields.description.description"
+        },
+        "example" : {
+          "type" : "string",
+          "title" : "fields.example.title",
+          "description" : "fields.example.description"
+        },
+        "format" : {
+          "type" : "string",
+          "title" : "fields.format.title",
+          "description" : "fields.format.description"
+        },
+        "name" : {
+          "type" : "string",
+          "title" : "fields.name.title",
+          "description" : "fields.name.description"
+        },
+        "title" : {
+          "type" : "string",
+          "title" : "fields.title.title",
+          "description" : "fields.title.description"
+        },
+        "type" : {
+          "$ref" : "#/$defs/FieldType",
+          "title" : "fields.type.title",
+          "description" : "fields.type.description"
+        }
+      }
+    },
+    "FieldType" : {
+      "type" : "string",
+      "enum" : [ "string", "number", "integer", "boolean", "object", "array", "date", "time", "datetime", "year", "yearmonth", "duration", "geopoint", "geojson", "any" ]
+    },
+    "Map_String.Serializable_" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "$ref" : "#/$defs/Serializable"
+      }
+    },
+    "NumberField" : {
+      "type" : "number",
+      "title" : "number"
+    },
+    "ObjectField" : {
+      "type" : "object",
+      "title" : "object"
+    },
+    "Serializable" : {
+      "anyOf" : [ {
+        "$ref" : "#/$defs/StringField"
+      }, {
+        "$ref" : "#/$defs/NumberField"
+      }, {
+        "$ref" : "#/$defs/BooleanField"
+      }, {
+        "$ref" : "#/$defs/ObjectField"
+      }, {
+        "$ref" : "#/$defs/ArrayField"
+      } ],
+      "title" : "object"
+    },
+    "StringField" : {
+      "type" : "string",
+      "title" : "string"
+    },
+    "TableSchema" : {
+      "type" : "object",
+      "properties" : {
+        "fields" : {
+          "title" : "fields.fields.title",
+          "description" : "fields.fields.description",
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/$defs/Field",
+            "title" : "fields.fields.item.title",
+            "description" : "fields.fields.item.description"
+          }
+        }
+      }
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "path" : {
+      "type" : "string",
+      "title" : "fields.path.title",
+      "description" : "fields.path.description",
+      "minLength" : 1
+    },
+    "schema" : {
+      "$ref" : "#/$defs/TableSchema",
+      "title" : "fields.schema.title",
+      "description" : "fields.schema.description"
+    }
+  },
+  "required" : [ "path" ],
+  "title" : "specs.table.title",
+  "description" : "specs.table.description"
+}

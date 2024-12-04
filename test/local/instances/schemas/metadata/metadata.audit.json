@@ -1,0 +1,30 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "type" : "object",
+  "properties" : {
+    "created" : {
+      "type" : "string",
+      "format" : "date-time",
+      "title" : "fields.created.title",
+      "description" : "fields.created.description"
+    },
+    "created_by" : {
+      "type" : "string",
+      "title" : "fields.createdBy.title",
+      "description" : "fields.createdBy.description"
+    },
+    "updated" : {
+      "type" : "string",
+      "format" : "date-time",
+      "title" : "fields.updated.title",
+      "description" : "fields.updated.description"
+    },
+    "updated_by" : {
+      "type" : "string",
+      "title" : "fields.updatedBy.title",
+      "description" : "fields.updatedBy.description"
+    }
+  },
+  "title" : "specs.metadata.audit.title",
+  "description" : "specs.metadata.audit.description"
+}

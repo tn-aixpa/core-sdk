@@ -1,0 +1,23 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "type" : "object",
+  "properties" : {
+    "name" : {
+      "type" : "string",
+      "title" : "fields.name.title",
+      "description" : "fields.name.description"
+    },
+    "project" : {
+      "type" : "string",
+      "title" : "fields.project.title",
+      "description" : "fields.project.description"
+    },
+    "version" : {
+      "type" : "string",
+      "title" : "fields.version.title",
+      "description" : "fields.version.description"
+    }
+  },
+  "title" : "specs.metadata.versioning.title",
+  "description" : "specs.metadata.versioning.description"
+}

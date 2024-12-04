@@ -1,0 +1,25 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "type" : "object",
+  "properties" : {
+    "algorithm" : {
+      "type" : "string",
+      "title" : "fields.algorithm.title",
+      "description" : "fields.algorithm.description"
+    },
+    "framework" : {
+      "type" : "string",
+      "title" : "fields.framework.title",
+      "description" : "fields.framework.description"
+    },
+    "path" : {
+      "type" : "string",
+      "title" : "fields.path.title",
+      "description" : "fields.path.description",
+      "minLength" : 1
+    }
+  },
+  "required" : [ "path" ],
+  "title" : "specs.model.title",
+  "description" : "specs.model.description"
+}

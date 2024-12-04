@@ -1,0 +1,56 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$defs" : {
+    "KFPSourceCodeLanguages" : {
+      "type" : "string",
+      "enum" : [ "python" ]
+    },
+    "SourceCode_KFPSourceCodeLanguages_" : {
+      "type" : "object",
+      "properties" : {
+        "base64" : {
+          "type" : "string",
+          "title" : "fields.sourceCode.base64.title",
+          "description" : "fields.sourceCode.base64.description"
+        },
+        "handler" : {
+          "type" : "string",
+          "title" : "fields.sourceCode.handler.title",
+          "description" : "fields.sourceCode.handler.description"
+        },
+        "lang" : {
+          "$ref" : "#/$defs/KFPSourceCodeLanguages",
+          "title" : "fields.sourceCode.lang.title",
+          "description" : "fields.sourceCode.lang.description",
+          "default" : "python"
+        },
+        "source" : {
+          "type" : "string",
+          "title" : "fields.sourceCode.source.title",
+          "description" : "fields.sourceCode.source.description"
+        }
+      }
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "image" : {
+      "type" : "string",
+      "title" : "fields.container.image.title",
+      "description" : "fields.container.image.description"
+    },
+    "source" : {
+      "$ref" : "#/$defs/SourceCode_KFPSourceCodeLanguages_",
+      "title" : "fields.sourceCode.title",
+      "description" : "fields.sourceCode.description"
+    },
+    "tag" : {
+      "type" : "string",
+      "title" : "fields.container.tag.title",
+      "description" : "fields.container.tag.description"
+    }
+  },
+  "required" : [ "source" ],
+  "title" : "specs.kfp.title",
+  "description" : "specs.kfp.description"
+}

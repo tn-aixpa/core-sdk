@@ -1,0 +1,192 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$defs" : {
+    "ArrayField" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/Serializable"
+      },
+      "title" : "array"
+    },
+    "BooleanField" : {
+      "type" : "boolean",
+      "title" : "boolean"
+    },
+    "Dataset" : {
+      "type" : "object",
+      "properties" : {
+        "digest" : {
+          "type" : "string",
+          "title" : "fields.mlflow.inputdatasetdigest.title",
+          "description" : "fields.mlflow.inputdatasetdigest.description"
+        },
+        "name" : {
+          "type" : "string",
+          "title" : "fields.mlflow.inputdatasetname.title",
+          "description" : "fields.mlflow.inputdatasetname.description"
+        },
+        "profile" : {
+          "type" : "string",
+          "title" : "fields.mlflow.inputdatasetprofile.title",
+          "description" : "fields.mlflow.inputdatasetprofile.description"
+        },
+        "schema" : {
+          "type" : "string",
+          "title" : "fields.mlflow.inputdatasetschema.title",
+          "description" : "fields.mlflow.inputdatasetschema.description"
+        },
+        "source" : {
+          "type" : "string",
+          "title" : "fields.mlflow.inputdatasetsource.title",
+          "description" : "fields.mlflow.inputdatasetsource.description"
+        },
+        "source_type" : {
+          "type" : "string",
+          "title" : "fields.mlflow.inputdatasetsourcetype.title",
+          "description" : "fields.mlflow.inputdatasetsourcetype.description"
+        }
+      }
+    },
+    "Map_String.Number_" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "number"
+      }
+    },
+    "Map_String.Serializable_" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "$ref" : "#/$defs/Serializable"
+      }
+    },
+    "Map_String.String_" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "string"
+      }
+    },
+    "NumberField" : {
+      "type" : "number",
+      "title" : "number"
+    },
+    "ObjectField" : {
+      "type" : "object",
+      "title" : "object"
+    },
+    "Serializable" : {
+      "anyOf" : [ {
+        "$ref" : "#/$defs/StringField"
+      }, {
+        "$ref" : "#/$defs/NumberField"
+      }, {
+        "$ref" : "#/$defs/BooleanField"
+      }, {
+        "$ref" : "#/$defs/ObjectField"
+      }, {
+        "$ref" : "#/$defs/ArrayField"
+      } ],
+      "title" : "object"
+    },
+    "Signature" : {
+      "type" : "object",
+      "properties" : {
+        "inputs" : {
+          "type" : "string",
+          "title" : "fields.mlflow.signatureinputs.title",
+          "description" : "fields.mlflow.signatureinputs.description"
+        },
+        "outputs" : {
+          "type" : "string",
+          "title" : "fields.mlflow.signatureoutputs.title",
+          "description" : "fields.mlflow.signatureoutputs.description"
+        },
+        "params" : {
+          "type" : "string",
+          "title" : "fields.mlflow.signatureparams.title",
+          "description" : "fields.mlflow.signatureparams.description"
+        }
+      }
+    },
+    "StringField" : {
+      "type" : "string",
+      "title" : "string"
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "algorithm" : {
+      "type" : "string",
+      "title" : "fields.algorithm.title",
+      "description" : "fields.algorithm.description"
+    },
+    "base_model" : {
+      "type" : "string",
+      "title" : "fields.baseModel.title",
+      "description" : "fields.baseModel.description"
+    },
+    "flavor" : {
+      "type" : "string",
+      "title" : "fields.mlflow.flavor.title",
+      "description" : "fields.mlflow.flavor.description"
+    },
+    "framework" : {
+      "type" : "string",
+      "title" : "fields.framework.title",
+      "description" : "fields.framework.description"
+    },
+    "input_datasets" : {
+      "title" : "fields.mlflow.inputdatasets.title",
+      "description" : "fields.mlflow.inputdatasets.description",
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/Dataset",
+        "title" : "fields.inputDatasets.item.title",
+        "description" : "fields.inputDatasets.item.description"
+      }
+    },
+    "metrics" : {
+      "$ref" : "#/$defs/Map_String.Number_",
+      "title" : "fields.metrics.title",
+      "description" : "fields.metrics.description",
+      "additionalProperties" : {
+        "type" : "number",
+        "title" : "fields.metrics.item.title",
+        "description" : "fields.metrics.item.description"
+      }
+    },
+    "model_config" : {
+      "$ref" : "#/$defs/Map_String.String_",
+      "title" : "fields.mlflow.modelconfig.title",
+      "description" : "fields.mlflow.modelconfig.description",
+      "additionalProperties" : {
+        "type" : "string",
+        "title" : "fields.modelConfig.item.title",
+        "description" : "fields.modelConfig.item.description"
+      }
+    },
+    "parameters" : {
+      "$ref" : "#/$defs/Map_String.Serializable_",
+      "title" : "fields.parameters.title",
+      "description" : "fields.parameters.description",
+      "additionalProperties" : {
+        "$ref" : "#/$defs/Serializable",
+        "title" : "fields.parameters.item.title",
+        "description" : "fields.parameters.item.description"
+      }
+    },
+    "path" : {
+      "type" : "string",
+      "title" : "fields.path.title",
+      "description" : "fields.path.description",
+      "minLength" : 1
+    },
+    "signature" : {
+      "$ref" : "#/$defs/Signature",
+      "title" : "fields.mlflow.signature.title",
+      "description" : "fields.mlflow.signature.description"
+    }
+  },
+  "required" : [ "path" ],
+  "title" : "specs.mlflow.title",
+  "description" : "specs.mlflow.description"
+}

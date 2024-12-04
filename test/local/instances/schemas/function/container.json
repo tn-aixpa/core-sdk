@@ -1,0 +1,69 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$defs" : {
+    "SourceCodeLanguages" : {
+      "type" : "string",
+      "enum" : [ "python", "java", "javascript", "typescript", "markdown", "html", "json", "sql", "css", "yaml", "text" ]
+    },
+    "SourceCode_SourceCodeLanguages_" : {
+      "type" : "object",
+      "properties" : {
+        "base64" : {
+          "type" : "string",
+          "title" : "fields.sourceCode.base64.title",
+          "description" : "fields.sourceCode.base64.description"
+        },
+        "handler" : {
+          "type" : "string",
+          "title" : "fields.sourceCode.handler.title",
+          "description" : "fields.sourceCode.handler.description"
+        },
+        "lang" : {
+          "$ref" : "#/$defs/SourceCodeLanguages",
+          "title" : "fields.sourceCode.lang.title",
+          "description" : "fields.sourceCode.lang.description"
+        },
+        "source" : {
+          "type" : "string",
+          "title" : "fields.sourceCode.source.title",
+          "description" : "fields.sourceCode.source.description"
+        }
+      }
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "args" : {
+      "title" : "fields.container.args.title",
+      "description" : "fields.container.args.description",
+      "type" : "array",
+      "items" : {
+        "type" : "string",
+        "title" : "fields.args.item.title",
+        "description" : "fields.args.item.description"
+      }
+    },
+    "base_image" : {
+      "type" : "string",
+      "title" : "fields.container.baseImage.title",
+      "description" : "fields.container.baseImage.description"
+    },
+    "command" : {
+      "type" : "string",
+      "title" : "fields.container.command.title",
+      "description" : "fields.container.command.description"
+    },
+    "image" : {
+      "type" : "string",
+      "title" : "fields.container.image.title",
+      "description" : "fields.container.image.description"
+    },
+    "source" : {
+      "$ref" : "#/$defs/SourceCode_SourceCodeLanguages_",
+      "title" : "fields.sourceCode.title",
+      "description" : "fields.sourceCode.description"
+    }
+  },
+  "title" : "specs.container.title",
+  "description" : "specs.container.description"
+}

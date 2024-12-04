@@ -1,0 +1,45 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "type" : "object",
+  "properties" : {
+    "created" : {
+      "type" : "string",
+      "format" : "date-time",
+      "title" : "fields.created.title",
+      "description" : "fields.created.description"
+    },
+    "description" : {
+      "type" : "string",
+      "title" : "fields.description.title",
+      "description" : "fields.description.description"
+    },
+    "labels" : {
+      "title" : "fields.labels.title",
+      "description" : "fields.labels.description",
+      "type" : "array",
+      "items" : {
+        "type" : "string",
+        "title" : "fields.labels.item.title",
+        "description" : "fields.labels.item.description"
+      }
+    },
+    "name" : {
+      "type" : "string",
+      "title" : "fields.name.title",
+      "description" : "fields.name.description"
+    },
+    "project" : {
+      "type" : "string",
+      "title" : "fields.project.title",
+      "description" : "fields.project.description"
+    },
+    "updated" : {
+      "type" : "string",
+      "format" : "date-time",
+      "title" : "fields.updated.title",
+      "description" : "fields.updated.description"
+    }
+  },
+  "title" : "specs.metadata.base.title",
+  "description" : "specs.metadata.base.description"
+}

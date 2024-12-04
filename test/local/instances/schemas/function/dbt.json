@@ -1,0 +1,45 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "$defs" : {
+    "DbtSourceCodeLanguages" : {
+      "type" : "string",
+      "enum" : [ "sql", "python" ]
+    },
+    "SourceCode_DbtSourceCodeLanguages_" : {
+      "type" : "object",
+      "properties" : {
+        "base64" : {
+          "type" : "string",
+          "title" : "fields.sourceCode.base64.title",
+          "description" : "fields.sourceCode.base64.description"
+        },
+        "handler" : {
+          "type" : "string",
+          "title" : "fields.sourceCode.handler.title",
+          "description" : "fields.sourceCode.handler.description"
+        },
+        "lang" : {
+          "$ref" : "#/$defs/DbtSourceCodeLanguages",
+          "title" : "fields.sourceCode.lang.title",
+          "description" : "fields.sourceCode.lang.description"
+        },
+        "source" : {
+          "type" : "string",
+          "title" : "fields.sourceCode.source.title",
+          "description" : "fields.sourceCode.source.description"
+        }
+      }
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "source" : {
+      "$ref" : "#/$defs/SourceCode_DbtSourceCodeLanguages_",
+      "title" : "fields.sourceCode.title",
+      "description" : "fields.sourceCode.description"
+    }
+  },
+  "required" : [ "source" ],
+  "title" : "specs.dbt.title",
+  "description" : "specs.dbt.description"
+}

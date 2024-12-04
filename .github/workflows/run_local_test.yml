@@ -28,6 +28,14 @@ jobs:
           pip install ruff
           ruff check --output-format=github .
         continue-on-error: true  
+      - name: Runtimes
+        run: |
+          pip freeze
+          pip install digitalhub-runtime-container
+          pip install digitalhub-runtime-dbt
+          pip install digitalhub-runtime-kfp
+          pip install digitalhub-runtime-modelserve
+          pip install digitalhub-runtime-python
       - name: Test with pytest  
         run: |  
           coverage run -m pytest test/local -v -s  

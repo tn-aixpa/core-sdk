@@ -1,11 +1,11 @@
-ARG VERSION=
+ARG VERSION=latest
 FROM ghcr.io/scc-digitalhub/digitalhub-sdk/wrapper-dbt:${VERSION}
 
 ARG ROOT=/usr/local/lib/python3.9/site-packages
 
 COPY ./digitalhub-sdk/digitalhub ${ROOT}/digitalhub
-COPY ./digitalhub-sdk/runtimes/dbt/digitalhub_runtime_dbt ${ROOT}/digitalhub_runtime_dbt
-COPY ./digitalhub-sdk/wrapper/dbt/wrapper.py /app
+COPY ./digitalhub-sdk-runtime-dbt/digitalhub_runtime_dbt ${ROOT}/digitalhub_runtime_dbt
+COPY ./digitalhub-sdk-wrapper-dbt/wrapper.py /app
 
 USER root
 RUN chown -R nonroot ${ROOT}/digitalhub*

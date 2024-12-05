@@ -44,7 +44,7 @@ class Workflow(ExecutableEntity):
     def run(
         self,
         action: str,
-        wait: bool = True,
+        wait: bool = False,
         log_info: bool = True,
         **kwargs,
     ) -> Run:
@@ -55,7 +55,10 @@ class Workflow(ExecutableEntity):
         ----------
         action : str
             Action to execute.
-
+        wait : bool
+            Flag to wait for execution to finish.
+        log_info : bool
+            Flag to log information while waiting.
         **kwargs : dict
             Keyword arguments passed to Run builder.
 

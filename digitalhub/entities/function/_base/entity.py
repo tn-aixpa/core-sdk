@@ -79,11 +79,11 @@ class Function(ExecutableEntity):
         task = self._get_or_create_task(task_kind)
 
         # Run function from task
-        run = task.run(run_kind, local_execution, **kwargs)
+        run = task.run(run_kind, save=False, local_execution=local_execution, **kwargs)
 
         # Set as run's parent
         run.add_relationship(Relationship.RUN_OF.value, run.key + ":" + run.id, self.key)
-        run.save(update=True)
+        run.save()
 
         # If execution is done by DHCore backend, return the object
         if not local_execution:

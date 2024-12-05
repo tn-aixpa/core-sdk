@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._base.executable.entity import ExecutableEntity
-from digitalhub.entities._commons.enums import EntityTypes
+from digitalhub.entities._commons.enums import EntityTypes, Relationship
 from digitalhub.factory.api import get_run_kind, get_task_kind_from_action
 from digitalhub.utils.exceptions import BackendError
 
@@ -76,7 +76,12 @@ class Workflow(ExecutableEntity):
             raise BackendError("Cannot run workflow with local backend.")
 
         # Run task
-        run = task.run(run_kind, local_execution=False, **kwargs)
+        run = task.run(run_kind, save=False, local_execution=False, **kwargs)
+
+        # Set as run's parent
+        run.add_relationship(Relationship.RUN_OF.value, run.key + ":" + run.id, self.key)
+        run.save()
+
         if wait:
             return run.wait(log_info=log_info)
         return run

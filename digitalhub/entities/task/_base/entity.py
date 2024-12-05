@@ -4,8 +4,8 @@ import typing
 
 from digitalhub.entities._base.unversioned.entity import UnversionedEntity
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities.run.crud import delete_run, get_run, new_run
-from digitalhub.factory.api import get_entity_type_from_kind, get_executable_kind
+from digitalhub.entities._operations.processor import processor
+from digitalhub.factory.api import build_entity_from_params, get_entity_type_from_kind, get_executable_kind
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -42,6 +42,7 @@ class Task(UnversionedEntity):
     def run(
         self,
         run_kind: str,
+        save: bool = True,
         local_execution: bool = False,
         **kwargs,
     ) -> Run:
@@ -66,6 +67,7 @@ class Task(UnversionedEntity):
         exec_type = get_entity_type_from_kind(exec_kind)
         kwargs[exec_type] = getattr(self.spec, exec_type)
         return self.new_run(
+            save=save,
             project=self.project,
             task=self._get_task_string(),
             kind=run_kind,
@@ -88,21 +90,25 @@ class Task(UnversionedEntity):
     # CRUD Methods for Run
     ##############################
 
-    def new_run(self, **kwargs) -> Run:
+    def new_run(self, save: bool = True, **kwargs) -> Run:
         """
         Create a new run.
 
         Parameters
         ----------
+        save : bool
+            Flag to indicate save.
         **kwargs : dict
-            Keyword arguments.
+            Keyword arguments to build run. See new_run().
 
         Returns
         -------
         Run
             Run object.
         """
-        return new_run(**kwargs)
+        if save:
+            return processor.create_context_entity(**kwargs)
+        return build_entity_from_params(**kwargs)
 
     def get_run(self, entity_key: str) -> Run:
         """
@@ -118,9 +124,9 @@ class Task(UnversionedEntity):
         Run
             Run object.
         """
-        return get_run(entity_key)
+        return processor.read_context_entity(entity_key)
 
-    def delete_run(self, entity_key: str) -> None:
+    def delete_run(self, entity_key: str) -> dict:
         """
         Delete run.
 
@@ -131,6 +137,7 @@ class Task(UnversionedEntity):
 
         Returns
         -------
-        None
+        dict
+            Response from backend.
         """
-        delete_run(entity_key)
+        return processor.delete_context_entity(entity_key)

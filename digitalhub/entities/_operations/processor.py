@@ -736,6 +736,10 @@ class OperationsProcessor:
         """
         if not identifier.startswith("store://"):
             entity_id = identifier
+        else:
+            splt = identifier.split(":")
+            if len(splt) == 3:
+                identifier = f"{splt[0]}:{splt[1]}"
         return self.read_context_entity(
             identifier,
             entity_type=entity_type,

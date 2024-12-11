@@ -82,7 +82,7 @@ class Workflow(ExecutableEntity):
         run = task.run(run_kind, save=False, local_execution=False, **kwargs)
 
         # Set as run's parent
-        run.add_relationship(Relationship.RUN_OF.value, run.key + ":" + run.id, self.key)
+        run.add_relationship(Relationship.RUN_OF.value, self.key)
         run.save()
 
         if wait:

@@ -79,7 +79,7 @@ class Entity(Base):
         Abstract export method.
         """
 
-    def add_relationship(self, relation: str, source: str, dest: str) -> None:
+    def add_relationship(self, relation: str, dest: str, source: str | None = None) -> None:
         """
         Add relationship to entity metadata.
 
@@ -87,10 +87,10 @@ class Entity(Base):
         ----------
         relation : str
             The type of relationship.
+        dest : str
+            The target entity.
         source : str
             The source entity.
-        dest : str
-            The target entity..
 
         Returns
         -------
@@ -98,7 +98,9 @@ class Entity(Base):
         """
         if self.metadata.relationships is None:
             self.metadata.relationships = []
-        obj = {"type": relation, "source": source, "dest": dest}
+        obj = {"type": relation, "dest": dest}
+        if source is not None:
+            obj["source"] = source
         self.metadata.relationships.append(obj)
 
     def to_dict(self) -> dict:

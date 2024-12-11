@@ -559,7 +559,7 @@ class OperationsProcessor:
         context = self._get_context(kwargs["project"])
         obj = build_entity_from_params(**kwargs)
         if context.is_running:
-            obj.add_relationship(Relationship.PRODUCEDBY.value, obj.key, context.get_run_ctx())
+            obj.add_relationship(Relationship.PRODUCEDBY.value, context.get_run_ctx())
 
         new_obj: MaterialEntity = self._create_context_entity(context, obj.ENTITY_TYPE, obj.to_dict())
         new_obj = build_entity_from_dict(new_obj)

@@ -31,7 +31,7 @@ jobs:
       - name: Get schema files from core
         run: |
           wget https://github.com/scc-digitalhub/digitalhub-core/archive/main.zip
-          tar -xvf main.zip
+          7z x main.zip
           rm main.zip
           mv digitalhub-core-main/schemas/specs test/local/instances/schemas
           rm -r digitalhub-core-main

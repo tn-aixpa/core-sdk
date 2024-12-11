@@ -61,7 +61,10 @@ jobs:
     needs: bumpver-pyproject
     runs-on: ubuntu-latest
     steps:
+      # Force with ref as https://github.com/orgs/community/discussions/110853
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"

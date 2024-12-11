@@ -27,7 +27,14 @@ jobs:
         run: |  
           pip install ruff
           ruff check --output-format=github .
-        continue-on-error: true  
+        continue-on-error: true
+      - name: Get schema files from core
+        run: |
+          wget https://github.com/scc-digitalhub/digitalhub-core/archive/main.zip
+          7z x main.zip
+          rm main.zip
+          mv digitalhub-core-main/schemas/specs test/local/instances/schemas
+          rm -r digitalhub-core-main
       - name: Test with pytest  
         run: |  
           coverage run -m pytest test/local -v -s  

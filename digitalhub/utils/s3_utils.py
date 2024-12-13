@@ -7,6 +7,23 @@ from urllib.parse import urlparse
 from boto3 import client as boto3_client
 
 
+def get_bucket_name(path: str) -> str:
+    """
+    Get bucket name from path.
+
+    Parameters
+    ----------
+    path : str
+        The source path to get the key from.
+
+    Returns
+    -------
+    str
+        The bucket name.
+    """
+    return urlparse(path).netloc
+
+
 def get_bucket_and_key(path: str) -> tuple[str, str]:
     """
     Get bucket and key from path.

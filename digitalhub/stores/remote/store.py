@@ -69,7 +69,7 @@ class RemoteStore(Store):
 
         return self._download_file(root, dst, overwrite)
 
-    def upload(self, src: str | list[str], dst: str | None = None) -> list[tuple[str, str]]:
+    def upload(self, src: str | list[str], dst: str) -> list[tuple[str, str]]:
         """
         Upload an artifact to storage.
 
@@ -80,7 +80,11 @@ class RemoteStore(Store):
         """
         raise StoreError("Remote HTTP store does not support upload.")
 
-    def get_file_info(self, paths: list[str]) -> list[dict]:
+    def get_file_info(
+        self,
+        root: str,
+        paths: list[tuple[str, str]],
+    ) -> list[dict]:
         """
         Get file information from HTTP(s) storage.
 

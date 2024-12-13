@@ -52,13 +52,17 @@ class Store:
         """
 
     @abstractmethod
-    def upload(self, src: str | list[str], dst: str | None = None) -> list[tuple[str, str]]:
+    def upload(self, src: str | list[str], dst: str) -> list[tuple[str, str]]:
         """
         Method to upload artifact to storage.
         """
 
     @abstractmethod
-    def get_file_info(self, paths: list[str]) -> list[dict]:
+    def get_file_info(
+        self,
+        root: str,
+        paths: list[tuple[str, str]],
+    ) -> list[dict]:
         """
         Method to get file metadata.
         """

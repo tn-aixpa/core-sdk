@@ -99,7 +99,11 @@ class SqlStore(Store):
         table = self._get_table_name(root)
         return self._download_table(schema, table, str(dst))
 
-    def upload(self, src: str | list[str], dst: str | None = None) -> list[tuple[str, str]]:
+    def upload(
+        self,
+        src: str | list[str],
+        dst: str,
+    ) -> list[tuple[str, str]]:
         """
         Upload an artifact to storage.
 
@@ -110,7 +114,11 @@ class SqlStore(Store):
         """
         raise StoreError("SQL store does not support upload.")
 
-    def get_file_info(self, paths: list[str]) -> list[dict]:
+    def get_file_info(
+        self,
+        root: str,
+        paths: list[tuple[str, str]],
+    ) -> list[dict]:
         """
         Get file information from SQL based storage.
 

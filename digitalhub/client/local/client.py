@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from digitalhub.client._base.client import Client
 from digitalhub.client.local.api_builder import ClientLocalApiBuilder
+from digitalhub.client.local.key_builder import ClientLocalKeyBuilder
 from digitalhub.utils.exceptions import BackendError
 
 
@@ -24,6 +25,7 @@ class ClientLocal(Client):
     def __init__(self) -> None:
         super().__init__()
         self._api_builder = ClientLocalApiBuilder()
+        self._key_builder = ClientLocalKeyBuilder()
         self._db: dict[str, dict[str, dict]] = {}
 
     ##############################

@@ -427,6 +427,55 @@ class OperationsProcessor:
             **kwargs,
         )
 
+    ##############################
+    # Base entity operations
+    ##############################
+
+    def _build_base_entity_key(
+        self,
+        client: Client,
+        entity_id: str,
+    ) -> str:
+        """
+        Build object key.
+
+        Parameters
+        ----------
+        client : Client
+            Client instance.
+        entity_id : str
+            Entity ID.
+
+        Returns
+        -------
+        str
+            Object key.
+        """
+        return client.build_key(ApiCategories.BASE.value, entity_id)
+
+    def build_project_key(
+        self,
+        entity_id: str,
+        **kwargs,
+    ) -> str:
+        """
+        Build object key.
+
+        Parameters
+        ----------
+        entity_id : str
+            Entity ID.
+        **kwargs : dict
+            Parameters to pass to entity builder.
+
+        Returns
+        -------
+        str
+            Object key.
+        """
+        client = get_client(kwargs.pop("local", False))
+        return self._build_base_entity_key(client, entity_id)
+
     def share_project_entity(
         self,
         entity_type: str,
@@ -1278,6 +1327,76 @@ class OperationsProcessor:
     ##############################
     # Context entity operations
     ##############################
+
+    def _build_context_entity_key(
+        self,
+        context: Context,
+        entity_type: str,
+        entity_kind: str,
+        entity_name: str,
+        entity_id: str | None = None,
+    ) -> str:
+        """
+        Build object key.
+
+        Parameters
+        ----------
+        context : Context
+            Context instance.
+        entity_type : str
+            Entity type.
+        entity_kind : str
+            Entity kind.
+        entity_name : str
+            Entity name.
+        entity_id : str
+            Entity ID.
+
+        Returns
+        -------
+        str
+            Object key.
+        """
+        return context.client.build_key(
+            ApiCategories.CONTEXT.value,
+            project=context.name,
+            entity_type=entity_type,
+            entity_kind=entity_kind,
+            entity_name=entity_name,
+            entity_id=entity_id,
+        )
+
+    def build_context_entity_key(
+        self,
+        project: str,
+        entity_type: str,
+        entity_kind: str,
+        entity_name: str,
+        entity_id: str | None = None,
+    ) -> str:
+        """
+        Build object key.
+
+        Parameters
+        ----------
+        project : str
+            Project name.
+        entity_type : str
+            Entity type.
+        entity_kind : str
+            Entity kind.
+        entity_name : str
+            Entity name.
+        entity_id : str
+            Entity ID.
+
+        Returns
+        -------
+        str
+            Object key.
+        """
+        context = self._get_context(project)
+        return self._build_context_entity_key(context, entity_type, entity_kind, entity_name, entity_id)
 
     def read_secret_data(
         self,

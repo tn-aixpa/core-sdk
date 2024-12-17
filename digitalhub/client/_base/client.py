@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import typing
 from abc import abstractmethod
 
-from digitalhub.client._base.api_builder import ClientApiBuilder
+if typing.TYPE_CHECKING:
+    from digitalhub.client._base.api_builder import ClientApiBuilder
+    from digitalhub.client._base.key_builder import ClientKeyBuilder
 
 
 class Client:
@@ -16,26 +19,11 @@ class Client:
 
     def __init__(self) -> None:
         self._api_builder: ClientApiBuilder = None
+        self._key_builder: ClientKeyBuilder = None
 
-    def build_api(self, category: str, operation: str, **kwargs) -> str:
-        """
-        Build the API for the client.
-
-        Parameters
-        ----------
-        category : str
-            API category.
-        operation : str
-            API operation.
-        **kwargs : dict
-            Additional parameters.
-
-        Returns
-        -------
-        str
-            API formatted.
-        """
-        return self._api_builder.build_api(category, operation, **kwargs)
+    ##############################
+    # CRUD methods
+    ##############################
 
     @abstractmethod
     def create_object(self, api: str, obj: dict, **kwargs) -> dict:
@@ -78,6 +66,54 @@ class Client:
         """
         Search objects method.
         """
+
+    ##############################
+    # Build methods
+    ##############################
+
+    def build_api(self, category: str, operation: str, **kwargs) -> str:
+        """
+        Build the API for the client.
+
+        Parameters
+        ----------
+        category : str
+            API category.
+        operation : str
+            API operation.
+        **kwargs : dict
+            Additional parameters.
+
+        Returns
+        -------
+        str
+            API formatted.
+        """
+        return self._api_builder.build_api(category, operation, **kwargs)
+
+    def build_key(self, category: str, *args, **kwargs) -> str:
+        """
+        Build the key for the client.
+
+        Parameters
+        ----------
+        category : str
+            Key category.
+        *args : tuple
+            Additional arguments.
+        **kwargs : dict
+            Additional parameters.
+
+        Returns
+        -------
+        str
+            Key formatted.
+        """
+        return self._key_builder.build_key(category, *args, **kwargs)
+
+    ##############################
+    # Interface methods
+    ##############################
 
     @staticmethod
     @abstractmethod

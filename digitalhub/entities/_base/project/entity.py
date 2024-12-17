@@ -40,7 +40,7 @@ class ProjectEntity(Entity):
         super().__init__(kind, metadata, spec, status, user)
         self.id = name
         self.name = name
-        self.key = f"store://{name}"
+        self.key = processor.build_project_key(self.name, local=local)
 
         self._obj_attr.extend(["id", "name"])
 

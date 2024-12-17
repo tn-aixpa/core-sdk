@@ -14,6 +14,7 @@ from digitalhub.client._base.client import Client
 from digitalhub.client.dhcore.api_builder import ClientDHCoreApiBuilder
 from digitalhub.client.dhcore.enums import AuthType, DhcoreEnvVar
 from digitalhub.client.dhcore.env import ENV_FILE, FALLBACK_USER, LIB_VERSION, MAX_API_LEVEL, MIN_API_LEVEL
+from digitalhub.client.dhcore.key_builder import ClientDHCoreKeyBuilder
 from digitalhub.client.dhcore.models import BasicAuth, OAuth2TokenAuth
 from digitalhub.utils.exceptions import (
     BackendError,
@@ -51,6 +52,9 @@ class ClientDHCore(Client):
 
         # API builder
         self._api_builder = ClientDHCoreApiBuilder()
+
+        # Key builder
+        self._key_builder = ClientDHCoreKeyBuilder()
 
         # Endpoints
         self._endpoint_core: str | None = None

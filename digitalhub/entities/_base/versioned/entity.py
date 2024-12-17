@@ -3,6 +3,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._base.context.entity import ContextEntity
+from digitalhub.entities._operations.processor import processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -25,4 +26,4 @@ class VersionedEntity(ContextEntity):
         super().__init__(project, kind, metadata, spec, status, user)
         self.name = name
         self.id = uuid
-        self.key = f"store://{project}/{self.ENTITY_TYPE}/{kind}/{name}:{uuid}"
+        self.key = processor.build_context_entity_key(project, self.ENTITY_TYPE, kind, name, uuid)

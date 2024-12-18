@@ -13,16 +13,16 @@ except ImportError as e:
         warnings.warn("git is not installed. Please install git and try again.", RuntimeWarning)
 
 
-def clone_repository(url: str, path: Path) -> None:
+def clone_repository(path: Path, url: str) -> None:
     """
     Clone git repository.
 
     Parameters
     ----------
-    url : str
-        URL of the repository.
     path : Path
         Path where to save the repository.
+    url : str
+        URL of the repository.
 
     Returns
     -------

@@ -40,20 +40,20 @@ jobs:
       - name: Execute script bumpver
         run: ./.github/scripts/bump.sh ${{ inputs.release-type }}
 
-      # Commit modifications to pyproject.toml
-      - name: Commit changes
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git commit -a -m "bump: bumpver"
-          git push
-
       # Store current version for later use
       - name: Current version
         id: current-version
         run: |
           ver=$(bumpver show -n --environ | grep CUR | awk '{gsub(/CURRENT_VERSION=/, ""); print}')
           echo "version=${ver}" >> "$GITHUB_OUTPUT"
+
+      # Commit modifications to pyproject.toml
+      - name: Commit changes
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git commit -a -m "bump: new version ${{ steps.current-version.outputs.version }}"
+          git push
 
   build-n-publish:
     name: Build and publish

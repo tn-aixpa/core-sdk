@@ -41,6 +41,8 @@ class RemoteSchemes(Enum):
 
     HTTP = "http"
     HTTPS = "https"
+    ZIP_HTTP = "zip+http"
+    ZIP_HTTPS = "zip+https"
 
 
 class SqlSchemes(Enum):
@@ -97,7 +99,7 @@ def map_uri_scheme(uri: str) -> str:
     if scheme in list_enum(LocalSchemes):
         return SchemeCategory.LOCAL.value
     if scheme in list_enum(InvalidLocalSchemes):
-        raise ValueError("For local path, do not use any scheme.")
+        raise ValueError("For local uri, do not use any scheme.")
     if scheme in list_enum(RemoteSchemes):
         return SchemeCategory.REMOTE.value
     if scheme in list_enum(S3Schemes):
@@ -109,86 +111,103 @@ def map_uri_scheme(uri: str) -> str:
     raise ValueError(f"Unknown scheme '{scheme}'!")
 
 
-def has_local_scheme(path: str) -> bool:
+def has_local_scheme(uri: str) -> bool:
     """
-    Check if path is local.
+    Check if uri is local.
 
     Parameters
     ----------
-    path : str
-        Path of some source.
+    uri : str
+        Uri of some source.
 
     Returns
     -------
     bool
-        True if path is local.
+        True if uri is local.
     """
-    return map_uri_scheme(path) == SchemeCategory.LOCAL.value
+    return map_uri_scheme(uri) == SchemeCategory.LOCAL.value
 
 
-def has_remote_scheme(path: str) -> bool:
+def has_remote_scheme(uri: str) -> bool:
     """
-    Check if path is remote.
+    Check if uri is remote.
 
     Parameters
     ----------
-    path : str
-        Path of some source.
+    uri : str
+        Uri of some source.
 
     Returns
     -------
     bool
-        True if path is remote.
+        True if uri is remote.
     """
-    return map_uri_scheme(path) == SchemeCategory.REMOTE.value
+    return map_uri_scheme(uri) == SchemeCategory.REMOTE.value
 
 
-def has_s3_scheme(path: str) -> bool:
+def has_s3_scheme(uri: str) -> bool:
     """
-    Check if path is s3.
+    Check if uri is s3.
 
     Parameters
     ----------
-    path : str
-        Path of some source.
+    uri : str
+        Uri of some source.
 
     Returns
     -------
     bool
-        True if path is s3.
+        True if uri is s3.
     """
-    return map_uri_scheme(path) == SchemeCategory.S3.value
+    return map_uri_scheme(uri) == SchemeCategory.S3.value
 
 
-def has_sql_scheme(path: str) -> bool:
+def has_sql_scheme(uri: str) -> bool:
     """
-    Check if path is sql.
+    Check if uri is sql.
 
     Parameters
     ----------
-    path : str
-        Path of some source.
+    uri : str
+        Uri of some source.
 
     Returns
     -------
     bool
-        True if path is sql.
+        True if uri is sql.
     """
-    return map_uri_scheme(path) == SchemeCategory.SQL.value
+    return map_uri_scheme(uri) == SchemeCategory.SQL.value
 
 
-def has_git_scheme(path: str) -> bool:
+def has_git_scheme(uri: str) -> bool:
     """
-    Check if path is git.
+    Check if uri is git.
 
     Parameters
     ----------
-    path : str
-        Path of some source.
+    uri : str
+        Uri of some source.
 
     Returns
     -------
     bool
-        True if path is git.
+        True if uri is git.
     """
-    return map_uri_scheme(path) == SchemeCategory.GIT.value
+    return map_uri_scheme(uri) == SchemeCategory.GIT.value
+
+
+def has_zip_scheme(uri: str) -> bool:
+    """
+    Check if uri is zip.
+
+    Parameters
+    ----------
+    uri : str
+        Uri of some source.
+
+    Returns
+    -------
+    bool
+        True if uri is zip.
+    """
+    return uri.startswith("zip+")

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from digitalhub.utils.generic_utils import list_enum
 
@@ -211,3 +211,20 @@ def has_zip_scheme(uri: str) -> bool:
         True if uri is zip.
     """
     return uri.startswith("zip+")
+
+
+def get_filename_from_uri(uri: str) -> str:
+    """
+    Get filename from uri.
+
+    Parameters
+    ----------
+    uri : str
+        Uri of some source.
+
+    Returns
+    -------
+    str
+        Filename.
+    """
+    return unquote(urlparse(uri).path).split("/")[-1]

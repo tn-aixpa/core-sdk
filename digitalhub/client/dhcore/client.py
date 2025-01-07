@@ -561,14 +561,65 @@ class ClientDHCore(Client):
         Exception
             If the endpoint of DHCore is not set in the env variables.
         """
-        core_endpt = os.getenv(DhcoreEnvVar.ENDPOINT.value)
+        core_endpt = self._load_env_or_config(DhcoreEnvVar.ENDPOINT.value)
         if core_endpt is None:
             raise BackendError("Endpoint not set as environment variables.")
         self._endpoint_core = self._sanitize_endpoint(core_endpt)
 
-        issr_endpt = os.getenv(DhcoreEnvVar.ISSUER.value)
+        issr_endpt = self._load_env_or_config(DhcoreEnvVar.ISSUER.value)
         if issr_endpt is not None:
             self._endpoint_issuer = self._sanitize_endpoint(issr_endpt)
+
+    def _load_env_or_config(self, var: str) -> str | None:
+        """
+        Get env variable from env or config file.
+
+        Parameters
+        ----------
+        var : str
+            Environment variable name.
+
+        Returns
+        -------
+        str | None
+            Environment variable value.
+        """
+        if env_var := self._load_from_env(var) is None:
+            return self._load_from_config(var)
+        return env_var
+
+    def _load_from_env(self, var: str, default: str | None = None) -> str | None:
+        """
+        Load variable from env.
+
+        Parameters
+        ----------
+        var : str
+            Environment variable name.
+
+        Returns
+        -------
+        str | None
+            Environment variable value.
+        """
+        if env_var := os.getenv(var, default) != "":
+            return env_var
+
+    def _load_from_config(self, var: str) -> str | None:
+        """
+        Load variable from config file.
+
+        Parameters
+        ----------
+        var : str
+            Environment variable name.
+
+        Returns
+        -------
+        str | None
+            Environment variable value.
+        """
+        return get_key(ENV_FILE, var)
 
     def _sanitize_endpoint(self, endpoint: str) -> str:
         """
@@ -592,17 +643,17 @@ class ClientDHCore(Client):
         -------
         None
         """
-        self._user = os.getenv(DhcoreEnvVar.USER.value, FALLBACK_USER)
-        self._refresh_token = os.getenv(DhcoreEnvVar.REFRESH_TOKEN.value)
-        self._client_id = os.getenv(DhcoreEnvVar.CLIENT_ID.value)
+        self._user = self._load_from_env(DhcoreEnvVar.USER.value, FALLBACK_USER)
+        self._refresh_token = self._load_from_env(DhcoreEnvVar.REFRESH_TOKEN.value)
+        self._client_id = self._load_from_env(DhcoreEnvVar.CLIENT_ID.value)
 
-        token = os.getenv(DhcoreEnvVar.ACCESS_TOKEN.value)
-        if token is not None and token != "":
+        token = self._load_from_env(DhcoreEnvVar.ACCESS_TOKEN.value)
+        if token is not None:
             self._auth_type = AuthType.OAUTH2.value
             self._access_token = token
             return
 
-        password = os.getenv(DhcoreEnvVar.PASSWORD.value)
+        password = self._load_from_env(DhcoreEnvVar.PASSWORD.value)
         if self._user is not None and password is not None:
             self._auth_type = AuthType.BASIC.value
             self._password = password
@@ -622,12 +673,12 @@ class ClientDHCore(Client):
 
         # Call refresh token endpoint
         # Try token from env
-        refresh_token = os.getenv(DhcoreEnvVar.REFRESH_TOKEN.value)
+        refresh_token = self._load_from_env(DhcoreEnvVar.REFRESH_TOKEN.value)
         response = self._call_refresh_token_endpoint(url, refresh_token)
 
         # Otherwise try token from file
         if response.status_code in (400, 401, 403):
-            refresh_token = get_key(ENV_FILE, DhcoreEnvVar.REFRESH_TOKEN.value)
+            refresh_token = self._load_from_config(DhcoreEnvVar.REFRESH_TOKEN.value)
             response = self._call_refresh_token_endpoint(url, refresh_token)
 
         response.raise_for_status()
@@ -700,6 +751,12 @@ class ClientDHCore(Client):
             keys[DhcoreEnvVar.ACCESS_TOKEN.value] = self._access_token
         if self._refresh_token is not None:
             keys[DhcoreEnvVar.REFRESH_TOKEN.value] = self._refresh_token
+        if self._client_id is not None:
+            keys[DhcoreEnvVar.CLIENT_ID.value] = self._client_id
+        if self._endpoint_issuer is not None:
+            keys[DhcoreEnvVar.ISSUER.value] = self._endpoint_issuer
+        if self._endpoint_core is not None:
+            keys[DhcoreEnvVar.ENDPOINT.value] = self._endpoint_core
 
         for k, v in keys.items():
             set_key(dotenv_path=ENV_FILE, key_to_set=k, value_to_set=v)

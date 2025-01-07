@@ -24,12 +24,14 @@ def set_store(store_cfg: StoreParameters) -> None:
     store_builder.build(store_cfg)
 
 
-def get_store(uri: str) -> Store:
+def get_store(project: str, uri: str) -> Store:
     """
-    Get store instance by uri.
+    Get store instance by project and URI.
 
     Parameters
     ---------
+    project : str
+        Project name.
     uri : str
         URI to parse.
 

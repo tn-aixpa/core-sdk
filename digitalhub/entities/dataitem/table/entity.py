@@ -85,7 +85,7 @@ class DataitemTable(Dataitem):
                 checker = data_path
 
             extension = self._get_extension(checker, file_format)
-            return get_store("").read_df(data_path, extension, engine, **kwargs)
+            return get_store(self.project, "").read_df(data_path, extension, engine, **kwargs)
 
         except Exception as e:
             raise e
@@ -119,7 +119,7 @@ class DataitemTable(Dataitem):
         str
             Path to the written dataframe.
         """
-        return get_store(self.spec.path).write_df(df, self.spec.path, extension=extension, **kwargs)
+        return get_store(self.project, self.spec.path).write_df(df, self.spec.path, extension=extension, **kwargs)
 
     @staticmethod
     def _clean_tmp_path(pth: Path | None, clean: bool) -> None:

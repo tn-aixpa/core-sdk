@@ -584,7 +584,8 @@ class ClientDHCore(Client):
         str | None
             Environment variable value.
         """
-        if env_var := self._load_from_env(var) is None:
+        env_var = self._load_from_env(var)
+        if env_var is None:
             return self._load_from_config(var)
         return env_var
 
@@ -602,7 +603,8 @@ class ClientDHCore(Client):
         str | None
             Environment variable value.
         """
-        if env_var := os.getenv(var, default) != "":
+        env_var = os.getenv(var, default)
+        if env_var != "":
             return env_var
 
     def _load_from_config(self, var: str) -> str | None:
@@ -647,12 +649,14 @@ class ClientDHCore(Client):
         self._refresh_token = self._load_from_env(DhcoreEnvVar.REFRESH_TOKEN.value)
         self._client_id = self._load_from_env(DhcoreEnvVar.CLIENT_ID.value)
 
-        token = self._load_from_env(DhcoreEnvVar.ACCESS_TOKEN.value)
-        if token is not None:
+        # Give priority to access token
+        access_token = self._load_from_env(DhcoreEnvVar.ACCESS_TOKEN.value)
+        if access_token is not None:
             self._auth_type = AuthType.OAUTH2.value
-            self._access_token = token
+            self._access_token = access_token
             return
 
+        # Fallback to basic
         password = self._load_from_env(DhcoreEnvVar.PASSWORD.value)
         if self._user is not None and password is not None:
             self._auth_type = AuthType.BASIC.value
@@ -758,8 +762,11 @@ class ClientDHCore(Client):
         if self._endpoint_core is not None:
             keys[DhcoreEnvVar.ENDPOINT.value] = self._endpoint_core
 
-        for k, v in keys.items():
-            set_key(dotenv_path=ENV_FILE, key_to_set=k, value_to_set=v)
+        try:
+            for k, v in keys.items():
+                set_key(dotenv_path=ENV_FILE, key_to_set=k, value_to_set=v)
+        except Exception as e:
+            warn(f"Failed to write env file: {e}")
 
     ##############################
     # Interface methods

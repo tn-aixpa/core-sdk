@@ -1,13 +1,6 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
-
-# Use env user as fallback in the API calls
-try:
-    FALLBACK_USER = os.getlogin()
-except Exception:
-    FALLBACK_USER = None
 
 # File where to write DHCORE_ACCESS_TOKEN and DHCORE_REFRESH_TOKEN
 # It's used because we inject the variables in jupyter env,

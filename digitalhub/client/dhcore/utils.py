@@ -4,7 +4,7 @@ import os
 import typing
 
 from digitalhub.client.api import get_client
-from digitalhub.client.dhcore.enums import AuthType, DhcoreEnvVar
+from digitalhub.client.dhcore.enums import DhcoreEnvVar
 
 if typing.TYPE_CHECKING:
     from digitalhub.client.dhcore.client import ClientDHCore
@@ -21,8 +21,7 @@ def set_dhcore_env(
     """
     Function to set environment variables for DHCore config.
     Note that if the environment variable is already set, it
-    will be overwritten. It also ovverides the remote client
-    configuration.
+    will be overwritten.
 
     Parameters
     ----------
@@ -56,47 +55,8 @@ def set_dhcore_env(
     if client_id is not None:
         os.environ[DhcoreEnvVar.CLIENT_ID.value] = client_id
 
-    update_client_from_env()
-
-
-def update_client_from_env() -> None:
-    """
-    Function to update client from environment variables.
-
-    Returns
-    -------
-    None
-    """
     client: ClientDHCore = get_client(local=False)
-
-    # Update endpoint
-    endpoint = os.getenv(DhcoreEnvVar.ENDPOINT.value)
-    if endpoint is not None:
-        client._endpoint_core = endpoint
-
-    # Update auth
-
-    # If token is set, it will override the other auth options
-    access_token = os.getenv(DhcoreEnvVar.ACCESS_TOKEN.value)
-    refresh_token = os.getenv(DhcoreEnvVar.REFRESH_TOKEN.value)
-    client_id = os.getenv(DhcoreEnvVar.CLIENT_ID.value)
-
-    if access_token is not None:
-        if refresh_token is not None:
-            client._refresh_token = refresh_token
-        if client_id is not None:
-            client._client_id = client_id
-        client._access_token = access_token
-        client._auth_type = AuthType.OAUTH2.value
-        return
-
-    # Otherwise, if user and password are set, basic auth will be used
-    username = os.getenv(DhcoreEnvVar.USER.value)
-    password = os.getenv(DhcoreEnvVar.PASSWORD.value)
-    if username is not None and password is not None:
-        client._user = username
-        client._password = password
-        client._auth_type = AuthType.BASIC.value
+    client._configurator.configure()
 
 
 def refresh_token() -> None:
@@ -108,4 +68,4 @@ def refresh_token() -> None:
     None
     """
     client: ClientDHCore = get_client(local=False)
-    client._get_new_access_token()
+    client._configurator.get_new_access_token()

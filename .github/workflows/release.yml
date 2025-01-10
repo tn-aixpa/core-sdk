@@ -116,7 +116,7 @@ jobs:
           branch=${{ github.ref }}
 
           # Define the repositories to trigger
-          repos=("digitalhub-sdk-runtime-kfp" "jupyter-notebook-custom-image" "digitalhub-sdk-runtime-dbt")
+          repos=("digitalhub-sdk-wrapper-kfp" "jupyter-notebook-custom-image" "digitalhub-sdk-wrapper-dbt")
 
           # Loop over the repositories and trigger the workflow
           for repo in "${repos[@]}"; do

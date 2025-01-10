@@ -7,7 +7,7 @@ from pathlib import Path
 # but refresh token is only available once. Is it's used, we cannot
 # overwrite it with coder, so we need to store the new one in a file,
 # preserved for jupyter restart
-ENV_FILE = Path.home() / ".dhcore"
+ENV_FILE = Path.home() / ".dhcore.ini"
 
 
 # API levels that are supported

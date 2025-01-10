@@ -91,7 +91,7 @@ class ClientDHCoreApiBuilder(ClientApiBuilder):
         elif operation == BackendOperations.RESUME.value:
             return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}/resume"
         elif operation == BackendOperations.DATA.value:
-            return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}/data"
+            return f"{API_CONTEXT}/{project}/{entity_type}/data"
         elif operation == BackendOperations.FILES.value:
             return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}/files/info"
         elif operation == BackendOperations.SEARCH.value:

@@ -71,3 +71,9 @@ class ReaderError(Exception):
     """
     Raised when incontered errors on readers.
     """
+
+
+class ClientError(Exception):
+    """
+    Raised when incontered errors on clients.
+    """

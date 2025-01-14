@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-import os
 import typing
-from configparser import ConfigParser
 from warnings import warn
 
 from requests import request
 
-from digitalhub.client.dhcore.credentials_store import CredentialsStore
 from digitalhub.client.dhcore.enums import AuthType, DhcoreEnvVar
-from digitalhub.client.dhcore.env import ENV_FILE, LIB_VERSION, MAX_API_LEVEL, MIN_API_LEVEL
 from digitalhub.client.dhcore.models import BasicAuth, OAuth2TokenAuth
+from digitalhub.configurator.configurator import Configurator
 from digitalhub.utils.exceptions import ClientError
 from digitalhub.utils.uri_utils import has_remote_scheme
 
@@ -18,21 +15,19 @@ if typing.TYPE_CHECKING:
     from requests import Response
 
 
+# Default key used to store authentication information
 AUTH_KEY = "_auth"
-DEFAULT_SET = "DEFAULT"
+
+# API levels that are supported
+MAX_API_LEVEL = 20
+MIN_API_LEVEL = 9
+LIB_VERSION = 9
 
 
-class ClientDHCoreConfigurator:
+class ClientDHCoreConfigurator(Configurator):
     """
     Configurator object used to configure the client.
     """
-
-    def __init__(self) -> None:
-        # Store
-        self._store = CredentialsStore()
-
-        # Current credentials set (DEFAULT by default)
-        self._profile_creds = DEFAULT_SET
 
     ##############################
     # Configuration methods
@@ -87,21 +82,6 @@ class ClientDHCoreConfigurator:
         else:
             raise ClientError("Invalid credentials format.")
 
-    def set_current_credentials_set(self, creds_set: str) -> None:
-        """
-        Set the current credentials set.
-
-        Parameters
-        ----------
-        creds_set : str
-            Credentials set name.
-
-        Returns
-        -------
-        None
-        """
-        self._profile_creds = creds_set
-
     def check_core_version(self, response: Response) -> None:
         """
         Raise an exception if DHCore API version is not supported.
@@ -141,68 +121,6 @@ class ClientDHCoreConfigurator:
     ##############################
     # Private methods
     ##############################
-
-    def _load_var(self, var_name: str) -> str | None:
-        """
-        Get env variable from credentials store, env or file (in order).
-
-        Parameters
-        ----------
-        var_name : str
-            Environment variable name.
-
-        Returns
-        -------
-        str | None
-            Environment variable value.
-        """
-        var = self._get_credentials(var_name)
-        if var is None:
-            var = self._load_from_env(var_name)
-        if var is None:
-            var = self._load_from_config(var_name)
-        return var
-
-    def _load_from_env(self, var: str) -> str | None:
-        """
-        Load variable from env.
-
-        Parameters
-        ----------
-        var : str
-            Environment variable name.
-
-        Returns
-        -------
-        str | None
-            Environment variable value.
-        """
-        if self._profile_creds != DEFAULT_SET:
-            var += f"__{self._profile_creds}"
-        env_var = os.getenv(var)
-        if env_var != "":
-            return env_var
-
-    def _load_from_config(self, var: str) -> str | None:
-        """
-        Load variable from config file.
-
-        Parameters
-        ----------
-        var : str
-            Environment variable name.
-
-        Returns
-        -------
-        str | None
-            Environment variable value.
-        """
-        cfg = ConfigParser()
-        cfg.read(ENV_FILE)
-        try:
-            return cfg[self._profile_creds].get(var)
-        except KeyError:
-            raise ClientError(f"No section {self._profile_creds} in config file.")
 
     @staticmethod
     def _sanitize_endpoint(endpoint: str) -> str:
@@ -260,89 +178,6 @@ class ClientDHCoreConfigurator:
                 self._set_credential(AUTH_KEY, AuthType.BASIC.value)
                 self._set_credential(DhcoreEnvVar.USER.value, user)
                 self._set_credential(DhcoreEnvVar.PASSWORD.value, password)
-
-    def _write_env(self) -> None:
-        """
-        Write the env variables to the .dhcore file.
-        It will overwrite any existing env variables.
-
-        Returns
-        -------
-        None
-        """
-        try:
-            cfg = ConfigParser()
-            cfg.read(ENV_FILE)
-
-            creds = self._get_all_cred()
-            creds.pop(AUTH_KEY, None)
-
-            default = cfg.defaults()
-            if not default:
-                cfg[DEFAULT_SET] = creds
-                if self._profile_creds != DEFAULT_SET:
-                    cfg.add_section(self._profile_creds)
-                    cfg[self._profile_creds] = creds
-            else:
-                sections = cfg.sections()
-                if self._profile_creds not in sections and self._profile_creds != DEFAULT_SET:
-                    cfg.add_section(self._profile_creds)
-                cfg[self._profile_creds] = creds
-
-            ENV_FILE.touch(exist_ok=True)
-            with open(ENV_FILE, "w") as inifile:
-                cfg.write(inifile)
-
-        except Exception as e:
-            raise ClientError(f"Failed to write env file: {e}")
-
-    ##############################
-    # Credentials store methods
-    ##############################
-
-    def _set_credential(self, key: str, value: str) -> None:
-        """
-        Register a credential value.
-
-        Parameters
-        ----------
-        key : str
-            The key.
-        value : str
-            The value.
-
-        Returns
-        -------
-        None
-        """
-        self._store.set(self._profile_creds, key, value)
-
-    def _get_credentials(self, key: str) -> dict:
-        """
-        Get the credentials.
-
-        Parameters
-        ----------
-        key : str
-            The key.
-
-        Returns
-        -------
-        dict
-            The credentials.
-        """
-        return self._store.get(self._profile_creds, key)
-
-    def _get_all_cred(self) -> dict:
-        """
-        Get all the credentials.
-
-        Returns
-        -------
-        dict
-            The credentials.
-        """
-        return self._store.get_all(self._profile_creds)
 
     ##############################
     # Auth methods
@@ -406,7 +241,7 @@ class ClientDHCoreConfigurator:
         self._set_credential(DhcoreEnvVar.REFRESH_TOKEN.value, dict_response["refresh_token"])
 
         # Propagate new access token to env
-        self._write_env()
+        self._write_env([AUTH_KEY])
 
     def _get_refresh_endpoint(self) -> str:
         """

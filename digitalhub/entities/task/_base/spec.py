@@ -66,6 +66,8 @@ class TaskSpecWorkflow(TaskSpec):
         self.envs = envs
         self.secrets = secrets
         self.profile = profile
+        self.runtime_class = runtime_class
+        self.priority_class = priority_class
 
 
 class TaskValidator(SpecValidator):

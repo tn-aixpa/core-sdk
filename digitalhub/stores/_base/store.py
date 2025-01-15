@@ -5,35 +5,15 @@ from pathlib import Path
 from tempfile import mkdtemp
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
-
 from digitalhub.readers.api import get_reader_by_engine
 from digitalhub.utils.exceptions import StoreError
-from digitalhub.utils.uri_utils import SchemeCategory, has_local_scheme
+from digitalhub.utils.uri_utils import has_local_scheme
 
 
 class Store:
     """
     Store abstract class.
     """
-
-    def __init__(self, name: str, store_type: str) -> None:
-        """
-        Constructor.
-
-        Parameters
-        ----------
-        name : str
-            Store name.
-        store_type : str
-            Store type. Used to choose the right store implementation.
-
-        Returns
-        -------
-        None
-        """
-        self.name = name
-        self.type = store_type
 
     ##############################
     # I/O methods
@@ -207,31 +187,3 @@ class Store:
         """
         tmpdir = mkdtemp()
         return Path(tmpdir)
-
-
-class StoreConfig(BaseModel):
-    """
-    Store configuration base class.
-    """
-
-    model_config = ConfigDict(use_enum_values=True)
-
-
-class StoreParameters(BaseModel):
-    """
-    Store configuration class.
-    """
-
-    model_config = ConfigDict(use_enum_values=True)
-
-    name: str
-    """Store id."""
-
-    type: SchemeCategory
-    """Store type to instantiate."""
-
-    config: StoreConfig = None
-    """Configuration for the store."""
-
-    is_default: bool = False
-    """Flag to determine if the store is the default one."""

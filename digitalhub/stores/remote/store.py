@@ -5,14 +5,8 @@ from typing import Any
 
 import requests
 
-from digitalhub.stores._base.store import Store, StoreConfig
+from digitalhub.stores._base.store import Store
 from digitalhub.utils.exceptions import StoreError
-
-
-class RemoteStoreConfig(StoreConfig):
-    """
-    Remote store configuration class.
-    """
 
 
 class RemoteStore(Store):
@@ -21,9 +15,8 @@ class RemoteStore(Store):
     artifacts from remote HTTP based storage.
     """
 
-    def __init__(self, name: str, store_type: str, config: RemoteStoreConfig) -> None:
-        super().__init__(name, store_type)
-        self.config = config
+    def __init__(self, config: dict | None = None) -> None:
+        super().__init__()
 
     ##############################
     # I/O methods

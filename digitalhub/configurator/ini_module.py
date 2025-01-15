@@ -13,7 +13,7 @@ from digitalhub.utils.exceptions import ClientError
 ENV_FILE = Path.home() / ".dhcore.ini"
 
 
-def load_from_config(profile: str, var: str) -> str | None:
+def load_from_config(var: str) -> str | None:
     """
     Load variable from config file.
 
@@ -32,12 +32,13 @@ def load_from_config(profile: str, var: str) -> str | None:
     cfg = ConfigParser()
     cfg.read(ENV_FILE)
     try:
+        profile = cfg["DEFAULT"]["current_environment"]
         return cfg[profile].get(var)
     except KeyError:
-        raise ClientError(f"No section {profile} in config file.")
+        return
 
 
-def write_config(creds: dict, default_set: str, profile: str) -> None:
+def write_config(creds: dict, environment: str) -> None:
     """
     Write the env variables to the .dhcore.ini file.
     It will overwrite any existing env variables.
@@ -46,9 +47,7 @@ def write_config(creds: dict, default_set: str, profile: str) -> None:
     ----------
     creds : dict
         Credentials.
-    default_set : str
-        Credentials set name.
-    profile : str
+    environment : str
         Credentials set name.
 
     Returns
@@ -59,17 +58,13 @@ def write_config(creds: dict, default_set: str, profile: str) -> None:
         cfg = ConfigParser()
         cfg.read(ENV_FILE)
 
-        default = cfg.defaults()
-        if not default:
-            cfg[default_set] = creds
-            if profile != default_set:
-                cfg.add_section(profile)
-                cfg[profile] = creds
-        else:
-            sections = cfg.sections()
-            if profile not in sections and profile != default_set:
-                cfg.add_section(profile)
-            cfg[profile] = creds
+        sections = cfg.sections()
+        if environment not in sections:
+            cfg.add_section(environment)
+
+        cfg["DEFAULT"]["current_environment"] = environment
+        for k, v in creds.items():
+            cfg[environment][k] = v
 
         ENV_FILE.touch(exist_ok=True)
         with open(ENV_FILE, "w") as inifile:

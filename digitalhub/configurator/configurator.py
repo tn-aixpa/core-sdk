@@ -5,10 +5,8 @@ import os
 from digitalhub.configurator.credentials_store import CredentialsStore
 from digitalhub.configurator.ini_module import load_from_config, write_config
 
-DEFAULT_SET = "DEFAULT"
 
-
-class Configurator:
+class EnvConfigurator:
     """
     Configurator object used to configure clients and store credentials.
     """
@@ -17,14 +15,14 @@ class Configurator:
         # Store
         self._creds_store = CredentialsStore()
 
-        # Current credentials set (DEFAULT by default)
-        self._profile_creds = DEFAULT_SET
+        # Current credentials set (__default by default)
+        self._environment = "__default"
 
     ##############################
     # Public methods
     ##############################
 
-    def set_current_credentials_set(self, creds_set: str) -> None:
+    def set_current_env(self, creds_set: str) -> None:
         """
         Set the current credentials set.
 
@@ -37,13 +35,24 @@ class Configurator:
         -------
         None
         """
-        self._profile_creds = creds_set
+        self._environment = creds_set
+
+    def get_current_env(self) -> str:
+        """
+        Get the current credentials set.
+
+        Returns
+        -------
+        str
+            Credentials set name.
+        """
+        return self._environment
 
     ##############################
     # Private methods
     ##############################
 
-    def _load_var(self, var_name: str) -> str | None:
+    def load_var(self, var_name: str) -> str | None:
         """
         Get env variable from credentials store, env or file (in order).
 
@@ -57,14 +66,14 @@ class Configurator:
         str | None
             Environment variable value.
         """
-        var = self._get_credentials(var_name)
+        var = self.get_credentials(var_name)
         if var is None:
-            var = self._load_from_env(var_name)
+            var = self.load_from_env(var_name)
         if var is None:
-            var = self._load_from_config(var_name)
+            var = self.load_from_config(var_name)
         return var
 
-    def _load_from_env(self, var: str) -> str | None:
+    def load_from_env(self, var: str) -> str | None:
         """
         Load variable from env.
 
@@ -78,13 +87,11 @@ class Configurator:
         str | None
             Environment variable value.
         """
-        if self._profile_creds != DEFAULT_SET:
-            var += f"__{self._profile_creds}"
         env_var = os.getenv(var)
         if env_var != "":
             return env_var
 
-    def _load_from_config(self, var: str) -> str | None:
+    def load_from_config(self, var: str) -> str | None:
         """
         Load variable from config file.
 
@@ -98,12 +105,17 @@ class Configurator:
         str | None
             Environment variable value.
         """
-        return load_from_config(self._profile_creds, var)
+        return load_from_config(var)
 
-    def _write_env(self, key_to_exclude: list[str] | None = None) -> None:
+    def write_env(self, key_to_exclude: list[str] | None = None) -> None:
         """
         Write the env variables to the .dhcore file.
         It will overwrite any existing env variables.
+
+        Parameters
+        ----------
+        key_to_exclude : list[str]
+            List of keys to exclude.
 
         Returns
         -------
@@ -111,15 +123,15 @@ class Configurator:
         """
         if key_to_exclude is None:
             key_to_exclude = []
-        creds = self._get_all_cred()
+        creds = self.get_all_cred()
         creds = {k: v for k, v in creds.items() if k not in key_to_exclude}
-        write_config(creds, DEFAULT_SET, self._profile_creds)
+        write_config(creds, self._environment)
 
     ##############################
     # Credentials store methods
     ##############################
 
-    def _set_credential(self, key: str, value: str) -> None:
+    def set_credential(self, key: str, value: str) -> None:
         """
         Register a credential value.
 
@@ -134,9 +146,9 @@ class Configurator:
         -------
         None
         """
-        self._creds_store.set(self._profile_creds, key, value)
+        self._creds_store.set(self._environment, key, value)
 
-    def _get_credentials(self, key: str) -> dict:
+    def get_credentials(self, key: str) -> dict:
         """
         Get the credentials.
 
@@ -150,9 +162,9 @@ class Configurator:
         dict
             The credentials.
         """
-        return self._creds_store.get(self._profile_creds, key)
+        return self._creds_store.get(self._environment, key)
 
-    def _get_all_cred(self) -> dict:
+    def get_all_cred(self) -> dict:
         """
         Get all the credentials.
 
@@ -161,4 +173,7 @@ class Configurator:
         dict
             The credentials.
         """
-        return self._creds_store.get_all(self._profile_creds)
+        return self._creds_store.get_all(self._environment)
+
+
+configurator = EnvConfigurator()

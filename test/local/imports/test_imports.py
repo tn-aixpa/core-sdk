@@ -55,7 +55,6 @@ METHODS = [
     "delete_dataitem",
     "delete_model",
     "set_dhcore_env",
-    "set_store",
     "load_project",
     "get_or_create_project",
 ]

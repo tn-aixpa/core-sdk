@@ -7,7 +7,7 @@ from requests import request
 
 from digitalhub.client.dhcore.enums import AuthType, DhcoreEnvVar
 from digitalhub.client.dhcore.models import BasicAuth, OAuth2TokenAuth
-from digitalhub.configurator.configurator import Configurator
+from digitalhub.configurator.configurator import configurator
 from digitalhub.utils.exceptions import ClientError
 from digitalhub.utils.uri_utils import has_remote_scheme
 
@@ -24,7 +24,7 @@ MIN_API_LEVEL = 9
 LIB_VERSION = 9
 
 
-class ClientDHCoreConfigurator(Configurator):
+class ClientDHCoreConfigurator:
     """
     Configurator object used to configure the client.
     """
@@ -67,7 +67,7 @@ class ClientDHCoreConfigurator(Configurator):
                 (DhcoreEnvVar.REFRESH_TOKEN.value, config.refresh_token),
                 (DhcoreEnvVar.CLIENT_ID.value, config.client_id),
             ]:
-                self._set_credential(*pair)
+                configurator.set_credential(*pair)
 
         elif config.get("user") is not None and config.get("password") is not None:
             config = BasicAuth(**config)
@@ -77,7 +77,7 @@ class ClientDHCoreConfigurator(Configurator):
                 (DhcoreEnvVar.USER.value, config.user),
                 (DhcoreEnvVar.PASSWORD.value, config.password),
             ]:
-                self._set_credential(*pair)
+                configurator.set_credential(*pair)
 
         else:
             raise ClientError("Invalid credentials format.")
@@ -116,7 +116,7 @@ class ClientDHCoreConfigurator(Configurator):
         str
             The url.
         """
-        return f"{self._get_credentials(DhcoreEnvVar.ENDPOINT.value)}/{api}"
+        return f"{configurator.get_credentials(DhcoreEnvVar.ENDPOINT.value)}/{api}"
 
     ##############################
     # Private methods
@@ -150,11 +150,11 @@ class ClientDHCoreConfigurator(Configurator):
         Exception
             If the endpoint of DHCore is not set in the env variables.
         """
-        endpoint = self._load_var(DhcoreEnvVar.ENDPOINT.value)
+        endpoint = configurator.load_var(DhcoreEnvVar.ENDPOINT.value)
         if endpoint is None:
             raise ClientError("Endpoint not set as environment variables.")
         endpoint = self._sanitize_endpoint(endpoint)
-        self._set_credential(DhcoreEnvVar.ENDPOINT.value, endpoint)
+        configurator.set_credential(DhcoreEnvVar.ENDPOINT.value, endpoint)
 
     def _get_auth_vars(self) -> None:
         """
@@ -165,19 +165,19 @@ class ClientDHCoreConfigurator(Configurator):
         None
         """
         # Give priority to access token
-        access_token = self._load_var(DhcoreEnvVar.ACCESS_TOKEN.value)
+        access_token = configurator.load_var(DhcoreEnvVar.ACCESS_TOKEN.value)
         if access_token is not None:
-            self._set_credential(AUTH_KEY, AuthType.OAUTH2.value)
-            self._set_credential(DhcoreEnvVar.ACCESS_TOKEN.value, access_token)
+            configurator.set_credential(AUTH_KEY, AuthType.OAUTH2.value)
+            configurator.set_credential(DhcoreEnvVar.ACCESS_TOKEN.value, access_token)
 
         # Fallback to basic
         else:
-            user = self._load_var(DhcoreEnvVar.USER.value)
-            password = self._load_var(DhcoreEnvVar.PASSWORD.value)
+            user = configurator.load_var(DhcoreEnvVar.USER.value)
+            password = configurator.load_var(DhcoreEnvVar.PASSWORD.value)
             if user is not None and password is not None:
-                self._set_credential(AUTH_KEY, AuthType.BASIC.value)
-                self._set_credential(DhcoreEnvVar.USER.value, user)
-                self._set_credential(DhcoreEnvVar.PASSWORD.value, password)
+                configurator.set_credential(AUTH_KEY, AuthType.BASIC.value)
+                configurator.set_credential(DhcoreEnvVar.USER.value, user)
+                configurator.set_credential(DhcoreEnvVar.PASSWORD.value, password)
 
     ##############################
     # Auth methods
@@ -197,7 +197,7 @@ class ClientDHCoreConfigurator(Configurator):
         dict
             Authentication header.
         """
-        creds = self._get_all_cred()
+        creds = configurator.get_all_cred()
         if AUTH_KEY not in creds:
             return kwargs
         if creds[AUTH_KEY] == AuthType.BASIC.value:
@@ -225,23 +225,23 @@ class ClientDHCoreConfigurator(Configurator):
 
         # Call refresh token endpoint
         # Try token from env
-        refresh_token = self._load_from_env(DhcoreEnvVar.REFRESH_TOKEN.value)
+        refresh_token = configurator.load_from_env(DhcoreEnvVar.REFRESH_TOKEN.value)
         response = self._call_refresh_token_endpoint(url, refresh_token)
 
         # Otherwise try token from file
         if response.status_code in (400, 401, 403):
-            refresh_token = self._load_from_config(DhcoreEnvVar.REFRESH_TOKEN.value)
+            refresh_token = configurator.load_from_config(DhcoreEnvVar.REFRESH_TOKEN.value)
             response = self._call_refresh_token_endpoint(url, refresh_token)
 
         response.raise_for_status()
         dict_response = response.json()
 
         # Read new access token and refresh token
-        self._set_credential(DhcoreEnvVar.ACCESS_TOKEN.value, dict_response["access_token"])
-        self._set_credential(DhcoreEnvVar.REFRESH_TOKEN.value, dict_response["refresh_token"])
+        configurator.set_credential(DhcoreEnvVar.ACCESS_TOKEN.value, dict_response["access_token"])
+        configurator.set_credential(DhcoreEnvVar.REFRESH_TOKEN.value, dict_response["refresh_token"])
 
         # Propagate new access token to env
-        self._write_env([AUTH_KEY])
+        configurator.write_env([AUTH_KEY])
 
     def _get_refresh_endpoint(self) -> str:
         """
@@ -253,10 +253,10 @@ class ClientDHCoreConfigurator(Configurator):
             Refresh endpoint.
         """
         # Get issuer endpoint
-        endpoint_issuer = self._load_var(DhcoreEnvVar.ISSUER.value)
+        endpoint_issuer = configurator.load_var(DhcoreEnvVar.ISSUER.value)
         if endpoint_issuer is not None:
             endpoint_issuer = self._sanitize_endpoint(endpoint_issuer)
-            self._set_credential(DhcoreEnvVar.ISSUER.value, endpoint_issuer)
+            configurator.set_credential(DhcoreEnvVar.ISSUER.value, endpoint_issuer)
         else:
             raise ClientError("Issuer endpoint not set.")
 
@@ -285,7 +285,7 @@ class ClientDHCoreConfigurator(Configurator):
             Response object.
         """
         # Get client id
-        client_id = self._load_var(DhcoreEnvVar.CLIENT_ID.value)
+        client_id = configurator.load_var(DhcoreEnvVar.CLIENT_ID.value)
         if client_id is None:
             raise ClientError("Client id not set.")
 

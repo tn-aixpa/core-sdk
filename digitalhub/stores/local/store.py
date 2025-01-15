@@ -5,18 +5,9 @@ from pathlib import Path
 from typing import Any
 
 from digitalhub.readers.api import get_reader_by_object
-from digitalhub.stores._base.store import Store, StoreConfig
+from digitalhub.stores._base.store import Store
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_local
-
-
-class LocalStoreConfig(StoreConfig):
-    """
-    Local store configuration class.
-    """
-
-    path: str
-    """Local path."""
 
 
 class LocalStore(Store):
@@ -25,9 +16,8 @@ class LocalStore(Store):
     artifacts on local filesystem based storage.
     """
 
-    def __init__(self, name: str, store_type: str, config: LocalStoreConfig) -> None:
-        super().__init__(name, store_type)
-        self.config = config
+    def __init__(self, config: dict | None = None) -> None:
+        super().__init__()
 
     ##############################
     # I/O methods
@@ -218,13 +208,9 @@ class LocalStore(Store):
         str
             Path of written dataframe.
         """
-        self.store._check_local_dst(dst)
-        self._validate_extension(Path(dst).suffix.removeprefix("."))
-
-        # Write dataframe
+        self._check_local_dst(dst)
         reader = get_reader_by_object(df)
         reader.write_df(df, dst, extension=extension, **kwargs)
-
         return dst
 
     ##############################

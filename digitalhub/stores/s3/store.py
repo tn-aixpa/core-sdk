@@ -10,7 +10,8 @@ import botocore.client  # pylint: disable=unused-import
 from botocore.exceptions import ClientError
 
 from digitalhub.readers.api import get_reader_by_object
-from digitalhub.stores._base.store import Store, StoreConfig
+from digitalhub.stores._base.store import Store
+from digitalhub.stores.s3.configurator import S3StoreConfigurator
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
 from digitalhub.utils.s3_utils import get_bucket_name
@@ -19,33 +20,16 @@ from digitalhub.utils.s3_utils import get_bucket_name
 S3Client = Type["botocore.client.S3"]
 
 
-class S3StoreConfig(StoreConfig):
-    """
-    S3 store configuration class.
-    """
-
-    endpoint_url: str
-    """S3 endpoint URL."""
-
-    aws_access_key_id: str
-    """AWS access key ID."""
-
-    aws_secret_access_key: str
-    """AWS secret access key."""
-
-    bucket_name: str
-    """S3 bucket name."""
-
-
 class S3Store(Store):
     """
     S3 store class. It implements the Store interface and provides methods to fetch and persist
     artifacts on S3 based storage.
     """
 
-    def __init__(self, name: str, store_type: str, config: S3StoreConfig) -> None:
-        super().__init__(name, store_type)
-        self.config = config
+    def __init__(self, config: dict | None = None) -> None:
+        super().__init__()
+        self._configurator = S3StoreConfigurator()
+        self._configurator.configure(config)
 
     ##############################
     # I/O methods
@@ -512,11 +496,7 @@ class S3Store(Store):
         S3Client
             Returns a client object that interacts with the S3 storage service.
         """
-        cfg = {
-            "endpoint_url": self.config.endpoint_url,
-            "aws_access_key_id": self.config.aws_access_key_id,
-            "aws_secret_access_key": self.config.aws_secret_access_key,
-        }
+        cfg = self._configurator.get_s3_creds()
         return boto3.client("s3", **cfg)
 
     def _check_factory(self, root: str) -> tuple[S3Client, str]:

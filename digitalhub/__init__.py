@@ -1,4 +1,3 @@
-__version__ = "0.9.0b0"
 from digitalhub.entities.artifact.crud import (
     delete_artifact,
     get_artifact,
@@ -90,10 +89,10 @@ except ImportError:
     ...
 
 from digitalhub.client.dhcore.utils import refresh_token, set_dhcore_env
+from digitalhub.configurator.api import get_current_env, set_current_env
 
 # Register entities into registry
 from digitalhub.factory.utils import register_entities, register_runtimes_entities
-from digitalhub.stores.api import set_store
 
 register_entities()
 register_runtimes_entities()

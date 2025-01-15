@@ -11,29 +11,9 @@ from sqlalchemy.engine.row import LegacyRow
 from sqlalchemy.exc import SQLAlchemyError
 
 from digitalhub.readers.api import get_reader_by_object
-from digitalhub.stores._base.store import Store, StoreConfig
+from digitalhub.stores._base.store import Store
+from digitalhub.stores.sql.configurator import SqlStoreConfigurator
 from digitalhub.utils.exceptions import StoreError
-
-
-class SQLStoreConfig(StoreConfig):
-    """
-    SQL store configuration class.
-    """
-
-    host: str
-    """SQL host."""
-
-    port: int
-    """SQL port."""
-
-    user: str
-    """SQL user."""
-
-    password: str
-    """SQL password."""
-
-    database: str
-    """SQL database name."""
 
 
 class SqlStore(Store):
@@ -42,9 +22,10 @@ class SqlStore(Store):
     artifacts on SQL based storage.
     """
 
-    def __init__(self, name: str, store_type: str, config: SQLStoreConfig) -> None:
-        super().__init__(name, store_type)
-        self.config = config
+    def __init__(self, config: dict | None = None) -> None:
+        super().__init__()
+        self._configurator = SqlStoreConfigurator()
+        self._configurator.configure(config)
 
     ##############################
     # I/O methods
@@ -245,10 +226,7 @@ class SqlStore(Store):
         str
             The connection string.
         """
-        return (
-            f"postgresql://{self.config.user}:{self.config.password}@"
-            f"{self.config.host}:{self.config.port}/{self.config.database}"
-        )
+        return self._configurator.get_sql_conn_string()
 
     def _get_engine(self, schema: str | None = None) -> Engine:
         """

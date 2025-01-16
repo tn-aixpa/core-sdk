@@ -39,7 +39,8 @@ def eval_source(
         raise ValueError("You must provide source or data.")
 
     if source is not None:
-        return eval_local_source(source)
+        eval_local_source(source)
+        return source
 
     if kind == EntityKinds.DATAITEM_TABLE.value:
         ctx = get_context(project)

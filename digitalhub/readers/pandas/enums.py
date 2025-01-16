@@ -10,4 +10,8 @@ class Extensions(Enum):
 
     CSV = "csv"
     PARQUET = "parquet"
+    JSON = "json"
+    EXCEL_OLD = "xls"
+    EXCEL = "xlsx"
+    TXT = "txt"
     FILE = "file"

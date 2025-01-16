@@ -8,7 +8,7 @@ import pandas as pd
 from pandas.errors import ParserError
 
 from digitalhub.readers._base.reader import DataframeReader
-from digitalhub.readers._commons.enums import Extensions
+from digitalhub.readers.pandas.enums import Extensions
 from digitalhub.utils.data_utils import build_data_preview, get_data_preview
 from digitalhub.utils.exceptions import ReaderError
 
@@ -44,7 +44,11 @@ class DataframeReaderPandas(DataframeReader):
             method = pd.read_csv
         elif extension == Extensions.PARQUET.value:
             method = pd.read_parquet
-        elif extension == Extensions.FILE.value:
+        elif extension == Extensions.JSON.value:
+            method = pd.read_json
+        elif extension in (Extensions.EXCEL.value, Extensions.EXCEL_OLD.value):
+            method = pd.read_excel
+        elif extension in (Extensions.TXT.value, Extensions.FILE.value):
             try:
                 return self.read_df(path, Extensions.CSV.value, **kwargs)
             except ParserError:

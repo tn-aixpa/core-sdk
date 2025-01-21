@@ -8,7 +8,7 @@ from digitalhub.context.api import get_context
 from digitalhub.entities._base.entity._constructors.uuid import build_uuid
 from digitalhub.entities._base.material.utils import build_log_path_from_source, eval_local_source
 from digitalhub.entities._commons.enums import EntityKinds, EntityTypes
-from digitalhub.readers._commons.enums import Extensions
+from digitalhub.utils.data_utils import DEFAULT_EXTENSION
 from digitalhub.readers.api import get_reader_by_object
 from digitalhub.utils.generic_utils import slugify_string
 
@@ -44,7 +44,7 @@ def eval_source(
 
     if kind == EntityKinds.DATAITEM_TABLE.value:
         ctx = get_context(project)
-        pth = ctx.root / f"{slugify_string(name)}.{Extensions.PARQUET.value}"
+        pth = ctx.root / f"{slugify_string(name)}.{DEFAULT_EXTENSION}"
         reader = get_reader_by_object(data)
         reader.write_parquet(data, pth)
         return str(pth)

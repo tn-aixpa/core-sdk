@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 
 
+DEFAULT_EXTENSION = "parquet"
+
+
 def build_data_preview(preview: list[dict] | None = None, rows_count: int | None = None) -> dict:
     """
     Build data preview.

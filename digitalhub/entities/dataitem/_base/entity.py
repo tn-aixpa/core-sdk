@@ -5,7 +5,7 @@ from pathlib import Path
 
 from digitalhub.entities._base.material.entity import MaterialEntity
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.readers._commons.enums import Extensions
+from digitalhub.utils.data_utils import DEFAULT_EXTENSION
 from digitalhub.utils.exceptions import EntityError
 from digitalhub.utils.uri_utils import has_sql_scheme
 
@@ -67,7 +67,7 @@ class Dataitem(MaterialEntity):
             return file_format
 
         if has_sql_scheme(path):
-            return Extensions.PARQUET.value
+            return DEFAULT_EXTENSION
 
         ext = Path(path).suffix[1:]
         if ext is not None:

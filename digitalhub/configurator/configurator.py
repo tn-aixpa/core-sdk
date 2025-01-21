@@ -107,24 +107,23 @@ class EnvConfigurator:
         """
         return load_from_config(var)
 
-    def write_env(self, key_to_exclude: list[str] | None = None) -> None:
+    def write_env(self, key_to_include: list[str] | None = None) -> None:
         """
         Write the env variables to the .dhcore file.
         It will overwrite any existing env variables.
 
         Parameters
         ----------
-        key_to_exclude : list[str]
-            List of keys to exclude.
+        key_to_include : list[str]
+            List of keys to include.
 
         Returns
         -------
         None
         """
-        if key_to_exclude is None:
-            key_to_exclude = []
-        creds = self.get_all_cred()
-        creds = {k: v for k, v in creds.items() if k not in key_to_exclude}
+        if key_to_include is None:
+            key_to_include = []
+        creds = self.get_cred_list(key_to_include)
         write_config(creds, self._environment)
 
     ##############################
@@ -174,6 +173,22 @@ class EnvConfigurator:
             The credentials.
         """
         return self._creds_store.get_all(self._environment)
+
+    def get_cred_list(self, keys: list[str]) -> list[str]:
+        """
+        Get the list of credentials.
+
+        Parameters
+        ----------
+        keys : list[str]
+            The list of keys.
+
+        Returns
+        -------
+        list[str]
+            The list of credentials.
+        """
+        return {k: v for k, v in self.get_all_cred().items() if k in keys}
 
 
 configurator = EnvConfigurator()

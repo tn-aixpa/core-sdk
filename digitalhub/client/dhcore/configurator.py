@@ -53,7 +53,8 @@ class ClientDHCoreConfigurator:
         """
         if config is None:
             self._get_core_endpoint()
-            return self._get_auth_vars()
+            self._get_auth_vars()
+            return
 
         # Read passed config
         # Validate and save credentials
@@ -183,6 +184,28 @@ class ClientDHCoreConfigurator:
     # Auth methods
     ##############################
 
+    def basic_auth(self) -> bool:
+        """
+        Get basic auth.
+
+        Returns
+        -------
+        bool
+        """
+        auth_type = configurator.get_credentials(AUTH_KEY)
+        return auth_type == AuthType.BASIC.value
+
+    def oauth2_auth(self) -> bool:
+        """
+        Get oauth2 auth.
+
+        Returns
+        -------
+        bool
+        """
+        auth_type = configurator.get_credentials(AUTH_KEY)
+        return auth_type == AuthType.OAUTH2.value
+
     def set_request_auth(self, kwargs: dict) -> dict:
         """
         Get the authentication header.
@@ -200,11 +223,11 @@ class ClientDHCoreConfigurator:
         creds = configurator.get_all_cred()
         if AUTH_KEY not in creds:
             return kwargs
-        if creds[AUTH_KEY] == AuthType.BASIC.value:
+        if self.basic_auth():
             user = creds[DhcoreEnvVar.USER.value]
             password = creds[DhcoreEnvVar.PASSWORD.value]
             kwargs["auth"] = (user, password)
-        elif creds[AUTH_KEY] == AuthType.OAUTH2.value:
+        elif self.oauth2_auth():
             if "headers" not in kwargs:
                 kwargs["headers"] = {}
             access_token = creds[DhcoreEnvVar.ACCESS_TOKEN.value]
@@ -240,8 +263,29 @@ class ClientDHCoreConfigurator:
         configurator.set_credential(DhcoreEnvVar.ACCESS_TOKEN.value, dict_response["access_token"])
         configurator.set_credential(DhcoreEnvVar.REFRESH_TOKEN.value, dict_response["refresh_token"])
 
-        # Propagate new access token to env
-        configurator.write_env([AUTH_KEY])
+        # Propagate new access token to config file
+        self._write_env()
+
+    def _write_env(self) -> None:
+        """
+        Write the env variables to the .dhcore.ini file.
+        It will overwrite any existing env variables.
+
+        Returns
+        -------
+        None
+        """
+        configurator.write_env(
+            [
+                DhcoreEnvVar.ACCESS_TOKEN.value,
+                DhcoreEnvVar.REFRESH_TOKEN.value,
+                DhcoreEnvVar.CLIENT_ID.value,
+                DhcoreEnvVar.ENDPOINT.value,
+                DhcoreEnvVar.ISSUER.value,
+                DhcoreEnvVar.USER.value,
+                DhcoreEnvVar.PASSWORD.value,
+            ]
+        )
 
     def _get_refresh_endpoint(self) -> str:
         """

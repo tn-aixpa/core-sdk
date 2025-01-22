@@ -279,11 +279,6 @@ class ClientDHCoreConfigurator:
             [
                 DhcoreEnvVar.ACCESS_TOKEN.value,
                 DhcoreEnvVar.REFRESH_TOKEN.value,
-                DhcoreEnvVar.CLIENT_ID.value,
-                DhcoreEnvVar.ENDPOINT.value,
-                DhcoreEnvVar.ISSUER.value,
-                DhcoreEnvVar.USER.value,
-                DhcoreEnvVar.PASSWORD.value,
             ]
         )
 

@@ -86,24 +86,3 @@ class SqlStoreConfigurator:
         configurator.set_credential(SqlStoreEnv.HOST.value, host)
         configurator.set_credential(SqlStoreEnv.PORT.value, port)
         configurator.set_credential(SqlStoreEnv.DATABASE.value, database)
-
-        self._write_env()
-
-    def _write_env(self) -> None:
-        """
-        Write the env variables to the .dhcore.ini file.
-        It will overwrite any existing env variables.
-
-        Returns
-        -------
-        None
-        """
-        configurator.write_env(
-            [
-                SqlStoreEnv.USER.value,
-                SqlStoreEnv.PASSWORD.value,
-                SqlStoreEnv.HOST.value,
-                SqlStoreEnv.PORT.value,
-                SqlStoreEnv.DATABASE.value,
-            ]
-        )

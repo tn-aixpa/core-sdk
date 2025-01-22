@@ -83,22 +83,3 @@ class S3StoreConfigurator:
         configurator.set_credential(S3StoreEnv.ACCESS_KEY_ID.value, access_key)
         configurator.set_credential(S3StoreEnv.SECRET_ACCESS_KEY.value, secret_key)
         configurator.set_credential(S3StoreEnv.BUCKET_NAME.value, bucket_name)
-        self._write_env()
-
-    def _write_env(self) -> None:
-        """
-        Write the env variables to the .dhcore.ini file.
-        It will overwrite any existing env variables.
-
-        Returns
-        -------
-        None
-        """
-        configurator.write_env(
-            [
-                S3StoreEnv.ENDPOINT_URL.value,
-                S3StoreEnv.ACCESS_KEY_ID.value,
-                S3StoreEnv.SECRET_ACCESS_KEY.value,
-                S3StoreEnv.BUCKET_NAME.value,
-            ]
-        )

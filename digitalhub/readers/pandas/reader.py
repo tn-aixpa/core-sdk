@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+import json
 from io import BytesIO
 from typing import Any
 
@@ -9,7 +11,7 @@ from pandas.errors import ParserError
 
 from digitalhub.readers._base.reader import DataframeReader
 from digitalhub.readers.pandas.enums import Extensions
-from digitalhub.utils.data_utils import build_data_preview, get_data_preview
+from digitalhub.utils.data_utils import build_data_preview, get_data_preview, check_preview_size
 from digitalhub.utils.exceptions import ReaderError
 
 
@@ -200,7 +202,7 @@ class DataframeReaderPandas(DataframeReader):
         return schema
 
     @staticmethod
-    def get_preview(df: pd.DataFrame) -> Any:
+    def get_preview(df: pd.DataFrame) -> dict:
         """
         Get preview.
 
@@ -220,4 +222,45 @@ class DataframeReaderPandas(DataframeReader):
         head = head.values.tolist()
         preview = get_data_preview(columns, head)
         len_df = len(df)
-        return build_data_preview(preview, len_df)
+        preview = build_data_preview(preview, len_df)
+        se_de_serialized = _serialize_deserialize_preview(preview)
+        return check_preview_size(se_de_serialized)
+
+
+def _serialize_deserialize_preview(preview: dict) -> dict:
+    """
+    Serialize and deserialize preview.
+
+    Parameters
+    ----------
+    preview : dict
+        The preview.
+
+    Returns
+    -------
+    dict
+        The serialized preview.
+    """
+
+    def _serializer(obj: dict) -> dict:
+        """
+        JSON datetime to ISO format serializer.
+
+        Parameters
+        ----------
+        obj : dict
+            The object to serialize.
+
+        Returns
+        -------
+        dict
+            The serialized object.
+        """
+        if isinstance(obj, (datetime.datetime, datetime.date, datetime.time)):
+            return obj.isoformat()
+        if isinstance(obj, pd.Timestamp):
+            return obj.isoformat()
+        raise TypeError(f"Type {type(obj)} not serializable")
+
+    return json.loads(json.dumps(preview, default=_serializer))
+

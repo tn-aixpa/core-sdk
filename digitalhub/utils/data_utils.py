@@ -62,10 +62,7 @@ def get_data_preview(columns: list, data: list[list], columnar: bool = False) ->
     data_dict = prepare_preview(columns, data)
 
     # Filter memoryview values
-    filtered_memview = filter_memoryview(data_dict)
-
-    # Check the size of the preview data
-    return check_preview_size(filtered_memview)
+    return filter_memoryview(data_dict)
 
 
 def prepare_preview(column_names: list, data: list[list]) -> list[dict]:
@@ -110,13 +107,13 @@ def filter_memoryview(data: list[dict]) -> list[dict]:
     return data
 
 
-def check_preview_size(preview: list[dict]) -> list:
+def check_preview_size(preview: dict) -> list:
     """
     Check preview size. If it's too big, return empty list.
 
     Parameters
     ----------
-    preview : list[dict]
+    preview : dict
         Preview.
 
     Returns

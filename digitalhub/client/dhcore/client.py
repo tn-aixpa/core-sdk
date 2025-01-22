@@ -286,7 +286,7 @@ class ClientDHCore(Client):
         dict
             The serialized object.
         """
-        if isinstance(obj, (datetime.datetime, datetime.date)):
+        if isinstance(obj, (datetime.datetime, datetime.date, datetime.time)):
             return obj.isoformat()
         raise TypeError(f"Type {type(obj)} not serializable")
 

@@ -8,7 +8,6 @@ class RunStatus(Status):
     RunStatus status.
     """
 
-
     def __init__(
         self,
         state: str,

@@ -97,7 +97,7 @@ class ClientDHCoreApiBuilder(ClientApiBuilder):
         elif operation == BackendOperations.SEARCH.value:
             return f"{API_CONTEXT}/{project}/solr/search/item"
         elif operation == BackendOperations.METRICS.value:
-            if kwargs['metric_name'] is not None:
+            if kwargs["metric_name"] is not None:
                 return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}/metrics/{kwargs['metric_name']}"
             else:
                 return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}/metrics"

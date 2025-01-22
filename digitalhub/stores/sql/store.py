@@ -1,19 +1,22 @@
 from __future__ import annotations
 
+import typing
 from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
 import pyarrow.parquet as pq
-from sqlalchemy import MetaData, Table, create_engine
+from sqlalchemy import MetaData, Table, create_engine, select
 from sqlalchemy.engine import Engine
-from sqlalchemy.engine.row import LegacyRow
 from sqlalchemy.exc import SQLAlchemyError
 
 from digitalhub.readers.api import get_reader_by_object
 from digitalhub.stores._base.store import Store
 from digitalhub.stores.sql.configurator import SqlStoreConfigurator
 from digitalhub.utils.exceptions import StoreError
+
+if typing.TYPE_CHECKING:
+    from sqlalchemy.engine.row import Row
 
 
 class SqlStore(Store):
@@ -141,12 +144,12 @@ class SqlStore(Store):
 
         # Read the table from the database
         sa_table = Table(table, MetaData(), autoload_with=engine)
-        query = sa_table.select()
+        stm = select(sa_table)
         with engine.begin() as conn:
-            result: list[LegacyRow] = conn.execute(query).fetchall()
+            result: list[Row] = conn.execute(stm).fetchall()
 
         # Parse the result
-        data = self._parse_result(result)
+        data = {col: [row[idx] for row in result] for idx, col in enumerate(sa_table.columns.keys())}
 
         # Convert the result to a pyarrow table and
         # write the pyarrow table to a Parquet file
@@ -355,27 +358,3 @@ class SqlStore(Store):
         except SQLAlchemyError:
             engine.dispose()
             raise StoreError("No access to db!")
-
-    @staticmethod
-    def _parse_result(result: list[LegacyRow]) -> dict:
-        """
-        Convert a list of list of tuples to a dict.
-
-        Parameters
-        ----------
-        result : list[LegacyRow]
-            The data to convert.
-
-        Returns
-        -------
-        dict
-            The converted data.
-        """
-        data_list = [row.items() for row in result]
-        data = {}
-        for row in data_list:
-            for column_name, value in row:
-                if column_name not in data:
-                    data[column_name] = []
-                data[column_name].append(value)
-        return data

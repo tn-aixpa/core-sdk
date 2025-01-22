@@ -23,7 +23,7 @@ requires-python = ">=3.9"
 dependencies = [
     "boto3",
     "pydantic",
-    "sqlalchemy<2",
+    "sqlalchemy",
     "pyarrow",
     "numpy<2",
     "requests",
@@ -36,11 +36,11 @@ dependencies = [
 
 [project.optional-dependencies]
 full = [
-    "pandas>=1.2, <2.2",
+    "pandas",
     "mlflow",
 ]
 pandas = [
-    "pandas>=1.2, <2.2",
+    "pandas",
 ]
 mlflow = [
     "mlflow",

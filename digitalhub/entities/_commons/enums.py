@@ -84,6 +84,7 @@ class BackendOperations(Enum):
     LOGS = "logs"
     SEARCH = "search"
     SHARE = "share"
+    METRICS = "metrics"
 
 
 class EntityKinds(Enum):

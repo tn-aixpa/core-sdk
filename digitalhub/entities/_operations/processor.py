@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import typing
+from typing import Any
 
 from digitalhub.client.api import get_client
 from digitalhub.context.api import delete_context, get_context
@@ -789,13 +790,16 @@ class OperationsProcessor:
             splt = identifier.split(":")
             if len(splt) == 3:
                 identifier = f"{splt[0]}:{splt[1]}"
-        return self.read_context_entity(
+        entity = self.read_context_entity(
             identifier,
             entity_type=entity_type,
             project=project,
             entity_id=entity_id,
             **kwargs,
         )
+        if hasattr(entity.status, "metrics"):
+            entity._get_metrics()
+        return entity
 
     def import_context_entity(
         self,
@@ -1643,6 +1647,82 @@ class OperationsProcessor:
             entity_id=entity_id,
         )
         return context.client.update_object(api, entity_list, **kwargs)
+
+    def read_metrics(
+        self,
+        project: str,
+        entity_type: str,
+        entity_id: str,
+        metric_name: str | None = None,
+        **kwargs,
+    ) -> dict:
+        """
+        Get metrics from backend.
+
+        Parameters
+        ----------
+        project : str
+            Project name.
+        entity_type : str
+            Entity type.
+        entity_id : str
+            Entity ID.
+        **kwargs : dict
+            Parameters to pass to the API call.
+
+        Returns
+        -------
+        dict
+            Response from backend.
+        """
+        context = self._get_context(project)
+        api = context.client.build_api(
+            ApiCategories.CONTEXT.value,
+            BackendOperations.METRICS.value,
+            project=context.name,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            metric_name=metric_name,
+        )
+        return context.client.read_object(api, **kwargs)
+
+    def update_metric(
+        self,
+        project: str,
+        entity_type: str,
+        entity_id: str,
+        metric_name: str,
+        metric_value: Any,
+        **kwargs,
+    ) -> None:
+        """
+        Get single metric from backend.
+
+        Parameters
+        ----------
+        project : str
+            Project name.
+        entity_type : str
+            Entity type.
+        entity_id : str
+            Entity ID.
+        **kwargs : dict
+            Parameters to pass to the API call.
+
+        Returns
+        -------
+        None
+        """
+        context = self._get_context(project)
+        api = context.client.build_api(
+            ApiCategories.CONTEXT.value,
+            BackendOperations.METRICS.value,
+            project=context.name,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            metric_name=metric_name,
+        )
+        context.client.update_object(api, metric_value, **kwargs)
 
     def _search(
         self,

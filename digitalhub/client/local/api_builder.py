@@ -63,9 +63,7 @@ class ClientLocalApiBuilder(ClientApiBuilder):
             BackendOperations.DELETE.value,
         ):
             return f"{API_BASE}/{entity_type}/{kwargs['entity_name']}"
-        elif operation == BackendOperations.SHARE.value:
-            raise BackendError("Share API not implemented for Local.")
-        raise BackendError(f"Invalid operation '{operation}' for entity type '{entity_type}' in Local.")
+        raise BackendError(f"API for operation '{operation}' for entity type '{entity_type}' not implemented in Local.")
 
     def build_api_context(self, operation: str, **kwargs) -> str:
         """
@@ -84,17 +82,4 @@ class ClientLocalApiBuilder(ClientApiBuilder):
             BackendOperations.DELETE.value,
         ):
             return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}"
-        elif operation == BackendOperations.LOGS.value:
-            raise BackendError("Logs run API not implemented for Local.")
-        elif operation == BackendOperations.STOP.value:
-            raise BackendError("Stop run API not implemented for Local.")
-        elif operation == BackendOperations.RESUME.value:
-            raise BackendError("Resume run API not implemented for Local.")
-        elif operation == BackendOperations.DATA.value:
-            raise BackendError("Secret API (read/set value) not implemented for Local.")
-        elif operation == BackendOperations.FILES.value:
-            raise BackendError("Files API not implemented for Local.")
-        elif operation == BackendOperations.SEARCH.value:
-            raise BackendError("Search API not implemented for Local.")
-
-        raise BackendError(f"Invalid operation '{operation}' for entity type '{entity_type}' in Local.")
+        raise BackendError(f"API for operation '{operation}' for entity type '{entity_type}' not implemented in Local.")

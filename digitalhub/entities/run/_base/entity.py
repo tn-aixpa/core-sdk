@@ -45,6 +45,39 @@ class Run(UnversionedEntity):
         self.spec: RunSpec
         self.status: RunStatus
 
+    def save(self, update: bool = False, metric_name: str | None = None) -> Run:
+        """
+        Save entity into backend.
+
+        Parameters
+        ----------
+        update : bool
+            Flag to indicate update.
+
+        Returns
+        -------
+        MaterialEntity
+            Entity saved.
+        """
+        if metric_name is not None:
+            return super().save(update)
+
+        # Prepare metrics
+        metrics = None
+        if self.status.metrics is not None and not self._context().local:
+            metrics = self.status.metrics
+            self.status.metrics = {}
+
+        obj: Run = super().save(update)
+
+        # Handle metrics
+        if metrics is not None and metric_name is not None:
+            obj = metrics[metric_name]
+            processor.update_metric(self.project, self.ENTITY_TYPE, self.id, metric_name, obj)
+            self.status.metrics = metrics
+
+        return obj
+
     ##############################
     #  Run Methods
     ##############################
@@ -160,6 +193,33 @@ class Run(UnversionedEntity):
         """
         if not self.spec.local_execution:
             return processor.resume_run(self.project, self.ENTITY_TYPE, self.id)
+
+    def log_metric(self, key: str, value: float | int, single_value: bool = False) -> None:
+        """
+        Log metric.
+
+        Parameters
+        ----------
+        key : str
+            Key of the metric.
+        value : float
+            Value of the metric.
+
+        Returns
+        -------
+        None
+        """
+        if not isinstance(value, (int, float)):
+            raise EntityError(f"Metric value must be float or int, not {type(value)}")
+        if self.status.metrics is None:
+            self.status.metrics = {}
+        if key not in self.status.metrics and not single_value:
+            self.status.metrics[key] = []
+        if single_value:
+            self.status.metrics[key] = value
+        else:
+            self.status.metrics[key].append(value)
+        processor.update_metric(self.project, self.ENTITY_TYPE, self.id, key, self.status.metrics[key])
 
     ##############################
     #  Helpers
@@ -303,3 +363,17 @@ class Run(UnversionedEntity):
             entity_type=EntityTypes.TASK.value,
             project=self.project,
         ).to_dict()
+
+    def _get_metrics(self) -> None:
+        """
+        Get run metrics from backend.
+
+        Returns
+        -------
+        None
+        """
+        self.status.metrics = processor.read_metrics(
+            project=self.project,
+            entity_type=self.ENTITY_TYPE,
+            entity_id=self.id,
+        )

@@ -19,6 +19,7 @@ def new_task(
     uuid: str | None = None,
     labels: list[str] | None = None,
     function: str | None = None,
+    workflow: str | None = None,
     **kwargs,
 ) -> Task:
     """
@@ -36,6 +37,8 @@ def new_task(
         List of labels.
     function : str
         Name of the executable associated with the task.
+    workflow : str
+        Name of the workflow associated with the task.
     **kwargs : dict
         Spec keyword arguments.
 
@@ -56,6 +59,7 @@ def new_task(
         uuid=uuid,
         labels=labels,
         function=function,
+        workflow=workflow,
         **kwargs,
     )
 

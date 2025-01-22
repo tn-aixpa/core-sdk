@@ -96,5 +96,10 @@ class ClientDHCoreApiBuilder(ClientApiBuilder):
             return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}/files/info"
         elif operation == BackendOperations.SEARCH.value:
             return f"{API_CONTEXT}/{project}/solr/search/item"
+        elif operation == BackendOperations.METRICS.value:
+            if kwargs['metric_name'] is not None:
+                return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}/metrics/{kwargs['metric_name']}"
+            else:
+                return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}/metrics"
 
         raise BackendError(f"Invalid operation '{operation}' for entity type '{entity_type}' in DHCore.")

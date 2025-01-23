@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime
 import json
 from io import BytesIO
 from typing import Any
@@ -9,10 +8,11 @@ import numpy as np
 import pandas as pd
 from pandas.errors import ParserError
 
+from digitalhub.entities.dataitem.table.utils import check_preview_size, finalize_preview, prepare_data, prepare_preview
 from digitalhub.readers._base.reader import DataframeReader
 from digitalhub.readers.pandas.enums import Extensions
-from digitalhub.utils.data_utils import build_data_preview, get_data_preview, check_preview_size
 from digitalhub.utils.exceptions import ReaderError
+from digitalhub.utils.generic_utils import CustomJsonEncoder
 
 
 class DataframeReaderPandas(DataframeReader):
@@ -217,14 +217,37 @@ class DataframeReaderPandas(DataframeReader):
             The preview.
         """
         columns = [str(col) for col, _ in df.dtypes.items()]
-        head = df.head(10)
-        head = head.replace({np.nan: None})
-        head = head.values.tolist()
-        preview = get_data_preview(columns, head)
-        len_df = len(df)
-        preview = build_data_preview(preview, len_df)
-        se_de_serialized = _serialize_deserialize_preview(preview)
-        return check_preview_size(se_de_serialized)
+        head = df.head(10).replace({np.nan: None})
+        data = head.values.tolist()
+        prepared_data = prepare_data(data)
+        preview = prepare_preview(columns, prepared_data)
+        finalizes = finalize_preview(preview, df.shape[0])
+        serialized = _serialize_deserialize_preview(finalizes)
+        return check_preview_size(serialized)
+
+
+class PandasJsonEncoder(CustomJsonEncoder):
+    """
+    JSON pd.Timestamp to ISO format serializer.
+    """
+
+    def default(self, obj: Any) -> Any:
+        """
+        Pandas datetime to ISO format serializer.
+
+        Parameters
+        ----------
+        obj : Any
+            The object to serialize.
+
+        Returns
+        -------
+        Any
+            The serialized object.
+        """
+        if isinstance(obj, pd.Timestamp):
+            return obj.isoformat()
+        return super().default(obj)
 
 
 def _serialize_deserialize_preview(preview: dict) -> dict:
@@ -241,26 +264,4 @@ def _serialize_deserialize_preview(preview: dict) -> dict:
     dict
         The serialized preview.
     """
-
-    def _serializer(obj: dict) -> dict:
-        """
-        JSON datetime to ISO format serializer.
-
-        Parameters
-        ----------
-        obj : dict
-            The object to serialize.
-
-        Returns
-        -------
-        dict
-            The serialized object.
-        """
-        if isinstance(obj, (datetime.datetime, datetime.date, datetime.time)):
-            return obj.isoformat()
-        if isinstance(obj, pd.Timestamp):
-            return obj.isoformat()
-        raise TypeError(f"Type {type(obj)} not serializable")
-
-    return json.loads(json.dumps(preview, default=_serializer))
-
+    return json.loads(json.dumps(preview, cls=PandasJsonEncoder))

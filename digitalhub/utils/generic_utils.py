@@ -3,7 +3,7 @@ from __future__ import annotations
 import base64
 import importlib.util as imputil
 import json
-from datetime import datetime
+from datetime import date, datetime, time
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable
@@ -120,14 +120,14 @@ def extract_archive(path: Path, filename: Path) -> None:
         zip_file.extractall(path)
 
 
-class MyEncoder(json.JSONEncoder):
+class CustomJsonEncoder(json.JSONEncoder):
     """
-    Custom JSON encoder to handle numpy types.
+    Custom JSON encoder to handle json dumps.
     """
 
     def default(self, obj: Any) -> Any:
         """
-        Convert numpy types to json.
+        Convert an object to json.
 
         Parameters
         ----------
@@ -147,11 +147,12 @@ class MyEncoder(json.JSONEncoder):
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
-        else:
-            return str(obj)
+        elif isinstance(obj, (datetime, date, time)):
+            return obj.isoformat()
+        return str(obj)
 
 
-def dict_to_json(struct: dict) -> str:
+def dump_json(struct: Any) -> str:
     """
     Convert a dict to json.
 
@@ -165,7 +166,7 @@ def dict_to_json(struct: dict) -> str:
     str
         The json string.
     """
-    return json.dumps(struct, cls=MyEncoder)
+    return json.dumps(struct, cls=CustomJsonEncoder).encode("utf-8")
 
 
 def slugify_string(filename: str) -> str:

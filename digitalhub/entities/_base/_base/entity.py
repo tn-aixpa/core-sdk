@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from digitalhub.utils.generic_utils import dict_to_json
+from digitalhub.utils.generic_utils import dump_json
 
 
 class Base:
@@ -40,7 +40,7 @@ class Base:
         str
             A json string containing the attributes of the entity instance.
         """
-        return dict_to_json(self.to_dict())
+        return dump_json(self.to_dict())
 
     def _any_setter(self, **kwargs) -> None:
         """

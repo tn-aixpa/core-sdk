@@ -1,51 +1,23 @@
 from __future__ import annotations
 
-import json
-
-DEFAULT_EXTENSION = "parquet"
+from digitalhub.utils.generic_utils import dump_json
 
 
-def build_data_preview(preview: list[dict] | None = None, rows_count: int | None = None) -> dict:
+def prepare_data(data: list[list], columnar: bool = False) -> list[list]:
     """
-    Build data preview.
+    Prepare data.
 
     Parameters
     ----------
-    preview : list[dict] | None
-        Preview.
-    rows_count : int | None
-        Row count.
-
-    Returns
-    -------
-    dict
-        Data preview.
-    """
-    dict_ = {}
-    if preview is not None:
-        dict_["cols"] = preview
-    if rows_count is not None:
-        dict_["rows"] = rows_count
-    return dict_
-
-
-def get_data_preview(columns: list, data: list[list], columnar: bool = False) -> list[dict]:
-    """
-    Prepare preview.
-
-    Parameters
-    ----------
-    columns : list
-        Columns names.
-    data : list[list]
-        Data to preview.
-    columnar : bool
+    data : list
+        Data.
+    columnar : bool | None
         If data are arranged in columns. If False, data are arranged in rows.
 
     Returns
     -------
-    list[dict]
-        Data preview.
+    list[list]
+        Prepared data.
     """
     # Reduce data to 10 rows
     if not columnar:
@@ -58,14 +30,10 @@ def get_data_preview(columns: list, data: list[list], columnar: bool = False) ->
     if not columnar:
         data = list(map(list, list(zip(*data))))
 
-    # Prepare the preview
-    data_dict = prepare_preview(columns, data)
-
-    # Filter memoryview values
-    return filter_memoryview(data_dict)
+    return data
 
 
-def prepare_preview(column_names: list, data: list[list]) -> list[dict]:
+def prepare_preview(columns: list, data: list[list]) -> list[dict]:
     """
     Get preview.
 
@@ -79,9 +47,10 @@ def prepare_preview(column_names: list, data: list[list]) -> list[dict]:
     list[dict]
         Preview.
     """
-    if len(column_names) != len(data):
+    if len(columns) != len(data):
         raise ValueError("Column names and data must have the same length")
-    return [{"name": column, "value": values} for column, values in zip(column_names, data)]
+    preview = [{"name": column, "value": values} for column, values in zip(columns, data)]
+    return filter_memoryview(preview)
 
 
 def filter_memoryview(data: list[dict]) -> list[dict]:
@@ -90,13 +59,13 @@ def filter_memoryview(data: list[dict]) -> list[dict]:
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : list[dict]
         Data.
 
     Returns
     -------
-    list[str]
-        Column to filter out from preview.
+    list[dict]
+        Preview.
     """
     key_to_filter = []
     for i in data:
@@ -121,6 +90,30 @@ def check_preview_size(preview: dict) -> list:
     list
         Preview.
     """
-    if len(json.dumps(preview).encode("utf-8")) >= 64000:
+    if len(dump_json(preview)) >= 64000:
         return []
     return preview
+
+
+def finalize_preview(preview: list[dict] | None = None, rows_count: int | None = None) -> dict:
+    """
+    Finalize preview.
+
+    Parameters
+    ----------
+    preview : list[dict] | None
+        Preview.
+    rows_count : int | None
+        Row count.
+
+    Returns
+    -------
+    dict
+        Data preview.
+    """
+    data = {}
+    if preview is not None:
+        data["cols"] = preview
+    if rows_count is not None:
+        data["rows"] = rows_count
+    return data

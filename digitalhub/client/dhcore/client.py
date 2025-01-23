@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import datetime
-import json
 import typing
+from typing import Any
 
 from requests import request
 from requests.exceptions import JSONDecodeError
@@ -13,6 +12,7 @@ from digitalhub.client.dhcore.configurator import ClientDHCoreConfigurator
 from digitalhub.client.dhcore.error_parser import ErrorParser
 from digitalhub.client.dhcore.key_builder import ClientDHCoreKeyBuilder
 from digitalhub.utils.exceptions import BackendError
+from digitalhub.utils.generic_utils import dump_json
 
 if typing.TYPE_CHECKING:
     from requests import Response
@@ -54,7 +54,7 @@ class ClientDHCore(Client):
     # CRUD methods
     ##############################
 
-    def create_object(self, api: str, obj: dict, **kwargs) -> dict:
+    def create_object(self, api: str, obj: Any, **kwargs) -> dict:
         """
         Create an object in DHCore.
 
@@ -62,7 +62,7 @@ class ClientDHCore(Client):
         ----------
         api : str
             Create API.
-        obj : dict
+        obj : Any
             Object to create.
         **kwargs : dict
             Keyword arguments to pass to the request.
@@ -75,7 +75,7 @@ class ClientDHCore(Client):
         if "headers" not in kwargs:
             kwargs["headers"] = {}
         kwargs["headers"]["Content-Type"] = "application/json"
-        kwargs["data"] = self._dump_data(obj)
+        kwargs["data"] = dump_json(obj)
         return self._prepare_call("POST", api, **kwargs)
 
     def read_object(self, api: str, **kwargs) -> dict:
@@ -96,7 +96,7 @@ class ClientDHCore(Client):
         """
         return self._prepare_call("GET", api, **kwargs)
 
-    def update_object(self, api: str, obj: dict, **kwargs) -> dict:
+    def update_object(self, api: str, obj: Any, **kwargs) -> dict:
         """
         Update an object in DHCore.
 
@@ -117,7 +117,7 @@ class ClientDHCore(Client):
         if "headers" not in kwargs:
             kwargs["headers"] = {}
         kwargs["headers"]["Content-Type"] = "application/json"
-        kwargs["data"] = self._dump_data(obj)
+        kwargs["data"] = dump_json(obj)
         return self._prepare_call("PUT", api, **kwargs)
 
     def delete_object(self, api: str, **kwargs) -> dict:
@@ -253,42 +253,6 @@ class ClientDHCore(Client):
     ##############################
     # Call methods
     ##############################
-
-    @staticmethod
-    def _dump_data(obj: dict) -> str:
-        """
-        Dump data.
-
-        Parameters
-        ----------
-        obj : dict
-            The object to dump.
-
-        Returns
-        -------
-        str
-            JSON string.
-        """
-        return json.dumps(obj, default=ClientDHCore._json_serialize)
-
-    @staticmethod
-    def _json_serialize(obj: dict) -> dict:
-        """
-        JSON datetime to ISO format serializer.
-
-        Parameters
-        ----------
-        obj : dict
-            The object to serialize.
-
-        Returns
-        -------
-        dict
-            The serialized object.
-        """
-        if isinstance(obj, (datetime.datetime, datetime.date, datetime.time)):
-            return obj.isoformat()
-        raise TypeError(f"Type {type(obj)} not serializable")
 
     def _prepare_call(self, call_type: str, api: str, **kwargs) -> dict:
         """

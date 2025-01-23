@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import typing
 from abc import abstractmethod
+from typing import Any
 
 if typing.TYPE_CHECKING:
     from digitalhub.client._base.api_builder import ClientApiBuilder
@@ -26,7 +27,7 @@ class Client:
     ##############################
 
     @abstractmethod
-    def create_object(self, api: str, obj: dict, **kwargs) -> dict:
+    def create_object(self, api: str, obj: Any, **kwargs) -> dict:
         """
         Create object method.
         """
@@ -38,7 +39,7 @@ class Client:
         """
 
     @abstractmethod
-    def update_object(self, api: str, obj: dict, **kwargs) -> dict:
+    def update_object(self, api: str, obj: Any, **kwargs) -> dict:
         """
         Update object method.
         """

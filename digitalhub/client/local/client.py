@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import datetime, timezone
+from typing import Any
 
 from digitalhub.client._base.client import Client
 from digitalhub.client.local.api_builder import ClientLocalApiBuilder
@@ -32,7 +33,7 @@ class ClientLocal(Client):
     # CRUD
     ##############################
 
-    def create_object(self, api: str, obj: dict, **kwargs) -> dict:
+    def create_object(self, api: str, obj: Any, **kwargs) -> dict:
         """
         Create an object in local.
 
@@ -48,6 +49,9 @@ class ClientLocal(Client):
         dict
             The created object.
         """
+        if not isinstance(obj, dict):
+            raise TypeError("Object must be a dictionary")
+
         entity_type, _, context_api = self._parse_api(api)
         try:
             # Check if entity_type is valid
@@ -155,7 +159,7 @@ class ClientLocal(Client):
             msg = self._format_msg(3, entity_type=entity_type, entity_id=entity_id)
             raise BackendError(msg)
 
-    def update_object(self, api: str, obj: dict, **kwargs) -> dict:
+    def update_object(self, api: str, obj: Any, **kwargs) -> dict:
         """
         Update an object in local.
 
@@ -171,6 +175,9 @@ class ClientLocal(Client):
         dict
             The updated object.
         """
+        if not isinstance(obj, dict):
+            raise TypeError("Object must be a dictionary")
+
         entity_type, entity_id, context_api = self._parse_api(api)
         try:
             # API example

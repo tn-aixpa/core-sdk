@@ -17,11 +17,10 @@ class ModelSpecHuggingface(ModelSpec):
         algorithm: str | None = None,
         base_model: str | None = None,
         parameters: dict | None = None,
-        metrics: dict | None = None,
         model_id: str | None = None,
         model_revision: str = None,
     ) -> None:
-        super().__init__(path, framework, algorithm, base_model, parameters, metrics)
+        super().__init__(path, framework, algorithm, base_model, parameters)
         self.model_id = model_id
         self.model_revision = model_revision
 

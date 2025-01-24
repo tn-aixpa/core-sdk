@@ -26,7 +26,7 @@ class Dataset(BaseModel):
     name: Optional[str] = None
     digest: Optional[str] = None
     profile: Optional[str] = None
-    schema_: Optional[str] = Field(default=None, alias="schema")
+    dataset_schema: Optional[str] = None
     source: Optional[str] = None
     source_type: Optional[str] = None
 

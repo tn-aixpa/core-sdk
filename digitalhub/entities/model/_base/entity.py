@@ -32,3 +32,21 @@ class Model(MaterialEntity):
         super().__init__(project, name, uuid, kind, metadata, spec, status, user)
         self.spec: ModelSpec
         self.status: ModelStatus
+
+    def log_metrics(self, metrics: dict[str, float]) -> None:
+        """
+        Log metrics to the model status.
+
+        Parameters
+        ----------
+        metrics : dict[str, float]
+            The metrics to log.
+
+        Returns
+        -------
+        None
+        """
+        if not isinstance(metrics, dict):
+            raise TypeError("Metrics must be a dictionary")
+        self.status.metrics = metrics
+        self.save(update=True)

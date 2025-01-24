@@ -15,14 +15,12 @@ class ModelSpec(MaterialSpec):
         algorithm: str | None = None,
         base_model: str | None = None,
         parameters: dict | None = None,
-        metrics: dict | None = None,
     ) -> None:
         self.path = path
         self.framework = framework
         self.algorithm = algorithm
         self.base_model = base_model
         self.parameters = parameters
-        self.metrics = metrics
 
 
 class ModelValidator(MaterialValidator):
@@ -44,6 +42,3 @@ class ModelValidator(MaterialValidator):
 
     parameters: dict = None
     """Model validator."""
-
-    metrics: dict = None
-    """Model metrics."""

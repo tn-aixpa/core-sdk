@@ -1,10 +1,31 @@
 from __future__ import annotations
 
+import typing
 from urllib.parse import urlparse
 
 import mlflow
 
 from digitalhub.entities.model.mlflow.models import Dataset, Signature
+
+if typing.TYPE_CHECKING:
+    from mlflow.entities import Run
+
+
+def get_mlflow_run(run_id: str) -> Run:
+    """
+    Get MLFlow run.
+
+    Parameters
+    ----------
+    run_id : str
+        The id of the mlflow run.
+
+    Returns
+    -------
+    Run
+        The extracted run.
+    """
+    return mlflow.MlflowClient().get_run(run_id)
 
 
 def from_mlflow_run(run_id: str) -> dict:
@@ -23,13 +44,11 @@ def from_mlflow_run(run_id: str) -> dict:
     """
 
     # Get MLFlow run
-    client = mlflow.MlflowClient()
-    run = client.get_run(run_id)
+    run = get_mlflow_run(run_id)
 
     # Extract spec
     data = run.data
     parameters = data.params
-    metrics = data.metrics
     source_path = urlparse(run.info.artifact_uri).path
     model_uri = f"runs:/{run_id}/model"
     model = mlflow.pyfunc.load_model(model_uri=model_uri)
@@ -56,7 +75,7 @@ def from_mlflow_run(run_id: str) -> dict:
                 name=d.dataset.name,
                 digest=d.dataset.digest,
                 profile=d.dataset.profile,
-                schema=d.dataset.schema,
+                dataset_schema=d.dataset.schema,
                 source=d.dataset.source,
                 source_type=d.dataset.source_type,
             ).to_dict()
@@ -72,7 +91,6 @@ def from_mlflow_run(run_id: str) -> dict:
     # common properties
     model_params["framework"] = flavor
     model_params["parameters"] = parameters
-    model_params["metrics"] = metrics
 
     # specific to MLFlow
     model_params["flavor"] = flavor
@@ -81,3 +99,24 @@ def from_mlflow_run(run_id: str) -> dict:
     model_params["signature"] = signature
 
     return model_params
+
+
+def get_mlflow_model_metrics(run_id: str) -> dict:
+    """
+    Get MLFlow model metrics for a given run id.
+
+    Parameters
+    ----------
+    run_id : str
+        The id of the mlflow run.
+
+    Returns
+    -------
+    dict
+        The extracted metrics.
+    """
+    # Get MLFlow run
+    run = get_mlflow_run(run_id)
+
+    # Extract metrics
+    return run.data.metrics

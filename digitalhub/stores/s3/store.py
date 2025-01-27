@@ -12,9 +12,9 @@ from botocore.exceptions import ClientError
 from digitalhub.readers.api import get_reader_by_object
 from digitalhub.stores._base.store import Store
 from digitalhub.stores.s3.configurator import S3StoreConfigurator
+from digitalhub.stores.s3.utils import get_bucket_name
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
-from digitalhub.utils.s3_utils import get_bucket_name
 
 # Type aliases
 S3Client = Type["botocore.client.S3"]

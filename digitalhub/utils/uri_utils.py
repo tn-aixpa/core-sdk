@@ -99,7 +99,7 @@ def map_uri_scheme(uri: str) -> str:
     if scheme in list_enum(LocalSchemes):
         return SchemeCategory.LOCAL.value
     if scheme in list_enum(InvalidLocalSchemes):
-        raise ValueError("For local uri, do not use any scheme.")
+        raise ValueError("For local URI, do not use any scheme.")
     if scheme in list_enum(RemoteSchemes):
         return SchemeCategory.REMOTE.value
     if scheme in list_enum(S3Schemes):

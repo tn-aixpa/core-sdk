@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from digitalhub.stores.s3.utils import get_s3_bucket_from_env
 from digitalhub.utils.file_utils import eval_zip_type
-from digitalhub.utils.s3_utils import get_s3_bucket
 from digitalhub.utils.uri_utils import S3Schemes, has_local_scheme
 
 
@@ -91,7 +91,7 @@ def build_log_path_from_source(
         Log path.
     """
     scheme = eval_zip_sources(source)
-    path = f"{scheme}://{get_s3_bucket()}/{project}/{entity_type}/{name}/{uuid}"
+    path = f"{scheme}://{get_s3_bucket_from_env()}/{project}/{entity_type}/{name}/{uuid}"
 
     if isinstance(source, list) and len(source) >= 1:
         if len(source) > 1:

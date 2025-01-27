@@ -6,6 +6,10 @@ from urllib.parse import urlparse
 
 from boto3 import client as boto3_client
 
+from digitalhub.stores.s3.enums import S3StoreEnv
+
+DEFAULT_BUCKET = "datalake"
+
 
 def get_bucket_name(path: str) -> str:
     """
@@ -59,11 +63,11 @@ def get_s3_source(bucket: str, key: str, filename: Path) -> None:
     -------
     None
     """
-    s3 = boto3_client("s3", endpoint_url=os.getenv("S3_ENDPOINT_URL"))
+    s3 = boto3_client("s3", endpoint_url=os.getenv(S3StoreEnv.ENDPOINT_URL.value))
     s3.download_file(bucket, key, filename)
 
 
-def get_s3_bucket() -> str | None:
+def get_s3_bucket_from_env() -> str | None:
     """
     Function to get S3 bucket name.
 
@@ -72,4 +76,4 @@ def get_s3_bucket() -> str | None:
     str
         The S3 bucket name.
     """
-    return os.getenv("S3_BUCKET_NAME", "datalake")
+    return os.getenv(S3StoreEnv.BUCKET_NAME.value, DEFAULT_BUCKET)

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from typing import Union
+
 from pydantic import BaseModel
 
 
 class Metric(BaseModel):
-    value: float | int | list[float | int]
+    value: Union[float, int, list[Union[float, int]]]

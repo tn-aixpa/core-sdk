@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from botocore.config import Config
 from digitalhub.configurator.configurator import configurator
 from digitalhub.stores.s3.enums import S3StoreEnv
 from digitalhub.stores.s3.models import S3StoreConfig
@@ -61,6 +62,10 @@ class S3StoreConfigurator:
                 "endpoint_url": creds[S3StoreEnv.ENDPOINT_URL.value],
                 "aws_access_key_id": creds[S3StoreEnv.ACCESS_KEY_ID.value],
                 "aws_secret_access_key": creds[S3StoreEnv.SECRET_ACCESS_KEY.value],
+                "config": Config(
+                    region_name=creds[S3StoreEnv.REGION.value],
+                    signature_version=creds[S3StoreEnv.SIGNATURE_VERSION.value],
+                ),
             }
         except KeyError as e:
             raise StoreError(f"Missing credentials for S3 store. {str(e)}")
@@ -73,13 +78,28 @@ class S3StoreConfigurator:
         -------
         None
         """
-        endpoint = configurator.load_var(S3StoreEnv.ENDPOINT_URL.value)
-        access_key = configurator.load_var(S3StoreEnv.ACCESS_KEY_ID.value)
-        secret_key = configurator.load_var(S3StoreEnv.SECRET_ACCESS_KEY.value)
-        bucket_name = configurator.load_var(S3StoreEnv.BUCKET_NAME.value)
-        if endpoint is None or access_key is None or secret_key is None or bucket_name is None:
-            raise StoreError("Missing credentials for S3 store.")
-        configurator.set_credential(S3StoreEnv.ENDPOINT_URL.value, endpoint)
-        configurator.set_credential(S3StoreEnv.ACCESS_KEY_ID.value, access_key)
-        configurator.set_credential(S3StoreEnv.SECRET_ACCESS_KEY.value, secret_key)
-        configurator.set_credential(S3StoreEnv.BUCKET_NAME.value, bucket_name)
+        required_vars = [
+            S3StoreEnv.ENDPOINT_URL,
+            S3StoreEnv.ACCESS_KEY_ID,
+            S3StoreEnv.SECRET_ACCESS_KEY,
+            S3StoreEnv.BUCKET_NAME
+        ]
+        optional_vars = [
+            S3StoreEnv.REGION,
+            S3StoreEnv.SIGNATURE_VERSION
+        ]
+
+        # Load required environment variables
+        credentials = {var.value: configurator.load_var(var.value) for var in required_vars}
+
+        # Check for missing required credentials
+        missing_vars = [key for key, value in credentials.items() if value is None]
+        if missing_vars:
+            raise StoreError(f"Missing credentials for S3 store: {', '.join(missing_vars)}")
+
+        # Load optional environment variables
+        credentials.update({var.value: configurator.load_var(var.value) for var in optional_vars})
+
+        # Set credentials
+        for key, value in credentials.items():
+            configurator.set_credential(key, value)

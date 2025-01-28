@@ -88,7 +88,7 @@ def get_project_from_key(key: str) -> str:
     return project
 
 
-def validate_metric_value(value: Any) -> None:
+def validate_metric_value(value: Any) -> float | int | list[float | int]:
     """
     Validate metric value.
 
@@ -99,9 +99,10 @@ def validate_metric_value(value: Any) -> None:
 
     Returns
     -------
-    None
+    float | int | list[float | int]
+        The validated value.
     """
     try:
-        Metric(value=value)
+        return Metric(value=value).value
     except ValidationError as e:
         raise ValueError("Invalid metric value. Must be a list of floats or ints or a float or an int.") from e

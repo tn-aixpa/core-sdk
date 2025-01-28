@@ -81,7 +81,7 @@ class Model(MaterialEntity):
         -------
         None
         """
-        validate_metric_value(value)
+        value = validate_metric_value(value)
 
         if isinstance(value, list):
             self._handle_metric_list(key, value, overwrite)

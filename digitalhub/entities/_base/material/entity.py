@@ -34,6 +34,9 @@ class MaterialEntity(VersionedEntity):
         self.spec: MaterialSpec
         self.status: MaterialStatus
 
+        # Init files info
+        self._init_files_info()
+
     def save(self, update: bool = False) -> MaterialEntity:
         """
         Save entity into backend.
@@ -175,6 +178,17 @@ class MaterialEntity(VersionedEntity):
     #  Public Helpers
     ##############################
 
+    def _init_files_info(self) -> None:
+        """
+        Initialize files info.
+
+        Returns
+        -------
+        None
+        """
+        if self.status.files is None:
+            self.status.files = []
+
     def add_files_info(self, files: list[dict]) -> None:
         """
         Add a file to the status.
@@ -202,8 +216,6 @@ class MaterialEntity(VersionedEntity):
         list[str]
             Paths of the files in the status.
         """
-        if self.status.files is None:
-            self.status.files = []
         return [f.get("path") for f in self.status.files]
 
     ##############################
@@ -225,7 +237,8 @@ class MaterialEntity(VersionedEntity):
         """
         if files_info is None:
             return
-        self.refresh()
+        if self.status.files:
+            self.refresh()
         self.add_files_info(files_info)
         self.save(update=True)
 

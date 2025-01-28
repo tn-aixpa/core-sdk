@@ -6,6 +6,7 @@ from typing import Any
 
 from digitalhub.client._base.client import Client
 from digitalhub.client.local.api_builder import ClientLocalApiBuilder
+from digitalhub.client.local.enums import LocalClientVar
 from digitalhub.client.local.key_builder import ClientLocalKeyBuilder
 from digitalhub.utils.exceptions import BackendError
 
@@ -118,6 +119,8 @@ class ClientLocal(Client):
         dict
             The read object.
         """
+        if api == LocalClientVar.EMPTY.value:
+            return {}
         entity_type, entity_id, context_api = self._parse_api(api)
         if entity_id is None:
             msg = self._format_msg(4)

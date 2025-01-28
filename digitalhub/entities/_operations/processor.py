@@ -714,46 +714,8 @@ class OperationsProcessor:
             entity_id=entity_id,
             **kwargs,
         )
-        return build_entity_from_dict(obj)
-
-    def read_material_entity(
-        self,
-        identifier: str,
-        entity_type: str | None = None,
-        project: str | None = None,
-        entity_id: str | None = None,
-        **kwargs,
-    ) -> MaterialEntity:
-        """
-        Read object from backend.
-
-        Parameters
-        ----------
-        identifier : str
-            Entity key (store://...) or entity name.
-        entity_type : str
-            Entity type.
-        project : str
-            Project name.
-        entity_id : str
-            Entity ID.
-        **kwargs : dict
-            Parameters to pass to the API call.
-
-        Returns
-        -------
-        MaterialEntity
-            Object instance.
-        """
-        obj: MaterialEntity = self.read_context_entity(
-            identifier,
-            entity_type=entity_type,
-            project=project,
-            entity_id=entity_id,
-            **kwargs,
-        )
-        obj._get_files_info()
-        return obj
+        entity = build_entity_from_dict(obj)
+        return self._post_process_get(entity)
 
     def read_unversioned_entity(
         self,
@@ -790,16 +752,13 @@ class OperationsProcessor:
             splt = identifier.split(":")
             if len(splt) == 3:
                 identifier = f"{splt[0]}:{splt[1]}"
-        entity = self.read_context_entity(
+        return self.read_context_entity(
             identifier,
             entity_type=entity_type,
             project=project,
             entity_id=entity_id,
             **kwargs,
         )
-        if hasattr(entity.status, "metrics"):
-            entity._get_metrics()
-        return entity
 
     def import_context_entity(
         self,
@@ -1004,42 +963,6 @@ class OperationsProcessor:
             List of object instances.
         """
         context = self._get_context_from_identifier(identifier, project)
-        obj = self._read_context_entity_versions(
-            context,
-            identifier,
-            entity_type=entity_type,
-            project=project,
-            **kwargs,
-        )
-        return [build_entity_from_dict(o) for o in obj]
-
-    def read_material_entity_versions(
-        self,
-        identifier: str,
-        entity_type: str | None = None,
-        project: str | None = None,
-        **kwargs,
-    ) -> list[MaterialEntity]:
-        """
-        Read object versions from backend.
-
-        Parameters
-        ----------
-        identifier : str
-            Entity key (store://...) or entity name.
-        entity_type : str
-            Entity type.
-        project : str
-            Project name.
-        **kwargs : dict
-            Parameters to pass to the API call.
-
-        Returns
-        -------
-        list[MaterialEntity]
-            List of object instances.
-        """
-        context = self._get_context_from_identifier(identifier, project)
         objs = self._read_context_entity_versions(
             context,
             identifier,
@@ -1049,8 +972,8 @@ class OperationsProcessor:
         )
         objects = []
         for o in objs:
-            entity: MaterialEntity = build_entity_from_dict(o)
-            entity._get_files_info()
+            entity: ContextEntity = build_entity_from_dict(o)
+            entity = self._post_process_get(entity)
             objects.append(entity)
         return objects
 
@@ -1110,37 +1033,10 @@ class OperationsProcessor:
         """
         context = self._get_context(project)
         objs = self._list_context_entities(context, entity_type, **kwargs)
-        return [build_entity_from_dict(obj) for obj in objs]
-
-    def list_material_entities(
-        self,
-        project: str,
-        entity_type: str,
-        **kwargs,
-    ) -> list[MaterialEntity]:
-        """
-        List all latest version objects from backend.
-
-        Parameters
-        ----------
-        project : str
-            Project name.
-        entity_type : str
-            Entity type.
-        **kwargs : dict
-            Parameters to pass to the API call.
-
-        Returns
-        -------
-        list[MaterialEntity]
-            List of object instances.
-        """
-        context = self._get_context(project)
-        objs = self._list_context_entities(context, entity_type, **kwargs)
         objects = []
         for o in objs:
-            entity: MaterialEntity = build_entity_from_dict(o)
-            entity._get_files_info()
+            entity: ContextEntity = build_entity_from_dict(o)
+            entity = self._post_process_get(entity)
             objects.append(entity)
         return objects
 
@@ -1327,6 +1223,26 @@ class OperationsProcessor:
             entity_id,
             **kwargs,
         )
+
+    def _post_process_get(self, entity: ContextEntity) -> ContextEntity:
+        """
+        Post process get (files, metrics).
+
+        Parameters
+        ----------
+        entity : ContextEntity
+            Entity to post process.
+
+        Returns
+        -------
+        ContextEntity
+            Post processed entity.
+        """
+        if hasattr(entity.status, "metrics"):
+            entity._get_metrics()
+        if hasattr(entity.status, "files"):
+            entity._get_files_info()
+        return entity
 
     ##############################
     # Context entity operations

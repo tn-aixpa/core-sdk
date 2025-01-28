@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from digitalhub.client._base.api_builder import ClientApiBuilder
+from digitalhub.client.local.enums import LocalClientVar
 from digitalhub.entities._commons.enums import ApiCategories, BackendOperations
 from digitalhub.utils.exceptions import BackendError
 
@@ -82,4 +83,10 @@ class ClientLocalApiBuilder(ClientApiBuilder):
             BackendOperations.DELETE.value,
         ):
             return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}"
+        elif operation in (
+            BackendOperations.LOGS.value,
+            BackendOperations.FILES.value,
+            BackendOperations.METRICS.value,
+        ):
+            return LocalClientVar.EMPTY.value
         raise BackendError(f"API for operation '{operation}' for entity type '{entity_type}' not implemented in Local.")

@@ -5,6 +5,7 @@ import typing
 
 from digitalhub.entities._base.unversioned.entity import UnversionedEntity
 from digitalhub.entities._commons.enums import EntityTypes, State
+from digitalhub.entities._commons.utils import validate_metric_value
 from digitalhub.entities._operations.processor import processor
 from digitalhub.factory.api import (
     build_runtime,
@@ -45,38 +46,8 @@ class Run(UnversionedEntity):
         self.spec: RunSpec
         self.status: RunStatus
 
-    def save(self, update: bool = False, metric_name: str | None = None) -> Run:
-        """
-        Save entity into backend.
-
-        Parameters
-        ----------
-        update : bool
-            Flag to indicate update.
-
-        Returns
-        -------
-        MaterialEntity
-            Entity saved.
-        """
-        if metric_name is not None:
-            return super().save(update)
-
-        # Prepare metrics
-        metrics = None
-        if self.status.metrics is not None and not self._context().local:
-            metrics = self.status.metrics
-            self.status.metrics = {}
-
-        obj: Run = super().save(update)
-
-        # Handle metrics
-        if metrics is not None and metric_name is not None:
-            obj = metrics[metric_name]
-            processor.update_metric(self.project, self.ENTITY_TYPE, self.id, metric_name, obj)
-            self.status.metrics = metrics
-
-        return obj
+        # Initialize metrics
+        self._init_metrics()
 
     ##############################
     #  Run Methods
@@ -194,7 +165,13 @@ class Run(UnversionedEntity):
         if not self.spec.local_execution:
             return processor.resume_run(self.project, self.ENTITY_TYPE, self.id)
 
-    def log_metric(self, key: str, value: float | int, single_value: bool = False) -> None:
+    def log_metric(
+        self,
+        key: str,
+        value: list | float | int,
+        overwrite: bool = False,
+        single_value: bool = False,
+    ) -> None:
         """
         Log metric.
 
@@ -204,21 +181,24 @@ class Run(UnversionedEntity):
             Key of the metric.
         value : float
             Value of the metric.
+        overwrite : bool
+            If True, overwrite existing metric.
+        single_value : bool
+            If True, value is a single value.
 
         Returns
         -------
         None
         """
-        if not isinstance(value, (int, float)):
-            raise EntityError(f"Metric value must be float or int, not {type(value)}")
-        if self.status.metrics is None:
-            self.status.metrics = {}
-        if key not in self.status.metrics and not single_value:
-            self.status.metrics[key] = []
-        if single_value:
-            self.status.metrics[key] = value
+        validate_metric_value(value)
+
+        if isinstance(value, list):
+            self._handle_metric_list(key, value, overwrite)
+        elif single_value:
+            self._handle_metric_single(key, value, overwrite)
         else:
-            self.status.metrics[key].append(value)
+            self._handle_metric_list_append(key, value, overwrite)
+
         processor.update_metric(self.project, self.ENTITY_TYPE, self.id, key, self.status.metrics[key])
 
     ##############################
@@ -364,6 +344,17 @@ class Run(UnversionedEntity):
             project=self.project,
         ).to_dict()
 
+    def _init_metrics(self) -> None:
+        """
+        Initialize metrics.
+
+        Returns
+        -------
+        None
+        """
+        if self.status.metrics is None:
+            self.status.metrics = {}
+
     def _get_metrics(self) -> None:
         """
         Get run metrics from backend.
@@ -377,3 +368,67 @@ class Run(UnversionedEntity):
             entity_type=self.ENTITY_TYPE,
             entity_id=self.id,
         )
+
+    def _handle_metric_single(self, key: str, value: float | int, overwrite: bool = False) -> None:
+        """
+        Handle metric single value.
+
+        Parameters
+        ----------
+        key : str
+            Key of the metric.
+        value : float
+            Value of the metric.
+        overwrite : bool
+            If True, overwrite existing metric.
+
+        Returns
+        -------
+        None
+        """
+        if key not in self.status.metrics or overwrite:
+            self.status.metrics[key] = value
+
+    def _handle_metric_list_append(self, key: str, value: float | int, overwrite: bool = False) -> None:
+        """
+        Handle metric list append.
+
+        Parameters
+        ----------
+        key : str
+            Key of the metric.
+        value : float
+            Value of the metric.
+        overwrite : bool
+            If True, overwrite existing metric.
+
+        Returns
+        -------
+        None
+        """
+        if key not in self.status.metrics or overwrite:
+            self.status.metrics[key] = [value]
+        else:
+            self.status.metrics[key].append(value)
+
+    def _handle_metric_list(self, key: str, value: list[int | float], overwrite: bool = False) -> None:
+        """
+        Handle metric list.
+
+        Parameters
+        ----------
+        key : str
+            Key of the metric.
+        value : list[int | float]
+            Value of the metric.
+        overwrite : bool
+            If True, overwrite existing metric.
+
+        Returns
+        -------
+        None
+        """
+        if key not in self.status.metrics or overwrite:
+            self.status.metrics[key] = value
+        else:
+            self.status.metrics[key].extend(value)

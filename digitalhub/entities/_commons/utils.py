@@ -1,6 +1,11 @@
 from __future__ import annotations
 
+from typing import Any
+
+from pydantic import ValidationError
+
 from digitalhub.entities._commons.enums import EntityTypes
+from digitalhub.entities._commons.models import Metric
 
 
 def parse_entity_key(key: str) -> tuple[str]:
@@ -81,3 +86,22 @@ def get_project_from_key(key: str) -> str:
     """
     project, _, _, _, _ = parse_entity_key(key)
     return project
+
+
+def validate_metric_value(value: Any) -> None:
+    """
+    Validate metric value.
+
+    Parameters
+    ----------
+    value : Any
+        The value to validate.
+
+    Returns
+    -------
+    None
+    """
+    try:
+        Metric(value=value)
+    except ValidationError as e:
+        raise ValueError("Invalid metric value. Must be a list of floats or ints or a float or an int.") from e

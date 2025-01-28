@@ -165,7 +165,7 @@ def get_dataitem(
     >>>                    project="my-project",
     >>>                    entity_id="my-dataitem-id")
     """
-    return processor.read_material_entity(
+    return processor.read_context_entity(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -205,7 +205,7 @@ def get_dataitem_versions(
     >>> objs = get_dataitem_versions("my-dataitem-name",
     >>>                              project="my-project")
     """
-    return processor.read_material_entity_versions(
+    return processor.read_context_entity_versions(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -233,7 +233,7 @@ def list_dataitems(project: str, **kwargs) -> list[Dataitem]:
     --------
     >>> objs = list_dataitems(project="my-project")
     """
-    return processor.list_material_entities(
+    return processor.list_context_entities(
         project=project,
         entity_type=ENTITY_TYPE,
         **kwargs,

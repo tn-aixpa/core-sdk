@@ -157,7 +157,7 @@ def get_model(
     >>>                 project="my-project",
     >>>                 entity_id="my-model-id")
     """
-    return processor.read_material_entity(
+    return processor.read_context_entity(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -197,7 +197,7 @@ def get_model_versions(
     >>> objs = get_model_versions("my-model-name",
     >>>                           project="my-project")
     """
-    return processor.read_material_entity_versions(
+    return processor.read_context_entity_versions(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -225,7 +225,7 @@ def list_models(project: str, **kwargs) -> list[Model]:
     --------
     >>> objs = list_models(project="my-project")
     """
-    return processor.list_material_entities(
+    return processor.list_context_entities(
         project=project,
         entity_type=ENTITY_TYPE,
         **kwargs,

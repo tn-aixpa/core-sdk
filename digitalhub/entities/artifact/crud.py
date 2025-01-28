@@ -158,7 +158,7 @@ def get_artifact(
     >>>                    project="my-project",
     >>>                    entity_id="my-artifact-id")
     """
-    return processor.read_material_entity(
+    return processor.read_context_entity(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -198,7 +198,7 @@ def get_artifact_versions(
     >>> obj = get_artifact_versions("my-artifact-name"
     >>>                             project="my-project")
     """
-    return processor.read_material_entity_versions(
+    return processor.read_context_entity_versions(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -226,7 +226,7 @@ def list_artifacts(project: str, **kwargs) -> list[Artifact]:
     --------
     >>> objs = list_artifacts(project="my-project")
     """
-    return processor.list_material_entities(
+    return processor.list_context_entities(
         project=project,
         entity_type=ENTITY_TYPE,
         **kwargs,

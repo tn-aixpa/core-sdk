@@ -43,7 +43,10 @@ class S3StoreConfigurator:
                 (S3StoreEnv.ENDPOINT_URL.value, config.endpoint),
                 (S3StoreEnv.ACCESS_KEY_ID.value, config.access_key),
                 (S3StoreEnv.SECRET_ACCESS_KEY.value, config.secret_key),
+                (S3StoreEnv.SESSION_TOKEN.value, config.session_token),
                 (S3StoreEnv.BUCKET_NAME.value, config.bucket_name),
+                (S3StoreEnv.REGION.value, config.region),
+                (S3StoreEnv.SIGNATURE_VERSION.value, config.signature_version),
             ]:
                 configurator.set_credential(*pair)
 
@@ -62,6 +65,7 @@ class S3StoreConfigurator:
                 "endpoint_url": creds[S3StoreEnv.ENDPOINT_URL.value],
                 "aws_access_key_id": creds[S3StoreEnv.ACCESS_KEY_ID.value],
                 "aws_secret_access_key": creds[S3StoreEnv.SECRET_ACCESS_KEY.value],
+                "aws_session_token": creds[S3StoreEnv.SESSION_TOKEN.value],
                 "config": Config(
                     region_name=creds[S3StoreEnv.REGION.value],
                     signature_version=creds[S3StoreEnv.SIGNATURE_VERSION.value],
@@ -86,7 +90,8 @@ class S3StoreConfigurator:
         ]
         optional_vars = [
             S3StoreEnv.REGION,
-            S3StoreEnv.SIGNATURE_VERSION
+            S3StoreEnv.SIGNATURE_VERSION,
+            S3StoreEnv.SESSION_TOKEN
         ]
 
         # Load required environment variables

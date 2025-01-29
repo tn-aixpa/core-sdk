@@ -117,6 +117,7 @@ class ClientDHCoreConfigurator:
         str
             The url.
         """
+        api = api.removeprefix("/")
         return f"{configurator.get_credentials(DhcoreEnvVar.ENDPOINT.value)}/{api}"
 
     ##############################

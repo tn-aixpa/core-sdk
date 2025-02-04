@@ -13,13 +13,11 @@ class ModelSpec(MaterialSpec):
         path: str,
         framework: str | None = None,
         algorithm: str | None = None,
-        base_model: str | None = None,
         parameters: dict | None = None,
     ) -> None:
         self.path = path
         self.framework = framework
         self.algorithm = algorithm
-        self.base_model = base_model
         self.parameters = parameters
 
 
@@ -36,9 +34,6 @@ class ModelValidator(MaterialValidator):
 
     algorithm: str = None
     """Model algorithm (e.g. 'resnet')."""
-
-    base_model: str = None
-    """Base model."""
 
     parameters: dict = None
     """Model validator."""

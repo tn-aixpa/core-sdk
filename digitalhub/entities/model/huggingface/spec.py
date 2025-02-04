@@ -15,12 +15,13 @@ class ModelSpecHuggingface(ModelSpec):
         path: str,
         framework: str | None = None,
         algorithm: str | None = None,
-        base_model: str | None = None,
         parameters: dict | None = None,
+                base_model: str | None = None,
         model_id: str | None = None,
         model_revision: str = None,
     ) -> None:
-        super().__init__(path, framework, algorithm, base_model, parameters)
+        super().__init__(path, framework, algorithm,  parameters)
+        self.base_model = base_model
         self.model_id = model_id
         self.model_revision = model_revision
 
@@ -29,6 +30,9 @@ class ModelValidatorHuggingface(ModelValidator):
     """
     ModelValidatorHuggingface validator.
     """
+
+    base_model: str = None
+    """Base model."""
 
     placeholder_model_id: str = Field(default=None, alias="model_id")
     """Huggingface model id. If not specified, the model is loaded from the model path."""

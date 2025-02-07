@@ -39,7 +39,7 @@ postprocessors = [
   # { pattern = '<REPO>', replace = "https://github.com/orhun/git-cliff" }, # replace repository URL
 ]
 # render body even when there are no releases to process
-render_always = true
+# render_always = true
 # output file path
 # output = "test.md"
 
@@ -74,5 +74,5 @@ filter_commits = false
 topo_order = false
 # sort the commits inside sections by oldest/newest order
 sort_commits = "oldest"
-ignore_tags = "b"
+ignore_tags = ".*b.*"
 use_branch_tags  = true

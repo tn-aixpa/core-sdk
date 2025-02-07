@@ -99,7 +99,8 @@ jobs:
       - name: Generate a changelog
         env:
           VERSION: ${{ needs.bumpver-pyproject.outputs.version }}
-        run: ./.github/scripts/changelog.sh ${{ env.VERSION }}
+          BETA: ${{ inputs.release-type == 'upgrade-beta' || startsWith(inputs.release-type, 'new-beta')}}
+        run: ./.github/scripts/changelog.sh ${{ env.VERSION }} ${{ env.BETA }}
 
       - name: Create Release
         id: create_release

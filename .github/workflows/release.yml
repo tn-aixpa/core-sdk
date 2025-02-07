@@ -112,7 +112,7 @@ jobs:
         with:
           name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
-          generate_release_notes: true
+          body_path: CHANGELOG.md
           draft: false
           prerelease: ${{ env.BETA }}
 

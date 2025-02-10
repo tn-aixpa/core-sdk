@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from botocore.config import Config
+
 from digitalhub.configurator.configurator import configurator
 from digitalhub.stores.s3.enums import S3StoreEnv
 from digitalhub.stores.s3.models import S3StoreConfig
@@ -86,13 +87,9 @@ class S3StoreConfigurator:
             S3StoreEnv.ENDPOINT_URL,
             S3StoreEnv.ACCESS_KEY_ID,
             S3StoreEnv.SECRET_ACCESS_KEY,
-            S3StoreEnv.BUCKET_NAME
+            S3StoreEnv.BUCKET_NAME,
         ]
-        optional_vars = [
-            S3StoreEnv.REGION,
-            S3StoreEnv.SIGNATURE_VERSION,
-            S3StoreEnv.SESSION_TOKEN
-        ]
+        optional_vars = [S3StoreEnv.REGION, S3StoreEnv.SIGNATURE_VERSION, S3StoreEnv.SESSION_TOKEN]
 
         # Load required environment variables
         credentials = {var.value: configurator.load_var(var.value) for var in required_vars}

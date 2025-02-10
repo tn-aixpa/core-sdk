@@ -22,7 +22,7 @@ class ModelSpecMlflow(ModelSpec):
         input_datasets: list[Dataset] | None = None,
         signature: Signature = None,
     ) -> None:
-        super().__init__(path, framework, algorithm,  parameters)
+        super().__init__(path, framework, algorithm, parameters)
         self.flavor = flavor
         self.model_config = model_config
         self.input_datasets = input_datasets

@@ -56,7 +56,7 @@ def process_kwargs(
     if path is None:
         uuid = build_uuid()
         kwargs["uuid"] = uuid
-        kwargs["path"] = build_log_path_from_source(project, EntityTypes.MODEL.value, name, uuid, source)
+        kwargs["path"] = build_log_path_from_source(project, EntityTypes.ARTIFACT.value, name, uuid, source)
     else:
         kwargs["path"] = path
     return kwargs

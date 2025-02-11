@@ -168,18 +168,21 @@ class Run(UnversionedEntity):
     def log_metric(
         self,
         key: str,
-        value: list | float | int,
+        value: list[float | int] | float | int,
         overwrite: bool = False,
         single_value: bool = False,
     ) -> None:
         """
-        Log metric.
+        Log metric into entity status.
+        A metric is named by a key and value (single number or list of numbers).
+        The metric by default is put in a list or appended to an existing list.
+        If single_value is True, the value will be a single number.
 
         Parameters
         ----------
         key : str
             Key of the metric.
-        value : float
+        value : list[float | int] | float | int
             Value of the metric.
         overwrite : bool
             If True, overwrite existing metric.
@@ -189,6 +192,23 @@ class Run(UnversionedEntity):
         Returns
         -------
         None
+
+        Examples
+        --------
+        Log a new value in a list
+        >>> entity.log_metric("loss", 0.002)
+
+        Append a new value in a list
+        >>> entity.log_metric("loss", 0.0019)
+
+        Log a list of values and append them to existing metric:
+        >>> entity.log_metric("loss", [0.0018, 0.0015])
+
+        Log a single value (not represented as list):
+        >>> entity.log_metric("accuracy", 0.9, single_value=True)
+
+        Log a list of values and overwrite existing metric:
+        >>> entity.log_metric("accuracy", [0.8, 0.9], overwrite=True)
         """
         value = validate_metric_value(value)
 

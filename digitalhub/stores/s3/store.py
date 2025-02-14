@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import typing
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Type
@@ -15,6 +16,9 @@ from digitalhub.stores.s3.configurator import S3StoreConfigurator
 from digitalhub.stores.s3.utils import get_bucket_name
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
+
+if typing.TYPE_CHECKING:
+    pass
 
 # Type aliases
 S3Client = Type["botocore.client.S3"]
@@ -229,11 +233,98 @@ class S3Store(Store):
         return infos
 
     ##############################
+    # Datastore methods
+    ##############################
+
+    def read_df(
+        self,
+        path: str | list[str],
+        file_format: str | None = None,
+        engine: str | None = None,
+        **kwargs,
+    ) -> Any:
+        """
+        Read DataFrame from path.
+
+        Parameters
+        ----------
+        path : str | list[str]
+            Path(s) to read DataFrame from.
+        file_format : str
+            Extension of the file.
+        engine : str
+            Dataframe engine (pandas, polars, etc.).
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        Any
+            DataFrame.
+        """
+        reader = self._get_reader(engine)
+
+        # Verify if partition or single file
+        if self.is_partition(path):
+            client, bucket = self._check_factory(path)
+            objects = self._list_objects(client, bucket, path)
+            keys = [self._get_key(o) for o in objects]
+
+        else:
+            if isinstance(path, list):
+                client, bucket = self._check_factory(path[0])
+                keys = [self._get_key(p) for p in path]
+            else:
+                client, bucket = self._check_factory(path)
+                keys = [self._get_key(path)]
+
+        dfs = []
+        for key in keys:
+            file_format = self._get_extension(file_format, key)
+            obj = self._download_fileobject(key, client, bucket)
+            dfs.append(reader.read_df(obj, extension=file_format, **kwargs))
+
+        if len(dfs) == 1:
+            return dfs[0]
+        return reader.concat_dfs(dfs)
+
+    def write_df(
+        self,
+        df: Any,
+        dst: str,
+        extension: str | None = None,
+        **kwargs,
+    ) -> str:
+        """
+        Write a dataframe to S3 based storage. Kwargs are passed to df.to_parquet().
+
+        Parameters
+        ----------
+        df : Any
+            The dataframe.
+        dst : str
+            The destination path on S3 based storage.
+        extension : str
+            The extension of the file.
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        str
+            The S3 path where the dataframe was saved.
+        """
+        fileobj = BytesIO()
+        reader = get_reader_by_object(df)
+        reader.write_df(df, fileobj, extension=extension, **kwargs)
+        return self.upload_fileobject(fileobj, dst)
+
+    ##############################
     # Private I/O methods
     ##############################
 
+    @staticmethod
     def _download_file(
-        self,
         key: str,
         dst_pth: Path,
         client: S3Client,
@@ -244,8 +335,8 @@ class S3Store(Store):
 
         Parameters
         ----------
-        keys : str
-            The list of keys to be downloaded.
+        key : str
+            The key to be downloaded.
         dst_pth : str
             The destination of the files on local filesystem.
         client : S3Client
@@ -258,8 +349,33 @@ class S3Store(Store):
         list[str]
             The list of paths of the downloaded files.
         """
-        # Download file
         client.download_file(bucket, key, dst_pth)
+
+    @staticmethod
+    def _download_fileobject(
+        key: str,
+        client: S3Client,
+        bucket: str,
+    ) -> BytesIO:
+        """
+        Download fileobject from S3 partition.
+
+        Parameters
+        ----------
+        key : str
+            The key of the file.
+        client : S3Client
+            The S3 client object.
+        bucket : str
+            The name of the S3 bucket.
+
+        Returns
+        -------
+        BytesIO
+            The fileobject of the downloaded file.
+        """
+        obj = client.get_object(Bucket=bucket, Key=key)
+        return BytesIO(obj["Body"].read())
 
     def _upload_dir(
         self,
@@ -438,41 +554,6 @@ class S3Store(Store):
         client.put_object(Bucket=bucket, Key=key, Body=fileobj.getvalue())
 
     ##############################
-    # Datastore methods
-    ##############################
-
-    def write_df(
-        self,
-        df: Any,
-        dst: str,
-        extension: str | None = None,
-        **kwargs,
-    ) -> str:
-        """
-        Write a dataframe to S3 based storage. Kwargs are passed to df.to_parquet().
-
-        Parameters
-        ----------
-        df : Any
-            The dataframe.
-        dst : str
-            The destination path on S3 based storage.
-        extension : str
-            The extension of the file.
-        **kwargs : dict
-            Keyword arguments.
-
-        Returns
-        -------
-        str
-            The S3 path where the dataframe was saved.
-        """
-        fileobj = BytesIO()
-        reader = get_reader_by_object(df)
-        reader.write_df(df, fileobj, extension=extension, **kwargs)
-        return self.upload_fileobject(fileobj, dst)
-
-    ##############################
     # Helper methods
     ##############################
 
@@ -496,7 +577,7 @@ class S3Store(Store):
         S3Client
             Returns a client object that interacts with the S3 storage service.
         """
-        cfg = self._configurator.get_s3_creds()
+        cfg = self._configurator.get_boto3_client_config()
         return boto3.client("s3", **cfg)
 
     def _check_factory(self, root: str) -> tuple[S3Client, str]:

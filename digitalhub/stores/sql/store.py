@@ -119,6 +119,68 @@ class SqlStore(Store):
         return []
 
     ##############################
+    # Datastore methods
+    ##############################
+
+    def read_df(
+        self,
+        path: str | list[str],
+        file_format: str | None = None,
+        engine: str | None = None,
+        **kwargs,
+    ) -> Any:
+        """
+        Read DataFrame from path.
+
+        Parameters
+        ----------
+        path : str | list[str]
+            Path(s) to read DataFrame from.
+        file_format : str
+            Extension of the file.
+        engine : str
+            Dataframe engine (pandas, polars, etc.).
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        Any
+            DataFrame.
+        """
+        reader = self._get_reader(engine)
+        schema = self._get_schema(path)
+        table = self._get_table_name(path)
+        sql_engine = self._check_factory(schema=schema)
+
+        sa_table = Table(table, MetaData(), autoload_with=sql_engine)
+        stm = select(sa_table)
+
+        return reader.read_table(stm, sql_engine, **kwargs)
+
+    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
+        """
+        Write a dataframe to a database. Kwargs are passed to df.to_sql().
+
+        Parameters
+        ----------
+        df : Any
+            The dataframe to write.
+        dst : str
+            The destination of the dataframe.
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        str
+            Path of written dataframe.
+        """
+        schema = self._get_schema(dst)
+        table = self._get_table_name(dst)
+        return self._upload_table(df, schema, table, **kwargs)
+
+    ##############################
     # Private I/O methods
     ##############################
 
@@ -159,36 +221,6 @@ class SqlStore(Store):
         engine.dispose()
 
         return dst
-
-    ##############################
-    # Datastore methods
-    ##############################
-
-    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
-        """
-        Write a dataframe to a database. Kwargs are passed to df.to_sql().
-
-        Parameters
-        ----------
-        df : Any
-            The dataframe to write.
-        dst : str
-            The destination of the dataframe.
-        **kwargs : dict
-            Keyword arguments.
-
-        Returns
-        -------
-        str
-            Path of written dataframe.
-        """
-        schema = self._get_schema(dst)
-        table = self._get_table_name(dst)
-        return self._upload_table(df, schema, table, **kwargs)
-
-    ##############################
-    # Private Datastore methods
-    ##############################
 
     def _upload_table(self, df: Any, schema: str, table: str, **kwargs) -> str:
         """

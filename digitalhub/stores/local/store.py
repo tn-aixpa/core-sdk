@@ -83,6 +83,84 @@ class LocalStore(Store):
         return [get_file_info_from_local(p) for p in paths]
 
     ##############################
+    # Datastore methods
+    ##############################
+
+    def read_df(
+        self,
+        path: str | list[str],
+        file_format: str | None = None,
+        engine: str | None = None,
+        **kwargs,
+    ) -> Any:
+        """
+        Read DataFrame from path.
+
+        Parameters
+        ----------
+        path : str | list[str]
+            Path(s) to read DataFrame from.
+        file_format : str
+            Extension of the file.
+        engine : str
+            Dataframe engine (pandas, polars, etc.).
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        Any
+            DataFrame.
+        """
+        reader = self._get_reader(engine)
+
+        dfs = []
+        if isinstance(path, list):
+            for p in path:
+                file_format = self._get_extension(file_format, p)
+                dfs.append(reader.read_df(p, file_format, **kwargs))
+        elif Path(path).is_dir():
+            import glob
+
+            paths = glob.glob(f"{path}/*")
+            for p in paths:
+                file_format = self._get_extension(file_format, p)
+                dfs.append(reader.read_df(p, file_format, **kwargs))
+        else:
+            file_format = self._get_extension(file_format, path)
+            dfs.append(reader.read_df(path, file_format, **kwargs))
+
+        if len(dfs) == 1:
+            return dfs[0]
+
+        return reader.concat_dfs(dfs)
+
+    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
+        """
+        Method to write a dataframe to a file. Kwargs are passed to df.to_parquet().
+        If destination is not provided, the dataframe is written to the default
+        store path with generated name.
+
+        Parameters
+        ----------
+        df : Any
+            The dataframe to write.
+        dst : str
+            The destination of the dataframe.
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        str
+            Path of written dataframe.
+        """
+        self._check_local_dst(dst)
+        reader = get_reader_by_object(df)
+        reader.write_df(df, dst, extension=extension, **kwargs)
+        return dst
+
+    ##############################
     # Private I/O methods
     ##############################
 
@@ -183,73 +261,3 @@ class LocalStore(Store):
             dst = dst / src
         self._build_path(dst)
         return dst
-
-    ##############################
-    # Datastore methods
-    ##############################
-
-    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
-        """
-        Method to write a dataframe to a file. Kwargs are passed to df.to_parquet().
-        If destination is not provided, the dataframe is written to the default
-        store path with generated name.
-
-        Parameters
-        ----------
-        df : Any
-            The dataframe to write.
-        dst : str
-            The destination of the dataframe.
-        **kwargs : dict
-            Keyword arguments.
-
-        Returns
-        -------
-        str
-            Path of written dataframe.
-        """
-        self._check_local_dst(dst)
-        reader = get_reader_by_object(df)
-        reader.write_df(df, dst, extension=extension, **kwargs)
-        return dst
-
-    ##############################
-    # Helper methods
-    ##############################
-
-    @staticmethod
-    def is_partition_or_dir(path: str) -> bool:
-        """
-        Check if path is a directory or a partition.
-
-        Parameters
-        ----------
-        path : str
-            The path to check.
-
-        Returns
-        -------
-        bool
-        """
-        return Path(path).is_dir()
-
-    @staticmethod
-    def build_object_path(root: str, paths: str | list[str]) -> list[str]:
-        """
-        Method to build object path.
-
-        Parameters
-        ----------
-        root : str
-            The root of the object path.
-        paths : str | list[str]
-            The path to build.
-
-        Returns
-        -------
-        list[str]
-            Returns the path of the object.
-        """
-        if isinstance(paths, str):
-            paths = [paths]
-        return [str(Path(root) / path) for path in paths]

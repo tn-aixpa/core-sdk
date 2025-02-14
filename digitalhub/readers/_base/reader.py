@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any
+from typing import IO, Any
 
 
 class DataframeReader:
@@ -13,11 +13,16 @@ class DataframeReader:
     # Read methods
     ##############################
 
-    @staticmethod
     @abstractmethod
-    def read_df(path: str | list[str], extension: str, **kwargs) -> Any:
+    def read_df(self, path_or_buffer: str | IO, extension: str, **kwargs) -> Any:
         """
-        Read DataFrame from path.
+        Read DataFrame from path or buffer.
+        """
+
+    @abstractmethod
+    def read_table(self, *args, **kwargs) -> Any:
+        """
+        Read table from db.
         """
 
     ##############################
@@ -67,4 +72,11 @@ class DataframeReader:
     def get_preview(df: Any) -> Any:
         """
         Get preview.
+        """
+
+    @staticmethod
+    @abstractmethod
+    def concat_dfs(dfs: list[Any]) -> Any:
+        """
+        Concatenate a list of DataFrames.
         """

@@ -38,9 +38,13 @@ dependencies = [
 full = [
     "pandas",
     "mlflow",
+    "fsspec",
+    "s3fs",
 ]
 pandas = [
     "pandas",
+    "fsspec",
+    "s3fs",
 ]
 mlflow = [
     "mlflow",

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from io import BytesIO
-from typing import Any
+from typing import IO, Any
 
 import numpy as np
 import pandas as pd
@@ -24,14 +24,14 @@ class DataframeReaderPandas(DataframeReader):
     # Read methods
     ##############################
 
-    def read_df(self, path: str | list[str], extension: str, **kwargs) -> pd.DataFrame:
+    def read_df(self, path_or_buffer: str | IO, extension: str, **kwargs) -> pd.DataFrame:
         """
-        Read DataFrame from path.
+        Read DataFrame from path or buffer.
 
         Parameters
         ----------
-        path : str | list[str]
-            Path(s) to read DataFrame from.
+        path_or_buffer : str | IO
+            Path or buffer to read DataFrame from.
         extension : str
             Extension of the file.
         **kwargs : dict
@@ -43,25 +43,40 @@ class DataframeReaderPandas(DataframeReader):
             Pandas DataFrame.
         """
         if extension == Extensions.CSV.value:
-            method = pd.read_csv
-        elif extension == Extensions.PARQUET.value:
-            method = pd.read_parquet
-        elif extension == Extensions.JSON.value:
-            method = pd.read_json
-        elif extension in (Extensions.EXCEL.value, Extensions.EXCEL_OLD.value):
-            method = pd.read_excel
-        elif extension in (Extensions.TXT.value, Extensions.FILE.value):
+            return pd.read_csv(path_or_buffer, **kwargs)
+        if extension == Extensions.PARQUET.value:
+            return pd.read_parquet(path_or_buffer, **kwargs)
+        if extension == Extensions.JSON.value:
+            return pd.read_json(path_or_buffer, **kwargs)
+        if extension in (Extensions.EXCEL.value, Extensions.EXCEL_OLD.value):
+            return pd.read_excel(path_or_buffer, **kwargs)
+        if extension in (Extensions.TXT.value, Extensions.FILE.value):
             try:
-                return self.read_df(path, Extensions.CSV.value, **kwargs)
+                return self.read_df(path_or_buffer, Extensions.CSV.value, **kwargs)
             except ParserError:
-                raise ReaderError(f"Unable to read from {path}.")
+                raise ReaderError(f"Unable to read from {path_or_buffer}.")
         else:
             raise ReaderError(f"Unsupported extension '{extension}' for reading.")
 
-        if isinstance(path, list):
-            dfs = [method(p, **kwargs) for p in path]
-            return pd.concat(dfs)
-        return method(path, **kwargs)
+    def read_table(self, sql: str, engine: Any, **kwargs) -> pd.DataFrame:
+        """
+        Read table from db.
+
+        Parameters
+        ----------
+        sql : str
+            SQL query.
+        engine : Any
+            SQL Engine.
+        **kwargs
+            Keyword arguments.
+
+        Returns
+        -------
+        pd.DataFrame
+            Pandas DataFrame.
+        """
+        return pd.read_sql(sql=sql, con=engine, **kwargs)
 
     ##############################
     # Write methods
@@ -92,7 +107,7 @@ class DataframeReaderPandas(DataframeReader):
         """
         if extension == Extensions.CSV.value:
             return self.write_csv(df, dst, **kwargs)
-        elif extension == Extensions.PARQUET.value:
+        if extension == Extensions.PARQUET.value:
             return self.write_parquet(df, dst, **kwargs)
         raise ReaderError(f"Unsupported extension '{extension}' for writing.")
 
@@ -137,7 +152,7 @@ class DataframeReaderPandas(DataframeReader):
         df.to_parquet(dst, index=False, **kwargs)
 
     @staticmethod
-    def write_table(df: pd.DataFrame, table: str, engine: Any, schema: str, **kwargs) -> None:
+    def write_table(df: pd.DataFrame, table: str, engine: Any, schema: str | None = None, **kwargs) -> None:
         """
         Write DataFrame as table.
 
@@ -148,7 +163,7 @@ class DataframeReaderPandas(DataframeReader):
         table : str
             The destination table.
         engine : Any
-            The SQLAlchemy engine.
+            SQL Engine.
         schema : str
             The destination schema.
         **kwargs : dict
@@ -163,6 +178,23 @@ class DataframeReaderPandas(DataframeReader):
     ##############################
     # Utils
     ##############################
+
+    @staticmethod
+    def concat_dfs(dfs: list[pd.DataFrame]) -> pd.DataFrame:
+        """
+        Concatenate a list of DataFrames.
+
+        Parameters
+        ----------
+        dfs : list[pd.DataFrame]
+            The DataFrames to concatenate.
+
+        Returns
+        -------
+        pd.DataFrame
+            The concatenated DataFrame.
+        """
+        return pd.concat(dfs, ignore_index=True)
 
     @staticmethod
     def get_schema(df: pd.DataFrame) -> Any:

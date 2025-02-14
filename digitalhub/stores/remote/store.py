@@ -97,6 +97,36 @@ class RemoteStore(Store):
     # Datastore methods
     ##############################
 
+    def read_df(
+        self,
+        path: str | list[str],
+        file_format: str | None = None,
+        engine: str | None = None,
+        **kwargs,
+    ) -> Any:
+        """
+        Read DataFrame from path.
+
+        Parameters
+        ----------
+        path : str | list[str]
+            Path(s) to read DataFrame from.
+        file_format : str
+            Extension of the file.
+        engine : str
+            Dataframe engine (pandas, polars, etc.).
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        Any
+            DataFrame.
+        """
+        reader = self._get_reader(engine)
+        extension = self._head_extension(path, file_format)
+        return reader.read_df(path, extension, **kwargs)
+
     def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
         """
         Method to write a dataframe to a file. Note that this method is not implemented
@@ -160,3 +190,32 @@ class RemoteStore(Store):
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
         return str(dst)
+
+    def _head_extension(self, url: str, file_format: str | None = None) -> str:
+        """
+        Method to get the extension of a file from a given url.
+
+        Parameters
+        ----------
+        url : str
+            The url of the file to get the extension.
+        file_format : str
+            The file format to check.
+
+        Returns
+        -------
+        str
+            File extension.
+        """
+        if file_format is not None:
+            return file_format
+        try:
+            r = requests.head(url, timeout=60)
+            r.raise_for_status()
+            content_type = r.headers["content-type"]
+            if "text" in content_type:
+                return "csv"
+            else:
+                raise ValueError("Content type not supported.")
+        except Exception as e:
+            raise e

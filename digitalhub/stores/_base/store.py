@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import typing
 from abc import abstractmethod
 from pathlib import Path
 from tempfile import mkdtemp
@@ -8,6 +9,9 @@ from typing import Any
 from digitalhub.readers.api import get_reader_by_engine
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.uri_utils import has_local_scheme
+
+if typing.TYPE_CHECKING:
+    from digitalhub.readers._base.reader import DataframeReader
 
 
 class Store:
@@ -52,11 +56,6 @@ class Store:
     ##############################
 
     @abstractmethod
-    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
-        """
-        Write DataFrame as parquet or csv.
-        """
-
     def read_df(
         self,
         path: str | list[str],
@@ -66,25 +65,13 @@ class Store:
     ) -> Any:
         """
         Read DataFrame from path.
-
-        Parameters
-        ----------
-        path : str | list[str]
-            Path(s) to read DataFrame from.
-        extension : str
-            Extension of the file.
-        engine : str
-            Dataframe engine (pandas, polars, etc.).
-        **kwargs : dict
-            Keyword arguments.
-
-        Returns
-        -------
-        Any
-            DataFrame.
         """
-        reader = get_reader_by_engine(engine)
-        return reader.read_df(path, extension, **kwargs)
+
+    @abstractmethod
+    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
+        """
+        Write DataFrame as parquet or csv.
+        """
 
     ##############################
     # Helpers methods
@@ -187,3 +174,43 @@ class Store:
         """
         tmpdir = mkdtemp()
         return Path(tmpdir)
+
+    @staticmethod
+    def _get_reader(engine: str | None = None) -> DataframeReader:
+        """
+        Get Dataframe reader.
+
+        Parameters
+        ----------
+        engine : str
+            Dataframe engine (pandas, polars, etc.).
+
+        Returns
+        -------
+        Any
+            Reader object.
+        """
+        return get_reader_by_engine(engine)
+
+    @staticmethod
+    def _get_extension(extension: str | None = None, path: str | None = None) -> str:
+        """
+        Get extension from path.
+
+        Parameters
+        ----------
+        extension : str
+            The extension to get.
+        path : str
+            The path to get the extension from.
+
+        Returns
+        -------
+        str
+            The extension.
+        """
+        if extension is not None:
+            return extension
+        if path is not None:
+            return Path(path).suffix.removeprefix(".")
+        raise ValueError("Extension or path must be provided.")

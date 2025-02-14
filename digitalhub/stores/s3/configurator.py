@@ -51,9 +51,10 @@ class S3StoreConfigurator:
             ]:
                 configurator.set_credential(*pair)
 
-    def get_s3_creds(self) -> dict:
+    def get_boto3_client_config(self) -> dict:
         """
-        Get endpoint, access key and secret key.
+        Get S3 credentials (access key, secret key,
+        session token and other config).
 
         Returns
         -------

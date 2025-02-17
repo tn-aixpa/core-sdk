@@ -10,7 +10,7 @@ import boto3
 import botocore.client  # pylint: disable=unused-import
 from botocore.exceptions import ClientError
 
-from digitalhub.readers.api import get_reader_by_object
+from digitalhub.readers.data.api import get_reader_by_object
 from digitalhub.stores._base.store import Store
 from digitalhub.stores.s3.configurator import S3StoreConfigurator
 from digitalhub.stores.s3.utils import get_bucket_name
@@ -287,6 +287,28 @@ class S3Store(Store):
         if len(dfs) == 1:
             return dfs[0]
         return reader.concat_dfs(dfs)
+
+    def query(
+        self,
+        query: str,
+        engine: str | None = None,
+    ) -> Any:
+        """
+        Query data from database.
+
+        Parameters
+        ----------
+        query : str
+            The query to execute.
+        engine : str
+            Dataframe engine (pandas, polars, etc.).
+
+        Returns
+        -------
+        Any
+            DataFrame.
+        """
+        raise StoreError("S3 store does not support query.")
 
     def write_df(
         self,

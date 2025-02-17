@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from digitalhub.readers._base.builder import ReaderBuilder
-from digitalhub.readers.pandas.reader import DataframeReaderPandas
+from digitalhub.readers.data._base.builder import ReaderBuilder
+from digitalhub.readers.data.pandas.reader import DataframeReaderPandas
 
 
 class ReaderBuilderPandas(ReaderBuilder):

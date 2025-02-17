@@ -127,6 +127,28 @@ class RemoteStore(Store):
         extension = self._head_extension(path, file_format)
         return reader.read_df(path, extension, **kwargs)
 
+    def query(
+        self,
+        query: str,
+        engine: str | None = None,
+    ) -> Any:
+        """
+        Query data from database.
+
+        Parameters
+        ----------
+        query : str
+            The query to execute.
+        engine : str
+            Dataframe engine (pandas, polars, etc.).
+
+        Returns
+        -------
+        Any
+            DataFrame.
+        """
+        raise StoreError("Remote store does not support query.")
+
     def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
         """
         Method to write a dataframe to a file. Note that this method is not implemented

@@ -5,8 +5,8 @@ import typing
 from digitalhub.utils.exceptions import BuilderError
 
 if typing.TYPE_CHECKING:
-    from digitalhub.readers._base.builder import ReaderBuilder
-    from digitalhub.readers._base.reader import DataframeReader
+    from digitalhub.readers.data._base.builder import ReaderBuilder
+    from digitalhub.readers.data._base.reader import DataframeReader
 
 
 class ReaderFactory:
@@ -126,7 +126,7 @@ class ReaderFactory:
 factory = ReaderFactory()
 
 try:
-    from digitalhub.readers.pandas.builder import ReaderBuilderPandas
+    from digitalhub.readers.data.pandas.builder import ReaderBuilderPandas
 
     factory.add_builder(
         ReaderBuilderPandas.ENGINE,

@@ -9,8 +9,8 @@ import pandas as pd
 from pandas.errors import ParserError
 
 from digitalhub.entities.dataitem.table.utils import check_preview_size, finalize_preview, prepare_data, prepare_preview
-from digitalhub.readers._base.reader import DataframeReader
-from digitalhub.readers.pandas.enums import Extensions
+from digitalhub.readers.data._base.reader import DataframeReader
+from digitalhub.readers.data.pandas.enums import Extensions
 from digitalhub.utils.exceptions import ReaderError
 from digitalhub.utils.generic_utils import CustomJsonEncoder
 

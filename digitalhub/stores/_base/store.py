@@ -6,12 +6,12 @@ from pathlib import Path
 from tempfile import mkdtemp
 from typing import Any
 
-from digitalhub.readers.api import get_reader_by_engine
+from digitalhub.readers.data.api import get_reader_by_engine
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.uri_utils import has_local_scheme
 
 if typing.TYPE_CHECKING:
-    from digitalhub.readers._base.reader import DataframeReader
+    from digitalhub.readers.data._base.reader import DataframeReader
 
 
 class Store:
@@ -65,6 +65,16 @@ class Store:
     ) -> Any:
         """
         Read DataFrame from path.
+        """
+
+    @abstractmethod
+    def query(
+        self,
+        query: str,
+        engine: str | None = None,
+    ) -> Any:
+        """
+        Query data from database.
         """
 
     @abstractmethod

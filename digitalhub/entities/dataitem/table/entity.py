@@ -7,6 +7,7 @@ from typing import Any
 
 from digitalhub.entities.dataitem._base.entity import Dataitem
 from digitalhub.stores.api import get_store
+from digitalhub.utils.uri_utils import has_sql_scheme
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -35,6 +36,31 @@ class DataitemTable(Dataitem):
         self.spec: DataitemSpecTable
         self.status: DataitemStatusTable
 
+        self._query: str | None = None
+
+    def query(self, query: str) -> DataitemTable:
+        """
+        Set query to execute.
+
+        Parameters
+        ----------
+        query : str
+            Query to execute.
+
+        Returns
+        -------
+        DataitemTable
+            Self object.
+        """
+        # to remove in future
+        if not has_sql_scheme(self.spec.path):
+            raise ValueError(
+                f"Dataitem path is not a SQL scheme: {self.spec.path}",
+                " Query can be made only on a SQL scheme.",
+            )
+        self._query = query
+        return self
+
     def as_df(
         self,
         file_format: str | None = None,
@@ -62,6 +88,14 @@ class DataitemTable(Dataitem):
         Any
             DataFrame.
         """
+        if self._query is not None:
+            df = get_store(self.project, self.spec.path).query(
+                self._query,
+                self.spec.path,
+                engine,
+            )
+            self._query = None
+            return df
         return get_store(self.project, self.spec.path).read_df(
             self.spec.path,
             file_format,

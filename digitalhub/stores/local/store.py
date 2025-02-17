@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-from digitalhub.readers.api import get_reader_by_object
+from digitalhub.readers.data.api import get_reader_by_object
 from digitalhub.stores._base.store import Store
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_local
@@ -134,6 +134,28 @@ class LocalStore(Store):
             return dfs[0]
 
         return reader.concat_dfs(dfs)
+
+    def query(
+        self,
+        query: str,
+        engine: str | None = None,
+    ) -> Any:
+        """
+        Query data from database.
+
+        Parameters
+        ----------
+        query : str
+            The query to execute.
+        engine : str
+            Dataframe engine (pandas, polars, etc.).
+
+        Returns
+        -------
+        Any
+            DataFrame.
+        """
+        raise StoreError("Local store does not support query.")
 
     def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
         """

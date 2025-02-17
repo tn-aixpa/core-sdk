@@ -6,7 +6,7 @@ from abc import abstractmethod
 from digitalhub.utils.exceptions import BuilderError
 
 if typing.TYPE_CHECKING:
-    from digitalhub.readers._base.reader import DataframeReader
+    from digitalhub.readers.data._base.reader import DataframeReader
 
 
 class ReaderBuilder:

@@ -3,11 +3,11 @@ from __future__ import annotations
 import typing
 from typing import Any
 
-from digitalhub.readers.factory import factory
+from digitalhub.readers.data.factory import factory
 from digitalhub.utils.exceptions import ReaderError
 
 if typing.TYPE_CHECKING:
-    from digitalhub.readers._base.reader import DataframeReader
+    from digitalhub.readers.data._base.reader import DataframeReader
 
 
 def get_reader_by_engine(engine: str | None = None) -> DataframeReader:

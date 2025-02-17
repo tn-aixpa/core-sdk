@@ -10,7 +10,7 @@ from sqlalchemy import MetaData, Table, create_engine, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from digitalhub.readers.api import get_reader_by_object
+from digitalhub.readers.data.api import get_reader_by_object
 from digitalhub.stores._base.store import Store
 from digitalhub.stores.sql.configurator import SqlStoreConfigurator
 from digitalhub.utils.exceptions import StoreError
@@ -157,6 +157,34 @@ class SqlStore(Store):
         stm = select(sa_table)
 
         return reader.read_table(stm, sql_engine, **kwargs)
+
+    def query(
+        self,
+        query: str,
+        path: str,
+        engine: str | None = None,
+    ) -> Any:
+        """
+        Query data from database.
+
+        Parameters
+        ----------
+        query : str
+            The query to execute.
+        path : str
+            Path to the database.
+        engine : str
+            Dataframe engine (pandas, polars, etc.).
+
+        Returns
+        -------
+        Any
+            DataFrame.
+        """
+        reader = self._get_reader(engine)
+        schema = self._get_schema(path)
+        sql_engine = self._check_factory(schema=schema)
+        return reader.read_table(query, sql_engine)
 
     def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
         """

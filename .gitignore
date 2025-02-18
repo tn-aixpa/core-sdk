@@ -161,13 +161,7 @@ cython_debug/
 
 # pylint
 .pylintrc
-
 .ruff_cache
-
-
 TODO
-
-
 .vscode
-
 .DS_STORE

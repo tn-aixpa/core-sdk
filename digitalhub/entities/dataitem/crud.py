@@ -5,7 +5,7 @@ from typing import Any
 
 from digitalhub.entities._commons.enums import EntityTypes
 from digitalhub.entities._operations.processor import processor
-from digitalhub.entities.dataitem.utils import clean_tmp_path, eval_source, post_process, process_kwargs
+from digitalhub.entities.dataitem.utils import clean_tmp_path, eval_data, eval_source, post_process, process_kwargs
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities.dataitem._base.entity import Dataitem
@@ -81,6 +81,8 @@ def log_dataitem(
     source: list[str] | str | None = None,
     data: Any | None = None,
     path: str | None = None,
+    file_format: str | None = None,
+    engine: str | None = "pandas",
     **kwargs,
 ) -> Dataitem:
     """
@@ -100,6 +102,10 @@ def log_dataitem(
         Dataframe to log. Alternative to source.
     path : str
         Destination path of the dataitem. If not provided, it's generated.
+    file_format : str
+        Extension of the file.
+    engine : str
+        Dataframe engine (pandas, polars, etc.).
     **kwargs : dict
         New dataitem spec parameters.
 
@@ -115,7 +121,12 @@ def log_dataitem(
     >>>                    kind="table",
     >>>                    data=df)
     """
+    cleanup = False
+    if data is not None:
+        cleanup = True
+
     source = eval_source(source, data, kind, name, project)
+    data = eval_data(project, kind, source, data, file_format, engine)
     kwargs = process_kwargs(project, name, kind, source=source, data=data, path=path, **kwargs)
     obj = processor.log_material_entity(
         source=source,
@@ -124,8 +135,8 @@ def log_dataitem(
         kind=kind,
         **kwargs,
     )
-    if data is not None:
-        obj = post_process(obj, data)
+    obj = post_process(obj, data)
+    if cleanup:
         clean_tmp_path(source)
     return obj
 

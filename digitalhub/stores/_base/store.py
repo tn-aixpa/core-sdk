@@ -59,7 +59,7 @@ class Store:
     def read_df(
         self,
         path: str | list[str],
-        extension: str,
+        file_format: str | None = None,
         engine: str | None = None,
         **kwargs,
     ) -> Any:

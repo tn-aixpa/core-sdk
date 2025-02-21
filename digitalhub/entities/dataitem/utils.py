@@ -9,6 +9,7 @@ from digitalhub.entities._base.entity._constructors.uuid import build_uuid
 from digitalhub.entities._base.material.utils import build_log_path_from_source, eval_local_source
 from digitalhub.entities._commons.enums import EntityKinds, EntityTypes
 from digitalhub.readers.data.api import get_reader_by_object
+from digitalhub.stores.api import get_store
 from digitalhub.utils.generic_utils import slugify_string
 
 if typing.TYPE_CHECKING:
@@ -52,6 +53,44 @@ def eval_source(
         return str(pth)
 
     raise NotImplementedError
+
+
+def eval_data(
+    project: str,
+    kind: str,
+    source: str,
+    data: Any | None = None,
+    file_format: str | None = None,
+    engine: str | None = None,
+) -> Any:
+    """
+    Evaluate data is loaded.
+
+    Parameters
+    ----------
+    project : str
+        Project name.
+    source : str
+        Source(s).
+    data : Any
+        Dataframe to log. Alternative to source.
+    file_format : str
+        Extension of the file.
+    engine : str
+        Engine to use.
+
+    Returns
+    -------
+    None
+    """
+    if kind == EntityKinds.DATAITEM_TABLE.value:
+        if data is None:
+            return get_store(project, source).read_df(
+                source,
+                file_format=file_format,
+                engine=engine,
+            )
+    return data
 
 
 def process_kwargs(

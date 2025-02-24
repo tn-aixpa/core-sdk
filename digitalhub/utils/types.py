@@ -1,4 +1,6 @@
 from __future__ import annotations
 
-MetricType = float | int | list[float | int]
-PathOrListOfPaths = str | list[str]
+from typing import Union
+
+MetricType = Union[float, int, list[Union[float, int]]]
+PathOrListOfPaths = Union[str, list[str]]

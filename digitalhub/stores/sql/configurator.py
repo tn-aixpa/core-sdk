@@ -38,7 +38,7 @@ class SqlStoreConfigurator:
         else:
             config: SqlStoreConfig = SqlStoreConfig(**config)
             for pair in [
-                (SqlStoreEnv.USER.value, config.user),
+                (SqlStoreEnv.USERNAME.value, config.user),
                 (SqlStoreEnv.PASSWORD.value, config.password),
                 (SqlStoreEnv.HOST.value, config.host),
                 (SqlStoreEnv.PORT.value, config.port),
@@ -57,7 +57,7 @@ class SqlStoreConfigurator:
         """
         creds = configurator.get_all_cred()
         try:
-            user = creds[SqlStoreEnv.USER.value]
+            user = creds[SqlStoreEnv.USERNAME.value]
             password = creds[SqlStoreEnv.PASSWORD.value]
             host = creds[SqlStoreEnv.HOST.value]
             port = creds[SqlStoreEnv.PORT.value]
@@ -74,14 +74,14 @@ class SqlStoreConfigurator:
         -------
         None
         """
-        user = configurator.load_var(SqlStoreEnv.USER.value)
+        user = configurator.load_var(SqlStoreEnv.USERNAME.value)
         password = configurator.load_var(SqlStoreEnv.PASSWORD.value)
         host = configurator.load_var(SqlStoreEnv.HOST.value)
         port = configurator.load_var(SqlStoreEnv.PORT.value)
         database = configurator.load_var(SqlStoreEnv.DATABASE.value)
         if user is None or password is None or host is None or port is None or database is None:
             raise StoreError("Missing credentials for SQL store.")
-        configurator.set_credential(SqlStoreEnv.USER.value, user)
+        configurator.set_credential(SqlStoreEnv.USERNAME.value, user)
         configurator.set_credential(SqlStoreEnv.PASSWORD.value, password)
         configurator.set_credential(SqlStoreEnv.HOST.value, host)
         configurator.set_credential(SqlStoreEnv.PORT.value, port)

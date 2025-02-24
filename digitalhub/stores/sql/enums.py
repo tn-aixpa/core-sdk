@@ -10,7 +10,7 @@ class SqlStoreEnv(Enum):
 
     HOST = "DB_HOST"
     PORT = "DB_PORT"
-    USER = "DB_USER"
+    USERNAME = "DB_USERNAME"
     PASSWORD = "DB_PASSWORD"
     DATABASE = "DB_DATABASE"
     PG_SCHEMA = "DB_SCHEMA"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -30,7 +31,7 @@ class Volume(BaseModel):
     mount_path: str
     """Volume mount path inside the container."""
 
-    spec: dict[str, str] = None
+    spec: Optional[dict[str, str]] = None
     """Volume spec."""
 
 
@@ -63,13 +64,13 @@ class Resource(BaseModel):
     Resource model.
     """
 
-    cpu: ResourceItem = None
+    cpu: Optional[ResourceItem] = None
     """CPU resource model."""
 
-    mem: ResourceItem = None
+    mem: Optional[ResourceItem] = None
     """Memory resource model."""
 
-    gpu: ResourceItem = None
+    gpu: Optional[ResourceItem] = None
     """GPU resource model."""
 
 
@@ -90,31 +91,31 @@ class Toleration(BaseModel):
     Toleration model.
     """
 
-    key: str = None
+    key: Optional[str] = None
     """Toleration key."""
 
-    operator: str = None
+    operator: Optional[str] = None
     """Toleration operator."""
 
-    value: str = None
+    value: Optional[str] = None
     """Toleration value."""
 
-    effect: str = None
+    effect: Optional[str] = None
     """Toleration effect."""
 
-    toleration_seconds: int = None
+    toleration_seconds: Optional[int] = None
     """Toleration seconds."""
 
 
 class V1NodeSelectorRequirement(BaseModel):
     key: str
     operator: str
-    values: list[str] = None
+    values: Optional[list[str]] = None
 
 
 class V1NodeSelectorTerm(BaseModel):
-    match_expressions: list[V1NodeSelectorRequirement] = None
-    match_fields: list[V1NodeSelectorRequirement] = None
+    match_expressions: Optional[list[V1NodeSelectorRequirement]] = None
+    match_fields: Optional[list[V1NodeSelectorRequirement]] = None
 
 
 class V1NodeSelector(BaseModel):
@@ -129,21 +130,21 @@ class V1PreferredSchedulingTerm(BaseModel):
 class V1LabelSelectorRequirement(BaseModel):
     key: str
     operator: str
-    values: list[str] = None
+    values: Optional[list[str]] = None
 
 
 class V1LabelSelector(BaseModel):
-    match_expressions: list[V1LabelSelectorRequirement] = None
-    match_labels: dict[str, str] = None
+    match_expressions: Optional[list[V1LabelSelectorRequirement]] = None
+    match_labels: Optional[dict[str, str]] = None
 
 
 class V1PodAffinityTerm(BaseModel):
-    label_selector: V1LabelSelector = None
-    match_label_keys: list[str] = None
-    mismatch_label_keys: list[str] = None
-    namespace_selector: V1LabelSelector = None
-    namespaces: list[str] = None
-    topology_key: str
+    label_selector: Optional[V1LabelSelector] = None
+    match_label_keys: Optional[list[str]] = None
+    mismatch_label_keys: Optional[list[str]] = None
+    namespace_selector: Optional[V1LabelSelector] = None
+    namespaces: Optional[list[str]] = None
+    topology_key: Optional[str] = None
 
 
 class V1WeightedPodAffinityTerm(BaseModel):
@@ -152,18 +153,18 @@ class V1WeightedPodAffinityTerm(BaseModel):
 
 
 class V1NodeAffinity(BaseModel):
-    preferred_during_scheduling_ignored_during_execution: list[V1PreferredSchedulingTerm] = None
-    required_during_scheduling_ignored_during_execution: V1NodeSelector = None
+    preferred_during_scheduling_ignored_during_execution: Optional[list[V1PreferredSchedulingTerm]] = None
+    required_during_scheduling_ignored_during_execution: Optional[V1NodeSelector] = None
 
 
 class V1PodAffinity(BaseModel):
-    preferred_during_scheduling_ignored_during_execution: list[V1WeightedPodAffinityTerm] = None
-    required_during_scheduling_ignored_during_execution: list[V1PodAffinityTerm] = None
+    preferred_during_scheduling_ignored_during_execution: Optional[list[V1WeightedPodAffinityTerm]] = None
+    required_during_scheduling_ignored_during_execution: Optional[list[V1PodAffinityTerm]] = None
 
 
 class V1PodAntiAffinity(BaseModel):
-    preferred_during_scheduling_ignored_during_execution: list[V1WeightedPodAffinityTerm] = None
-    required_during_scheduling_ignored_during_execution: list[V1PodAffinityTerm] = None
+    preferred_during_scheduling_ignored_during_execution: Optional[list[V1WeightedPodAffinityTerm]] = None
+    required_during_scheduling_ignored_during_execution: Optional[list[V1PodAffinityTerm]] = None
 
 
 class Affinity(BaseModel):
@@ -171,13 +172,13 @@ class Affinity(BaseModel):
     Affinity model.
     """
 
-    node_affinity: V1NodeAffinity = None
+    node_affinity: Optional[V1NodeAffinity] = None
     """Node affinity."""
 
-    pod_affinity: V1PodAffinity = None
+    pod_affinity: Optional[V1PodAffinity] = None
     """Pod affinity."""
 
-    pod_anti_affinity: V1PodAntiAffinity = None
+    pod_anti_affinity: Optional[V1PodAntiAffinity] = None
     """Pod anti affinity."""
 
 
@@ -186,34 +187,34 @@ class K8s(BaseModel):
     Kubernetes resource model.
     """
 
-    node_selector: list[NodeSelector] = None
+    node_selector: Optional[list[NodeSelector]] = None
     """Node selector."""
 
-    volumes: list[Volume] = None
+    volumes: Optional[list[Volume]] = None
     """List of volumes."""
 
-    resources: Resource = None
+    resources: Optional[Resource] = None
     """Resources restrictions."""
 
-    affinity: Affinity = None
+    affinity: Optional[Affinity] = None
     """Affinity."""
 
-    tolerations: list[Toleration] = None
+    tolerations: Optional[list[Toleration]] = None
     """Tolerations."""
 
-    envs: list[Env] = None
+    envs: Optional[list[Env]] = None
     """Env variables."""
 
-    secrets: list[str] = None
+    secrets: Optional[list[str]] = None
     """List of secret names."""
 
-    profile: str = None
+    profile: Optional[str] = None
     """Profile template."""
 
-    runtime_class: str = None
+    runtime_class: Optional[str] = None
     """Runtime class name."""
 
-    priority_class: str = None
+    priority_class: Optional[str] = None
     """Priority class."""
 
 

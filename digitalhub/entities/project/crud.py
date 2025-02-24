@@ -272,7 +272,7 @@ def update_project(entity: Project, **kwargs) -> Project:
         entity_type=entity.ENTITY_TYPE,
         entity_name=entity.name,
         entity_dict=entity.to_dict(),
-        local=entity.local,
+        local=entity._client.is_local(),
         **kwargs,
     )
 
@@ -283,7 +283,7 @@ def delete_project(
     clean_context: bool = True,
     local: bool = False,
     **kwargs,
-) -> list[dict]:
+) -> dict:
     """
     Delete a project.
 

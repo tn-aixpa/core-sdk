@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Union
-
 from pydantic import BaseModel
+
+from digitalhub.utils.types import MetricType
 
 
 class Metric(BaseModel):
-    value: Union[float, int, list[Union[float, int]]]
+    value: MetricType

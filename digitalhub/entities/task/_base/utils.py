@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-def build_task_actions(kind_action_list: list[tuple[str, str]]) -> dict[str, str]:
+def build_task_actions(kind_action_list: list[tuple[str, str]]) -> list[dict[str, str]]:
     """
     Build task actions.
 
@@ -12,7 +12,7 @@ def build_task_actions(kind_action_list: list[tuple[str, str]]) -> dict[str, str
 
     Returns
     -------
-    dict[str, str]
+    list[dict[str, str]]
         Returns the task actions.
     """
     return [{"kind": kind, "action": action} for (kind, action) in kind_action_list]

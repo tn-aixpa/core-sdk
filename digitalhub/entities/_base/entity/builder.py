@@ -24,10 +24,10 @@ class EntityBuilder:
 
     # Class variables
     ENTITY_TYPE: str = None
-    ENTITY_CLASS: Entity = None
-    ENTITY_SPEC_CLASS: Spec = None
-    ENTITY_SPEC_VALIDATOR: SpecValidator = None
-    ENTITY_STATUS_CLASS: Status = None
+    ENTITY_CLASS: type[Entity] = None
+    ENTITY_SPEC_CLASS: type[Spec] = None
+    ENTITY_SPEC_VALIDATOR: type[SpecValidator] = None
+    ENTITY_STATUS_CLASS: type[Status] = None
     ENTITY_KIND: str = None
 
     def __init__(self) -> None:
@@ -60,7 +60,7 @@ class EntityBuilder:
         """
         return build_name(name)
 
-    def build_uuid(self, uuid: str) -> str:
+    def build_uuid(self, uuid: str | None = None) -> str:
         """
         Build entity uuid.
 

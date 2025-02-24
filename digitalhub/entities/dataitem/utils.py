@@ -11,6 +11,7 @@ from digitalhub.entities._commons.enums import EntityKinds, EntityTypes
 from digitalhub.readers.data.api import get_reader_by_object
 from digitalhub.stores.api import get_store
 from digitalhub.utils.generic_utils import slugify_string
+from digitalhub.utils.types import PathOrListOfPaths
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities.dataitem._base.entity import Dataitem
@@ -20,7 +21,7 @@ DEFAULT_EXTENSION = "parquet"
 
 
 def eval_source(
-    source: str | list[str] | None = None,
+    source: PathOrListOfPaths | None = None,
     data: Any | None = None,
     kind: str | None = None,
     name: str | None = None,
@@ -31,7 +32,7 @@ def eval_source(
 
     Parameters
     ----------
-    source : str | list[str]
+    source : PathOrListOfPaths
         Source(s).
 
     Returns
@@ -58,7 +59,7 @@ def eval_source(
 def eval_data(
     project: str,
     kind: str,
-    source: str,
+    source: PathOrListOfPaths,
     data: Any | None = None,
     file_format: str | None = None,
     engine: str | None = None,
@@ -97,7 +98,7 @@ def process_kwargs(
     project: str,
     name: str,
     kind: str,
-    source: str | list[str],
+    source: PathOrListOfPaths,
     data: Any | None = None,
     path: str | None = None,
     **kwargs,
@@ -113,7 +114,7 @@ def process_kwargs(
         Object name.
     kind : str
         Kind the object.
-    source : str
+    source : PathOrListOfPaths
         Source(s).
     data : Any
         Dataframe to log. Alternative to source.
@@ -140,19 +141,23 @@ def process_kwargs(
     return kwargs
 
 
-def clean_tmp_path(pth: str) -> None:
+def clean_tmp_path(pth: PathOrListOfPaths) -> None:
     """
     Clean temporary path.
 
     Parameters
     ----------
-    pth : str
+    pth : PathOrListOfPaths
         Path to clean.
 
     Returns
     -------
     None
     """
+    if isinstance(pth, list):
+        for p in pth:
+            shutil.rmtree(p, ignore_errors=True)
+        return
     shutil.rmtree(pth, ignore_errors=True)
 
 

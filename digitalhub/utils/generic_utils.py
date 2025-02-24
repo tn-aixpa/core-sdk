@@ -4,8 +4,9 @@ import base64
 import importlib.util as imputil
 import json
 from datetime import date, datetime, time
-from enum import Enum
+from enum import Enum, EnumMeta
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Callable
 from zipfile import ZipFile
 
@@ -166,7 +167,7 @@ def dump_json(struct: Any) -> str:
     str
         The json string.
     """
-    return json.dumps(struct, cls=CustomJsonEncoder).encode("utf-8")
+    return json.dumps(struct, cls=CustomJsonEncoder)
 
 
 def slugify_string(filename: str) -> str:
@@ -203,23 +204,34 @@ def import_function(path: Path, handler: str) -> Callable:
         Function.
     """
     spec = imputil.spec_from_file_location(path.stem, path)
+    if spec is None:
+        raise RuntimeError(f"Error loading function source from {str(path)}.")
+
     mod = imputil.module_from_spec(spec)
+    if spec.loader is None:
+        raise RuntimeError(f"Error getting module loader from {str(path)}.")
+
     spec.loader.exec_module(mod)
-    return getattr(mod, handler)
+    func = getattr(mod, handler)
+    if not callable(func):
+        raise RuntimeError(f"Handler '{handler}' is not a callable.")
+
+    return func
 
 
-def list_enum(enum: Enum) -> list:
+def list_enum(enum: EnumMeta) -> list[Any]:
     """
     Get all values of an enum.
 
     Parameters
     ----------
-    enum : Enum
-        Enum to get values from.
+    enum : EnumMeta
+        Enum class to get values from.
 
     Returns
     -------
-    list
+    list[Any]
         List of enum values.
     """
-    return [e.value for e in enum]
+    vals: MappingProxyType[str, Enum] = enum.__members__
+    return [member.value for member in vals.values()]

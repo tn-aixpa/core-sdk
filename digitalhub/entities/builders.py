@@ -7,7 +7,7 @@ from digitalhub.entities.model.mlflow.builder import ModelModelBuilder
 from digitalhub.entities.project._base.builder import ProjectProjectBuilder
 from digitalhub.entities.secret._base.builder import SecretSecretBuilder
 
-entity_builders = (
+entity_builders: tuple = (
     (ProjectProjectBuilder.ENTITY_KIND, ProjectProjectBuilder),
     (SecretSecretBuilder.ENTITY_KIND, SecretSecretBuilder),
     (ArtifactArtifactBuilder.ENTITY_KIND, ArtifactArtifactBuilder),
@@ -17,17 +17,14 @@ entity_builders = (
 )
 
 ##############################
-#  Potential uninstalled entities
+#  Add custom entities here
 ##############################
 
 
 try:
     from digitalhub.entities.dataitem.iceberg.builder import DataitemIcebergBuilder
 
-    entity_builders = (
-        *entity_builders,
-        (DataitemIcebergBuilder.ENTITY_KIND, DataitemIcebergBuilder),
-    )
+    entity_builders += ((DataitemIcebergBuilder.ENTITY_KIND, DataitemIcebergBuilder),)
 except ImportError:
     ...
 
@@ -35,29 +32,20 @@ except ImportError:
 try:
     from digitalhub.entities.model.model.builder import ModelMlflowBuilder
 
-    entity_builders = (
-        *entity_builders,
-        (ModelMlflowBuilder.ENTITY_KIND, ModelMlflowBuilder),
-    )
+    entity_builders += ((ModelMlflowBuilder.ENTITY_KIND, ModelMlflowBuilder),)
 except ImportError:
     ...
 
 try:
     from digitalhub.entities.model.sklearn.builder import ModelSklearnBuilder
 
-    entity_builders = (
-        *entity_builders,
-        (ModelSklearnBuilder.ENTITY_KIND, ModelSklearnBuilder),
-    )
+    entity_builders += ((ModelSklearnBuilder.ENTITY_KIND, ModelSklearnBuilder),)
 except ImportError:
     ...
 
 try:
     from digitalhub.entities.model.huggingface.builder import ModelHuggingfaceBuilder
 
-    entity_builders = (
-        *entity_builders,
-        (ModelHuggingfaceBuilder.ENTITY_KIND, ModelHuggingfaceBuilder),
-    )
+    entity_builders += ((ModelHuggingfaceBuilder.ENTITY_KIND, ModelHuggingfaceBuilder),)
 except ImportError:
     ...

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from digitalhub.entities._base.entity.spec import Spec, SpecValidator
 
 
@@ -28,8 +30,8 @@ class SecretValidator(SpecValidator):
     SecretValidator validator.
     """
 
-    path: str = None
+    path: Optional[str] = None
     """Path to the secret."""
 
-    provider: str = None
+    provider: Optional[str] = None
     """Provider of the secret."""

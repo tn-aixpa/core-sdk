@@ -4,6 +4,7 @@ from datetime import datetime
 from hashlib import sha256
 from mimetypes import guess_type
 from pathlib import Path
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -13,12 +14,12 @@ class FileInfo(BaseModel):
     File info class.
     """
 
-    path: str = None
-    name: str = None
-    content_type: str = None
-    size: int = None
-    hash: str = None
-    last_modified: str = None
+    path: Optional[str] = None
+    name: Optional[str] = None
+    content_type: Optional[str] = None
+    size: Optional[int] = None
+    hash: Optional[str] = None
+    last_modified: Optional[str] = None
 
     def to_dict(self):
         return self.model_dump()
@@ -60,7 +61,7 @@ def get_file_size(data_path: str) -> int:
     return Path(data_path).stat().st_size
 
 
-def get_file_mime_type(data_path: str) -> str:
+def get_file_mime_type(data_path: str) -> str | None:
     """
     Get the mime type of a file.
 

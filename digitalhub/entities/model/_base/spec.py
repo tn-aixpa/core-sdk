@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from digitalhub.entities._base.material.spec import MaterialSpec, MaterialValidator
 
 
@@ -15,7 +17,7 @@ class ModelSpec(MaterialSpec):
         algorithm: str | None = None,
         parameters: dict | None = None,
     ) -> None:
-        self.path = path
+        super().__init__(path)
         self.framework = framework
         self.algorithm = algorithm
         self.parameters = parameters
@@ -26,14 +28,11 @@ class ModelValidator(MaterialValidator):
     ModelValidator validator.
     """
 
-    path: str
-    """Path to the model."""
-
-    framework: str = None
+    framework: Optional[str] = None
     """Model framework (e.g. 'pytorch')."""
 
-    algorithm: str = None
+    algorithm: Optional[str] = None
     """Model algorithm (e.g. 'resnet')."""
 
-    parameters: dict = None
+    parameters: Optional[dict] = None
     """Model validator."""

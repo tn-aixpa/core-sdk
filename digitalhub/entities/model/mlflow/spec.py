@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from pydantic import Field
 
 from digitalhub.entities.model._base.spec import ModelSpec, ModelValidator
@@ -20,7 +22,7 @@ class ModelSpecMlflow(ModelSpec):
         flavor: str | None = None,
         model_config: dict | None = None,
         input_datasets: list[Dataset] | None = None,
-        signature: Signature = None,
+        signature: Signature | None = None,
     ) -> None:
         super().__init__(path, framework, algorithm, parameters)
         self.flavor = flavor
@@ -34,14 +36,14 @@ class ModelValidatorMlflow(ModelValidator):
     ModelValidatorMlflow validator.
     """
 
-    flavor: str = None
+    flavor: Optional[str] = None
     """Mlflow model flavor."""
 
     placeholder_cfg_: dict = Field(default=None, alias="model_config")
     """Mlflow model config."""
 
-    input_datasets: list[Dataset] = None
+    input_datasets: Optional[list[Dataset]] = None
     """Mlflow input datasets."""
 
-    signature: Signature = None
+    signature: Optional[Signature] = None
     """Mlflow model signature."""

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -40,16 +41,16 @@ class TableSchemaFieldEntry(BaseModel):
     type_: FieldType = Field(alias="type")
     """Field type."""
 
-    title: str = None
+    title: Optional[str] = None
     """Field title."""
 
     format_: str = Field(default=None, alias="format")
     """Field format."""
 
-    example: str = None
+    example: Optional[str] = None
     """Field example."""
 
-    description: str = None
+    description: Optional[str] = None
     """Field description."""
 
 

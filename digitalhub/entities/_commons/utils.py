@@ -8,7 +8,7 @@ from digitalhub.entities._commons.enums import EntityTypes
 from digitalhub.entities._commons.models import Metric
 
 
-def parse_entity_key(key: str) -> tuple[str]:
+def parse_entity_key(key: str) -> tuple[str, str, str, str | None, str]:
     """
     Parse the entity key. Returns project, entity type, kind, name and uuid.
 
@@ -19,7 +19,7 @@ def parse_entity_key(key: str) -> tuple[str]:
 
     Returns
     -------
-    tuple[str]
+    tuple[str, str, str, str | None, str]
         Project, entity type, kind, name and uuid.
     """
     try:

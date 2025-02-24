@@ -93,7 +93,7 @@ def map_uri_scheme(uri: str) -> str:
     Raises
     ------
     ValueError
-        If the scheme is unknown.
+        If the scheme is unknown or invalid.
     """
     scheme = urlparse(uri).scheme
     if scheme in list_enum(LocalSchemes):

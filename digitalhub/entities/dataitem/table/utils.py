@@ -76,9 +76,9 @@ def filter_memoryview(data: list[dict]) -> list[dict]:
     return data
 
 
-def check_preview_size(preview: dict) -> list:
+def check_preview_size(preview: dict) -> dict:
     """
-    Check preview size. If it's too big, return empty list.
+    Check preview size. If it's too big, return empty dict.
 
     Parameters
     ----------
@@ -87,11 +87,11 @@ def check_preview_size(preview: dict) -> list:
 
     Returns
     -------
-    list
+    dict
         Preview.
     """
     if len(dump_json(preview)) >= 64000:
-        return []
+        return {}
     return preview
 
 
@@ -101,9 +101,9 @@ def finalize_preview(preview: list[dict] | None = None, rows_count: int | None =
 
     Parameters
     ----------
-    preview : list[dict] | None
+    preview : list[dict]
         Preview.
-    rows_count : int | None
+    rows_count : int
         Row count.
 
     Returns
@@ -111,7 +111,7 @@ def finalize_preview(preview: list[dict] | None = None, rows_count: int | None =
     dict
         Data preview.
     """
-    data = {}
+    data: dict[str, list[dict] | int] = {}
     if preview is not None:
         data["cols"] = preview
     if rows_count is not None:

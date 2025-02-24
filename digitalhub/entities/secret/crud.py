@@ -108,6 +108,8 @@ def get_secret(
     >>>                  entity_id="my-secret-id")
     """
     if not identifier.startswith("store://"):
+        if project is None:
+            raise ValueError("Project must be provided.")
         secrets = list_secrets(project=project, **kwargs)
         for secret in secrets:
             if secret.name == identifier:

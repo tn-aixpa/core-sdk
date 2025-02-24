@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from pydantic import Field
 
 from digitalhub.entities.model._base.spec import ModelSpec, ModelValidator
@@ -18,7 +20,7 @@ class ModelSpecHuggingface(ModelSpec):
         parameters: dict | None = None,
         base_model: str | None = None,
         model_id: str | None = None,
-        model_revision: str = None,
+        model_revision: str | None = None,
     ) -> None:
         super().__init__(path, framework, algorithm, parameters)
         self.base_model = base_model
@@ -31,7 +33,7 @@ class ModelValidatorHuggingface(ModelValidator):
     ModelValidatorHuggingface validator.
     """
 
-    base_model: str = None
+    base_model: Optional[str] = None
     """Base model."""
 
     placeholder_model_id: str = Field(default=None, alias="model_id")

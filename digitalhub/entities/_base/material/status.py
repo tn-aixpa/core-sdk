@@ -15,4 +15,4 @@ class MaterialStatus(Status):
         files: list[dict] | None = None,
     ) -> None:
         super().__init__(state, message)
-        self.files = files
+        self.files = files if files is not None else []

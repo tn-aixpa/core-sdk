@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from digitalhub.entities._base.entity.spec import Spec, SpecValidator
 
 
@@ -31,20 +33,20 @@ class ProjectValidator(SpecValidator):
     ProjectValidator validator.
     """
 
-    context: str = None
+    context: Optional[str] = None
     """The project's context."""
 
-    functions: list = None
+    functions: Optional[list] = None
     """List of project's functions."""
 
-    artifacts: list = None
+    artifacts: Optional[list] = None
     """List of project's artifacts."""
 
-    workflows: list = None
+    workflows: Optional[list] = None
     """List of project's workflows."""
 
-    dataitems: list = None
+    dataitems: Optional[list] = None
     """List of project's dataitems."""
 
-    models: list = None
+    models: Optional[list] = None
     """List of project's models."""

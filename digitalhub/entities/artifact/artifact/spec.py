@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from digitalhub.entities.artifact._base.spec import ArtifactSpec, ArtifactValidator
 
 
@@ -23,5 +25,5 @@ class ArtifactValidatorArtifact(ArtifactValidator):
     ArtifactValidatorArtifact validator.
     """
 
-    src_path: str = None
+    src_path: Optional[str] = None
     """Source path of the artifact."""

@@ -14,6 +14,7 @@ from digitalhub.readers.data.api import get_reader_by_object
 from digitalhub.stores._base.store import Store
 from digitalhub.stores.sql.configurator import SqlStoreConfigurator
 from digitalhub.utils.exceptions import StoreError
+from digitalhub.utils.types import SourcesOrListOfSources
 
 if typing.TYPE_CHECKING:
     from sqlalchemy.engine.row import Row
@@ -85,7 +86,7 @@ class SqlStore(Store):
 
     def upload(
         self,
-        src: str | list[str],
+        src: SourcesOrListOfSources,
         dst: str,
     ) -> list[tuple[str, str]]:
         """
@@ -124,7 +125,7 @@ class SqlStore(Store):
 
     def read_df(
         self,
-        path: str | list[str],
+        path: SourcesOrListOfSources,
         file_format: str | None = None,
         engine: str | None = None,
         **kwargs,
@@ -134,7 +135,7 @@ class SqlStore(Store):
 
         Parameters
         ----------
-        path : str | list[str]
+        path : SourcesOrListOfSources
             Path(s) to read DataFrame from.
         file_format : str
             Extension of the file.
@@ -148,6 +149,9 @@ class SqlStore(Store):
         Any
             DataFrame.
         """
+        if isinstance(path, list):
+            raise StoreError("SQL store can only read a single DataFrame at a time.")
+
         reader = self._get_reader(engine)
         schema = self._get_schema(path)
         table = self._get_table_name(path)

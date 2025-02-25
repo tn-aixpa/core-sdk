@@ -3,4 +3,4 @@ from __future__ import annotations
 from typing import Union
 
 MetricType = Union[float, int, list[Union[float, int]]]
-PathOrListOfPaths = Union[str, list[str]]
+SourcesOrListOfSources = Union[str, list[str]]

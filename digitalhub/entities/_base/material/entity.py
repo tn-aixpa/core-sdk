@@ -6,6 +6,7 @@ from pathlib import Path
 from digitalhub.entities._base.versioned.entity import VersionedEntity
 from digitalhub.entities._operations.processor import processor
 from digitalhub.stores.api import get_store
+from digitalhub.utils.types import SourcesOrListOfSources
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -136,7 +137,7 @@ class MaterialEntity(VersionedEntity):
 
         return store.download(self.spec.path, dst=dst, src=paths, overwrite=overwrite)
 
-    def upload(self, source: str | list[str]) -> None:
+    def upload(self, source: SourcesOrListOfSources) -> None:
         """
         Upload object from given local path to spec path destination.
         Source must be a local path. If the path is a folder, destination

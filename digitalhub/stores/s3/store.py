@@ -16,6 +16,7 @@ from digitalhub.stores.s3.configurator import S3StoreConfigurator
 from digitalhub.stores.s3.utils import get_bucket_name
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
+from digitalhub.utils.types import SourcesOrListOfSources
 
 if typing.TYPE_CHECKING:
     pass
@@ -117,7 +118,7 @@ class S3Store(Store):
 
     def upload(
         self,
-        src: str | list[str],
+        src: SourcesOrListOfSources,
         dst: str,
     ) -> list[tuple[str, str]]:
         """
@@ -125,7 +126,7 @@ class S3Store(Store):
 
         Parameters
         ----------
-        src : str | list[str]
+        src : SourcesOrListOfSources
             Source(s).
         dst : str
             The destination of the artifact on storage.
@@ -238,7 +239,7 @@ class S3Store(Store):
 
     def read_df(
         self,
-        path: str | list[str],
+        path: SourcesOrListOfSources,
         file_format: str | None = None,
         engine: str | None = None,
         **kwargs,
@@ -248,7 +249,7 @@ class S3Store(Store):
 
         Parameters
         ----------
-        path : str | list[str]
+        path : SourcesOrListOfSources
             Path(s) to read DataFrame from.
         file_format : str
             Extension of the file.

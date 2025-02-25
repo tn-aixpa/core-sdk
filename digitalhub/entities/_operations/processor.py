@@ -10,6 +10,7 @@ from digitalhub.entities._commons.utils import get_project_from_key, parse_entit
 from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
 from digitalhub.utils.exceptions import ContextError, EntityAlreadyExistsError, EntityError, EntityNotExistsError
 from digitalhub.utils.io_utils import read_yaml
+from digitalhub.utils.types import SourcesOrListOfSources
 
 if typing.TYPE_CHECKING:
     from digitalhub.client._base.client import Client
@@ -605,7 +606,7 @@ class OperationsProcessor:
         MaterialEntity
             Object instance.
         """
-        source = kwargs.pop("source")
+        source: SourcesOrListOfSources = kwargs.pop("source")
         context = self._get_context(kwargs["project"])
         obj = build_entity_from_params(**kwargs)
         if context.is_running:
@@ -1382,7 +1383,7 @@ class OperationsProcessor:
             project=context.name,
             entity_type=entity_type,
         )
-        return context.client.update_object(api, data, **kwargs)
+        context.client.update_object(api, data, **kwargs)
 
     def read_run_logs(
         self,
@@ -1453,7 +1454,7 @@ class OperationsProcessor:
             entity_type=entity_type,
             entity_id=entity_id,
         )
-        return context.client.create_object(api, **kwargs)
+        context.client.create_object(api, **kwargs)
 
     def resume_run(
         self,
@@ -1488,7 +1489,7 @@ class OperationsProcessor:
             entity_type=entity_type,
             entity_id=entity_id,
         )
-        return context.client.create_object(api, **kwargs)
+        context.client.create_object(api, **kwargs)
 
     def read_files_info(
         self,

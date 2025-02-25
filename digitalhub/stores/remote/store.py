@@ -7,6 +7,7 @@ import requests
 
 from digitalhub.stores._base.store import Store
 from digitalhub.utils.exceptions import StoreError
+from digitalhub.utils.types import SourcesOrListOfSources
 
 
 class RemoteStore(Store):
@@ -62,7 +63,7 @@ class RemoteStore(Store):
 
         return self._download_file(root, dst, overwrite)
 
-    def upload(self, src: str | list[str], dst: str) -> list[tuple[str, str]]:
+    def upload(self, src: SourcesOrListOfSources, dst: str) -> list[tuple[str, str]]:
         """
         Upload an artifact to storage.
 
@@ -99,7 +100,7 @@ class RemoteStore(Store):
 
     def read_df(
         self,
-        path: str | list[str],
+        path: SourcesOrListOfSources,
         file_format: str | None = None,
         engine: str | None = None,
         **kwargs,
@@ -109,7 +110,7 @@ class RemoteStore(Store):
 
         Parameters
         ----------
-        path : str | list[str]
+        path : SourcesOrListOfSources
             Path(s) to read DataFrame from.
         file_format : str
             Extension of the file.

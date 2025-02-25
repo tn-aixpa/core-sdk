@@ -8,6 +8,7 @@ from typing import Any
 
 from digitalhub.readers.data.api import get_reader_by_engine
 from digitalhub.utils.exceptions import StoreError
+from digitalhub.utils.types import SourcesOrListOfSources
 from digitalhub.utils.uri_utils import has_local_scheme
 
 if typing.TYPE_CHECKING:
@@ -36,7 +37,7 @@ class Store:
         """
 
     @abstractmethod
-    def upload(self, src: str | list[str], dst: str) -> list[tuple[str, str]]:
+    def upload(self, src: SourcesOrListOfSources, dst: str) -> list[tuple[str, str]]:
         """
         Method to upload artifact to storage.
         """
@@ -58,7 +59,7 @@ class Store:
     @abstractmethod
     def read_df(
         self,
-        path: str | list[str],
+        path: SourcesOrListOfSources,
         file_format: str | None = None,
         engine: str | None = None,
         **kwargs,
@@ -159,7 +160,7 @@ class Store:
 
         Parameters
         ----------
-        path : str
+        path : str | Path
             The path to build.
 
         Returns

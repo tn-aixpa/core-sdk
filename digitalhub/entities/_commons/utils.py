@@ -6,6 +6,7 @@ from pydantic import ValidationError
 
 from digitalhub.entities._commons.enums import EntityTypes
 from digitalhub.entities._commons.models import Metric
+from digitalhub.utils.types import MetricType
 
 
 def parse_entity_key(key: str) -> tuple[str, str, str, str | None, str]:
@@ -88,7 +89,7 @@ def get_project_from_key(key: str) -> str:
     return project
 
 
-def validate_metric_value(value: Any) -> float | int | list[float | int]:
+def validate_metric_value(value: Any) -> MetricType:
     """
     Validate metric value.
 
@@ -99,7 +100,7 @@ def validate_metric_value(value: Any) -> float | int | list[float | int]:
 
     Returns
     -------
-    float | int | list[float | int]
+    MetricType
         The validated value.
     """
     try:

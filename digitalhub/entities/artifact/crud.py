@@ -6,6 +6,7 @@ from digitalhub.entities._commons.enums import EntityTypes
 from digitalhub.entities._operations.processor import processor
 from digitalhub.entities.artifact._base.entity import Artifact
 from digitalhub.entities.artifact.utils import eval_source, process_kwargs
+from digitalhub.utils.types import SourcesOrListOfSources
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities.artifact._base.entity import Artifact
@@ -78,7 +79,7 @@ def log_artifact(
     project: str,
     name: str,
     kind: str,
-    source: list[str] | str,
+    source: SourcesOrListOfSources,
     path: str | None = None,
     **kwargs,
 ) -> Artifact:
@@ -93,7 +94,7 @@ def log_artifact(
         Object name.
     kind : str
         Kind the object.
-    source : str
+    source : SourcesOrListOfSources
         Artifact location on local path.
     path : str
         Destination path of the artifact. If not provided, it's generated.

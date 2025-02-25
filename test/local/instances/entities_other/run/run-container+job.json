@@ -29,7 +29,6 @@
         "base64": "ZGVmIGhhbmRsZXIoKToKICAgIHByaW50KCJIZWxsbyB3b3JsZCEiKQ==",
         "lang": "python"
       },
-      "backoff_limit": 3,
       "command": "python",
       "local_execution": false,
       "resources": {

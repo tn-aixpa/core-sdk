@@ -11,7 +11,7 @@ from digitalhub.entities._commons.enums import EntityKinds, EntityTypes
 from digitalhub.readers.data.api import get_reader_by_object
 from digitalhub.stores.api import get_store
 from digitalhub.utils.generic_utils import slugify_string
-from digitalhub.utils.types import PathOrListOfPaths
+from digitalhub.utils.types import SourcesOrListOfSources
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities.dataitem._base.entity import Dataitem
@@ -21,7 +21,7 @@ DEFAULT_EXTENSION = "parquet"
 
 
 def eval_source(
-    source: PathOrListOfPaths | None = None,
+    source: SourcesOrListOfSources | None = None,
     data: Any | None = None,
     kind: str | None = None,
     name: str | None = None,
@@ -32,7 +32,7 @@ def eval_source(
 
     Parameters
     ----------
-    source : PathOrListOfPaths
+    source : SourcesOrListOfSources
         Source(s).
 
     Returns
@@ -59,7 +59,7 @@ def eval_source(
 def eval_data(
     project: str,
     kind: str,
-    source: PathOrListOfPaths,
+    source: SourcesOrListOfSources,
     data: Any | None = None,
     file_format: str | None = None,
     engine: str | None = None,
@@ -98,7 +98,7 @@ def process_kwargs(
     project: str,
     name: str,
     kind: str,
-    source: PathOrListOfPaths,
+    source: SourcesOrListOfSources,
     data: Any | None = None,
     path: str | None = None,
     **kwargs,
@@ -114,7 +114,7 @@ def process_kwargs(
         Object name.
     kind : str
         Kind the object.
-    source : PathOrListOfPaths
+    source : SourcesOrListOfSources
         Source(s).
     data : Any
         Dataframe to log. Alternative to source.
@@ -141,13 +141,13 @@ def process_kwargs(
     return kwargs
 
 
-def clean_tmp_path(pth: PathOrListOfPaths) -> None:
+def clean_tmp_path(pth: SourcesOrListOfSources) -> None:
     """
     Clean temporary path.
 
     Parameters
     ----------
-    pth : PathOrListOfPaths
+    pth : SourcesOrListOfSources
         Path to clean.
 
     Returns

@@ -6,6 +6,7 @@ from typing import Any
 from digitalhub.entities._commons.enums import EntityTypes
 from digitalhub.entities._operations.processor import processor
 from digitalhub.entities.dataitem.utils import clean_tmp_path, eval_data, eval_source, post_process, process_kwargs
+from digitalhub.utils.types import SourcesOrListOfSources
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities.dataitem._base.entity import Dataitem
@@ -78,7 +79,7 @@ def log_dataitem(
     project: str,
     name: str,
     kind: str,
-    source: list[str] | str | None = None,
+    source: SourcesOrListOfSources | None = None,
     data: Any | None = None,
     path: str | None = None,
     file_format: str | None = None,
@@ -96,7 +97,7 @@ def log_dataitem(
         Object name.
     kind : str
         Kind the object.
-    source : str
+    source : SourcesOrListOfSources
         Dataitem location on local path.
     data : Any
         Dataframe to log. Alternative to source.

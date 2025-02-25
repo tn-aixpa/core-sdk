@@ -8,6 +8,7 @@ from digitalhub.readers.data.api import get_reader_by_object
 from digitalhub.stores._base.store import Store
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_local
+from digitalhub.utils.types import SourcesOrListOfSources
 
 
 class LocalStore(Store):
@@ -51,7 +52,7 @@ class LocalStore(Store):
         """
         raise StoreError("Local store does not support download.")
 
-    def upload(self, src: str | list[str], dst: str) -> list[tuple[str, str]]:
+    def upload(self, src: SourcesOrListOfSources, dst: str) -> list[tuple[str, str]]:
         """
         Upload an artifact to storage.
 
@@ -88,7 +89,7 @@ class LocalStore(Store):
 
     def read_df(
         self,
-        path: str | list[str],
+        path: SourcesOrListOfSources,
         file_format: str | None = None,
         engine: str | None = None,
         **kwargs,
@@ -98,7 +99,7 @@ class LocalStore(Store):
 
         Parameters
         ----------
-        path : str | list[str]
+        path : SourcesOrListOfSources
             Path(s) to read DataFrame from.
         file_format : str
             Extension of the file.

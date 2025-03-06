@@ -16,4 +16,4 @@ class ModelStatus(MaterialStatus):
         metrics: dict | None = None,
     ):
         super().__init__(state, message, files)
-        self.metrics = metrics
+        self.metrics = metrics if metrics is not None else {}

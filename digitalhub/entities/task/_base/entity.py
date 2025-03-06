@@ -4,7 +4,7 @@ import typing
 
 from digitalhub.entities._base.unversioned.entity import UnversionedEntity
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._operations.processor import processor
+from digitalhub.entities._processors.context import context_processor
 from digitalhub.factory.api import build_entity_from_params, get_entity_type_from_kind, get_executable_kind
 
 if typing.TYPE_CHECKING:
@@ -107,7 +107,7 @@ class Task(UnversionedEntity):
             Run object.
         """
         if save:
-            return processor.create_context_entity(**kwargs)
+            return context_processor.create_context_entity(**kwargs)
         return build_entity_from_params(**kwargs)
 
     def get_run(self, entity_key: str) -> Run:
@@ -124,7 +124,7 @@ class Task(UnversionedEntity):
         Run
             Run object.
         """
-        return processor.read_context_entity(entity_key)
+        return context_processor.read_context_entity(entity_key)
 
     def delete_run(self, entity_key: str) -> dict:
         """
@@ -140,4 +140,4 @@ class Task(UnversionedEntity):
         dict
             Response from backend.
         """
-        return processor.delete_context_entity(entity_key)
+        return context_processor.delete_context_entity(entity_key)

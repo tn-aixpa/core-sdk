@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._operations.processor import processor
+from digitalhub.entities._processors.context import context_processor
 from digitalhub.entities.artifact._base.entity import Artifact
 from digitalhub.entities.artifact.utils import eval_source, process_kwargs
 from digitalhub.utils.types import SourcesOrListOfSources
@@ -62,7 +62,7 @@ def new_artifact(
     >>>                    kind="artifact",
     >>>                    path="s3://my-bucket/my-key")
     """
-    return processor.create_context_entity(
+    return context_processor.create_context_entity(
         project=project,
         name=name,
         kind=kind,
@@ -115,7 +115,7 @@ def log_artifact(
     """
     eval_source(source)
     kwargs = process_kwargs(project, name, source=source, path=path, **kwargs)
-    return processor.log_material_entity(
+    return context_processor.log_material_entity(
         source=source,
         project=project,
         name=name,
@@ -159,7 +159,7 @@ def get_artifact(
     >>>                    project="my-project",
     >>>                    entity_id="my-artifact-id")
     """
-    return processor.read_context_entity(
+    return context_processor.read_context_entity(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -199,7 +199,7 @@ def get_artifact_versions(
     >>> obj = get_artifact_versions("my-artifact-name"
     >>>                             project="my-project")
     """
-    return processor.read_context_entity_versions(
+    return context_processor.read_context_entity_versions(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -227,7 +227,7 @@ def list_artifacts(project: str, **kwargs) -> list[Artifact]:
     --------
     >>> objs = list_artifacts(project="my-project")
     """
-    return processor.list_context_entities(
+    return context_processor.list_context_entities(
         project=project,
         entity_type=ENTITY_TYPE,
         **kwargs,
@@ -252,7 +252,7 @@ def import_artifact(file: str) -> Artifact:
     --------
     >>> obj = import_artifact("my-artifact.yaml")
     """
-    return processor.import_context_entity(file)
+    return context_processor.import_context_entity(file)
 
 
 def load_artifact(file: str) -> Artifact:
@@ -273,7 +273,7 @@ def load_artifact(file: str) -> Artifact:
     --------
     >>> obj = load_artifact("my-artifact.yaml")
     """
-    return processor.load_context_entity(file)
+    return context_processor.load_context_entity(file)
 
 
 def update_artifact(entity: Artifact) -> Artifact:
@@ -294,7 +294,7 @@ def update_artifact(entity: Artifact) -> Artifact:
     --------
     >>> obj = update_artifact(obj)
     """
-    return processor.update_context_entity(
+    return context_processor.update_context_entity(
         project=entity.project,
         entity_type=entity.ENTITY_TYPE,
         entity_id=entity.id,
@@ -340,7 +340,7 @@ def delete_artifact(
     >>>                  project="my-project",
     >>>                  delete_all_versions=True)
     """
-    return processor.delete_context_entity(
+    return context_processor.delete_context_entity(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,

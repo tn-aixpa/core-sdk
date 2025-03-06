@@ -18,4 +18,4 @@ class RunStatus(Status):
         **kwargs,
     ) -> None:
         super().__init__(state, message, transitions, k8s, **kwargs)
-        self.metrics = metrics
+        self.metrics = metrics if metrics is not None else {}

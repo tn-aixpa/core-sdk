@@ -3,7 +3,8 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._operations.processor import processor
+from digitalhub.entities._processors.base import base_processor
+from digitalhub.entities._processors.context import context_processor
 from digitalhub.entities.project.utils import setup_project
 from digitalhub.utils.exceptions import BackendError
 
@@ -58,7 +59,7 @@ def new_project(
     """
     if context is None:
         context = "./"
-    obj = processor.create_project_entity(
+    obj = base_processor.create_project_entity(
         name=name,
         kind="project",
         description=description,
@@ -103,7 +104,7 @@ def get_project(
     --------
     >>> obj = get_project("my-project")
     """
-    obj = processor.read_project_entity(
+    obj = base_processor.read_project_entity(
         entity_type=ENTITY_TYPE,
         entity_name=name,
         local=local,
@@ -142,7 +143,7 @@ def import_project(
     --------
     >>> obj = import_project("my-project.yaml")
     """
-    obj = processor.import_project_entity(file=file, local=local, config=config)
+    obj = base_processor.import_project_entity(file=file, local=local, config=config)
     return setup_project(obj, setup_kwargs)
 
 
@@ -175,7 +176,7 @@ def load_project(
     --------
     >>> obj = load_project("my-project.yaml")
     """
-    obj = processor.load_project_entity(file=file, local=local, config=config)
+    obj = base_processor.load_project_entity(file=file, local=local, config=config)
     return setup_project(obj, setup_kwargs)
 
 
@@ -195,7 +196,7 @@ def list_projects(local: bool = False, **kwargs) -> list[Project]:
     list
         List of objects.
     """
-    return processor.list_project_entities(local=local, **kwargs)
+    return base_processor.list_project_entities(local=local, **kwargs)
 
 
 def get_or_create_project(
@@ -268,7 +269,7 @@ def update_project(entity: Project, **kwargs) -> Project:
     --------
     >>> obj = update_project(obj)
     """
-    return processor.update_project_entity(
+    return base_processor.update_project_entity(
         entity_type=entity.ENTITY_TYPE,
         entity_name=entity.name,
         entity_dict=entity.to_dict(),
@@ -309,7 +310,7 @@ def delete_project(
     --------
     >>> delete_project("my-project")
     """
-    return processor.delete_project_entity(
+    return base_processor.delete_project_entity(
         entity_type=ENTITY_TYPE,
         entity_name=name,
         local=local,
@@ -362,7 +363,7 @@ def search_entity(
         list[ContextEntity]
             List of object instances.
     """
-    return processor.search_entity(
+    return context_processor.search_entity(
         project_name,
         query=query,
         entity_types=entity_types,

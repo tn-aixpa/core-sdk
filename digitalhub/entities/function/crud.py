@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._operations.processor import processor
+from digitalhub.entities._processors.context import context_processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities.function._base.entity import Function
@@ -56,7 +56,7 @@ def new_function(
     >>>                    code_src="function.py",
     >>>                    handler="function-handler")
     """
-    return processor.create_context_entity(
+    return context_processor.create_context_entity(
         project=project,
         name=name,
         kind=kind,
@@ -103,7 +103,7 @@ def get_function(
     >>>                    project="my-project",
     >>>                    entity_id="my-function-id")
     """
-    return processor.read_context_entity(
+    return context_processor.read_context_entity(
         identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -143,7 +143,7 @@ def get_function_versions(
     >>> obj = get_function_versions("my-function-name"
     >>>                             project="my-project")
     """
-    return processor.read_context_entity_versions(
+    return context_processor.read_context_entity_versions(
         identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -171,7 +171,7 @@ def list_functions(project: str, **kwargs) -> list[Function]:
     --------
     >>> objs = list_functions(project="my-project")
     """
-    return processor.list_context_entities(
+    return context_processor.list_context_entities(
         project=project,
         entity_type=ENTITY_TYPE,
         **kwargs,
@@ -196,7 +196,7 @@ def import_function(file: str) -> Function:
     --------
     >>> obj = import_function("my-function.yaml")
     """
-    return processor.import_executable_entity(file)
+    return context_processor.import_executable_entity(file)
 
 
 def load_function(file: str) -> Function:
@@ -217,7 +217,7 @@ def load_function(file: str) -> Function:
     --------
     >>> obj = load_function("my-function.yaml")
     """
-    return processor.load_executable_entity(file)
+    return context_processor.load_executable_entity(file)
 
 
 def update_function(entity: Function) -> Function:
@@ -238,7 +238,7 @@ def update_function(entity: Function) -> Function:
     --------
     >>> obj = update_function(obj)
     """
-    return processor.update_context_entity(
+    return context_processor.update_context_entity(
         project=entity.project,
         entity_type=entity.ENTITY_TYPE,
         entity_id=entity.id,
@@ -287,7 +287,7 @@ def delete_function(
     >>>                       project="my-project",
     >>>                       delete_all_versions=True)
     """
-    return processor.delete_context_entity(
+    return context_processor.delete_context_entity(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,

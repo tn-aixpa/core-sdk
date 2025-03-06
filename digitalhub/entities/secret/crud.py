@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._operations.processor import processor
+from digitalhub.entities._processors.context import context_processor
 from digitalhub.utils.exceptions import EntityNotExistsError
 
 if typing.TYPE_CHECKING:
@@ -58,7 +58,7 @@ def new_secret(
     """
     if secret_value is None:
         raise ValueError("secret_value must be provided.")
-    obj: Secret = processor.create_context_entity(
+    obj: Secret = context_processor.create_context_entity(
         project=project,
         name=name,
         kind="secret",
@@ -116,7 +116,7 @@ def get_secret(
                 return secret
         else:
             raise EntityNotExistsError(f"Secret {identifier} not found.")
-    return processor.read_context_entity(
+    return context_processor.read_context_entity(
         identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -156,7 +156,7 @@ def get_secret_versions(
     >>> objs = get_secret_versions("my-secret-name",
     >>>                            project="my-project")
     """
-    return processor.read_context_entity_versions(
+    return context_processor.read_context_entity_versions(
         identifier,
         entity_type=ENTITY_TYPE,
         project=project,
@@ -184,7 +184,7 @@ def list_secrets(project: str, **kwargs) -> list[Secret]:
     --------
     >>> objs = list_secrets(project="my-project")
     """
-    return processor.list_context_entities(
+    return context_processor.list_context_entities(
         project=project,
         entity_type=ENTITY_TYPE,
         **kwargs,
@@ -209,7 +209,7 @@ def import_secret(file: str) -> Secret:
     --------
     >>> obj = import_secret("my-secret.yaml")
     """
-    return processor.import_context_entity(file)
+    return context_processor.import_context_entity(file)
 
 
 def load_secret(file: str) -> Secret:
@@ -230,7 +230,7 @@ def load_secret(file: str) -> Secret:
     --------
     >>> obj = load_secret("my-secret.yaml")
     """
-    return processor.load_context_entity(file)
+    return context_processor.load_context_entity(file)
 
 
 def update_secret(entity: Secret) -> Secret:
@@ -251,7 +251,7 @@ def update_secret(entity: Secret) -> Secret:
     --------
     >>> obj = update_secret(obj)
     """
-    return processor.update_context_entity(
+    return context_processor.update_context_entity(
         project=entity.project,
         entity_type=entity.ENTITY_TYPE,
         entity_id=entity.id,
@@ -297,7 +297,7 @@ def delete_secret(
     >>>                     project="my-project",
     >>>                     delete_all_versions=True)
     """
-    return processor.delete_context_entity(
+    return context_processor.delete_context_entity(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,

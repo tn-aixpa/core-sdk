@@ -3,26 +3,27 @@ from __future__ import annotations
 import typing
 from typing import Any
 
-from digitalhub.client.api import get_client
-from digitalhub.context.api import delete_context, get_context
-from digitalhub.entities._commons.enums import ApiCategories, BackendOperations, EntityTypes, Relationship
-from digitalhub.entities._commons.utils import get_project_from_key, parse_entity_key
+from digitalhub.entities._commons.enums import ApiCategories, BackendOperations, Relationship
 from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
-from digitalhub.utils.exceptions import ContextError, EntityAlreadyExistsError, EntityError, EntityNotExistsError
+from digitalhub.processors.utils import (
+    get_context_from_identifier,
+    get_context_from_project,
+    parse_identifier,
+    set_params,
+)
+from digitalhub.utils.exceptions import EntityAlreadyExistsError, EntityError, EntityNotExistsError
 from digitalhub.utils.io_utils import read_yaml
 from digitalhub.utils.types import SourcesOrListOfSources
 
 if typing.TYPE_CHECKING:
-    from digitalhub.client._base.client import Client
     from digitalhub.context.context import Context
     from digitalhub.entities._base.context.entity import ContextEntity
     from digitalhub.entities._base.executable.entity import ExecutableEntity
     from digitalhub.entities._base.material.entity import MaterialEntity
-    from digitalhub.entities._base.project.entity import ProjectEntity
     from digitalhub.entities._base.unversioned.entity import UnversionedEntity
 
 
-class OperationsProcessor:
+class ContextEntityOperationsProcessor:
     """
     Processor for Entity operations.
 
@@ -30,500 +31,6 @@ class OperationsProcessor:
     and then calls the appropriate method to perform the requested operation.
     Operations can be CRUD, search, list, etc.
     """
-
-    ##############################
-    # CRUD base entity
-    ##############################
-
-    def _create_base_entity(
-        self,
-        client: Client,
-        entity_type: str,
-        entity_dict: dict,
-        **kwargs,
-    ) -> dict:
-        """
-        Create object in backend.
-
-        Parameters
-        ----------
-        client : Client
-            Client instance.
-        entity_type : str
-            Entity type.
-        entity_dict : dict
-            Object instance.
-        **kwargs : dict
-            Parameters to pass to the API call.
-
-        Returns
-        -------
-        dict
-            Object instance.
-        """
-        api = client.build_api(
-            ApiCategories.BASE.value,
-            BackendOperations.CREATE.value,
-            entity_type=entity_type,
-        )
-        return client.create_object(api, entity_dict, **kwargs)
-
-    def create_project_entity(
-        self,
-        _entity: ProjectEntity | None = None,
-        **kwargs,
-    ) -> ProjectEntity:
-        """
-        Create object in backend.
-
-        Parameters
-        ----------
-        _entity : ProjectEntity
-            Object instance.
-        **kwargs : dict
-            Parameters to pass to entity builder.
-
-        Returns
-        -------
-        Project
-            Object instance.
-        """
-        if _entity is not None:
-            client = _entity._client
-            obj = _entity
-        else:
-            client = get_client(kwargs.get("local"), kwargs.pop("config", None))
-            obj = build_entity_from_params(**kwargs)
-        ent = self._create_base_entity(client, obj.ENTITY_TYPE, obj.to_dict())
-        ent["local"] = client.is_local()
-        return build_entity_from_dict(ent)
-
-    def _read_base_entity(
-        self,
-        client: Client,
-        entity_type: str,
-        entity_name: str,
-        **kwargs,
-    ) -> dict:
-        """
-        Read object from backend.
-
-        Parameters
-        ----------
-        client : Client
-            Client instance.
-        entity_type : str
-            Entity type.
-        entity_name : str
-            Entity name.
-        **kwargs : dict
-            Parameters to pass to the API call.
-
-        Returns
-        -------
-        dict
-            Object instance.
-        """
-        api = client.build_api(
-            ApiCategories.BASE.value,
-            BackendOperations.READ.value,
-            entity_type=entity_type,
-            entity_name=entity_name,
-        )
-        return client.read_object(api, **kwargs)
-
-    def read_project_entity(
-        self,
-        entity_type: str,
-        entity_name: str,
-        **kwargs,
-    ) -> ProjectEntity:
-        """
-        Read object from backend.
-
-        Parameters
-        ----------
-        entity_type : str
-            Entity type.
-        entity_name : str
-            Entity name.
-        **kwargs : dict
-            Parameters to pass to entity builder.
-
-        Returns
-        -------
-        ProjectEntity
-            Object instance.
-        """
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
-        obj = self._read_base_entity(client, entity_type, entity_name, **kwargs)
-        obj["local"] = client.is_local()
-        return build_entity_from_dict(obj)
-
-    def import_project_entity(
-        self,
-        file: str,
-        **kwargs,
-    ) -> ProjectEntity:
-        """
-        Import object from a YAML file and create a new object into the backend.
-
-        Parameters
-        ----------
-        file : str
-            Path to YAML file.
-        **kwargs : dict
-            Additional keyword arguments.
-
-        Returns
-        -------
-        ProjectEntity
-            Object instance.
-        """
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
-        obj: dict = read_yaml(file)
-        obj["status"] = {}
-        obj["local"] = client.is_local()
-        ent: ProjectEntity = build_entity_from_dict(obj)
-
-        try:
-            self._create_base_entity(ent._client, ent.ENTITY_TYPE, ent.to_dict())
-        except EntityAlreadyExistsError:
-            raise EntityError(f"Entity {ent.name} already exists. If you want to update it, use load instead.")
-
-        # Import related entities
-        ent._import_entities(obj)
-        ent.refresh()
-        return ent
-
-    def load_project_entity(
-        self,
-        file: str,
-        **kwargs,
-    ) -> ProjectEntity:
-        """
-        Load object from a YAML file and update an existing object into the backend.
-
-        Parameters
-        ----------
-        file : str
-            Path to YAML file.
-        **kwargs : dict
-            Additional keyword arguments.
-
-        Returns
-        -------
-        ProjectEntity
-            Object instance.
-        """
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
-        obj: dict = read_yaml(file)
-        obj["local"] = client.is_local()
-        ent: ProjectEntity = build_entity_from_dict(obj)
-
-        try:
-            self._update_base_entity(ent._client, ent.ENTITY_TYPE, ent.name, ent.to_dict())
-        except EntityNotExistsError:
-            self._create_base_entity(ent._client, ent.ENTITY_TYPE, ent.to_dict())
-
-        # Load related entities
-        ent._load_entities(obj)
-        ent.refresh()
-        return ent
-
-    def _list_base_entities(
-        self,
-        client: Client,
-        entity_type: str,
-        **kwargs,
-    ) -> list[dict]:
-        """
-        List objects from backend.
-
-        Parameters
-        ----------
-        client : Client
-            Client instance.
-        entity_type : str
-            Entity type.
-        **kwargs : dict
-            Parameters to pass to the API call.
-
-        Returns
-        -------
-        list[dict]
-            List of objects.
-        """
-        api = client.build_api(
-            ApiCategories.BASE.value,
-            BackendOperations.LIST.value,
-            entity_type=entity_type,
-        )
-        return client.list_objects(api, **kwargs)
-
-    def list_project_entities(
-        self,
-        entity_type: str,
-        **kwargs,
-    ) -> list[ProjectEntity]:
-        """
-        List objects from backend.
-
-        Parameters
-        ----------
-        entity_type : str
-            Entity type.
-        **kwargs : dict
-            Parameters to pass to API call.
-
-        Returns
-        -------
-        list[ProjectEntity]
-            List of objects.
-        """
-        client = get_client(kwargs.pop("local", False))
-        objs = self._list_base_entities(client, entity_type, **kwargs)
-        entities = []
-        for obj in objs:
-            obj["local"] = client.is_local()
-            ent = build_entity_from_dict(obj)
-            entities.append(ent)
-        return entities
-
-    def _update_base_entity(
-        self,
-        client: Client,
-        entity_type: str,
-        entity_name: str,
-        entity_dict: dict,
-        **kwargs,
-    ) -> dict:
-        """
-        Update object method.
-
-        Parameters
-        ----------
-        client : Client
-            Client instance.
-        entity_type : str
-            Entity type.
-        entity_name : str
-            Entity name.
-        entity_dict : dict
-            Object instance.
-        **kwargs : dict
-            Parameters to pass to the API call.
-
-        Returns
-        -------
-        dict
-            Object instance.
-        """
-        api = client.build_api(
-            ApiCategories.BASE.value,
-            BackendOperations.UPDATE.value,
-            entity_type=entity_type,
-            entity_name=entity_name,
-        )
-        return client.update_object(api, entity_dict, **kwargs)
-
-    def update_project_entity(
-        self,
-        entity_type: str,
-        entity_name: str,
-        entity_dict: dict,
-        **kwargs,
-    ) -> ProjectEntity:
-        """
-        Update object method.
-
-        Parameters
-        ----------
-        entity_type : str
-            Entity type.
-        entity_name : str
-            Entity name.
-        entity_dict : dict
-            Object instance.
-        **kwargs : dict
-            Parameters to pass to entity builder.
-
-        Returns
-        -------
-        ProjectEntity
-            Object instance.
-        """
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
-        obj = self._update_base_entity(client, entity_type, entity_name, entity_dict, **kwargs)
-        obj["local"] = client.is_local()
-        return build_entity_from_dict(obj)
-
-    def _delete_base_entity(
-        self,
-        client: Client,
-        entity_type: str,
-        entity_name: str,
-        **kwargs,
-    ) -> dict:
-        """
-        Delete object method.
-
-        Parameters
-        ----------
-        client : Client
-            Client instance.
-        entity_type : str
-            Entity type.
-        entity_name : str
-            Entity name.
-        **kwargs : dict
-            Parameters to pass to the API call.
-
-        Returns
-        -------
-        dict
-            Response from backend.
-        """
-        api = client.build_api(
-            ApiCategories.BASE.value,
-            BackendOperations.DELETE.value,
-            entity_type=entity_type,
-            entity_name=entity_name,
-        )
-        return client.delete_object(api, **kwargs)
-
-    def delete_project_entity(
-        self,
-        entity_type: str,
-        entity_name: str,
-        **kwargs,
-    ) -> dict:
-        """
-        Delete object method.
-
-        Parameters
-        ----------
-        entity_type : str
-            Entity type.
-        entity_name : str
-            Entity name.
-        **kwargs : dict
-            Parameters to pass to entity builder.
-
-        Returns
-        -------
-        dict
-            Response from backend.
-        """
-        kwargs = self._set_params(**kwargs)
-        if cascade := kwargs.pop("cascade", None) is not None:
-            kwargs["params"]["cascade"] = str(cascade).lower()
-        if kwargs.pop("clean_context", True):
-            delete_context(entity_name)
-
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
-        return self._delete_base_entity(
-            client,
-            entity_type,
-            entity_name,
-            **kwargs,
-        )
-
-    ##############################
-    # Base entity operations
-    ##############################
-
-    def _build_base_entity_key(
-        self,
-        client: Client,
-        entity_id: str,
-    ) -> str:
-        """
-        Build object key.
-
-        Parameters
-        ----------
-        client : Client
-            Client instance.
-        entity_id : str
-            Entity ID.
-
-        Returns
-        -------
-        str
-            Object key.
-        """
-        return client.build_key(ApiCategories.BASE.value, entity_id)
-
-    def build_project_key(
-        self,
-        entity_id: str,
-        **kwargs,
-    ) -> str:
-        """
-        Build object key.
-
-        Parameters
-        ----------
-        entity_id : str
-            Entity ID.
-        **kwargs : dict
-            Parameters to pass to entity builder.
-
-        Returns
-        -------
-        str
-            Object key.
-        """
-        client = get_client(kwargs.pop("local", False))
-        return self._build_base_entity_key(client, entity_id)
-
-    def share_project_entity(
-        self,
-        entity_type: str,
-        entity_name: str,
-        **kwargs,
-    ) -> None:
-        """
-        Share object method.
-
-        Parameters
-        ----------
-        entity_type : str
-            Entity type.
-        entity_name : str
-            Entity name.
-        **kwargs : dict
-            Parameters to pass to entity builder.
-
-        Returns
-        -------
-        None
-        """
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
-        api = client.build_api(
-            ApiCategories.BASE.value,
-            BackendOperations.SHARE.value,
-            entity_type=entity_type,
-            entity_name=entity_name,
-        )
-        user = kwargs.pop("user")
-        unshare = kwargs.pop("unshare", False)
-        kwargs = self._set_params(**kwargs)
-
-        # Unshare
-        if unshare:
-            users = client.read_object(api, **kwargs)
-            for u in users:
-                if u["user"] == user:
-                    kwargs["params"]["id"] = u["id"]
-                    client.delete_object(api, **kwargs)
-                    break
-            return
-
-        # Share
-        kwargs["params"]["user"] = user
-        client.create_object(api, obj={}, **kwargs)
 
     ##############################
     # CRUD context entity
@@ -566,7 +73,7 @@ class OperationsProcessor:
         self,
         _entity: ContextEntity | None = None,
         **kwargs,
-    ) -> dict:
+    ) -> ContextEntity:
         """
         Create object in backend.
 
@@ -577,14 +84,14 @@ class OperationsProcessor:
 
         Returns
         -------
-        dict
+        ContextEntity
             Object instance.
         """
         if _entity is not None:
             context = _entity._context()
             obj = _entity
         else:
-            context = self._get_context(kwargs["project"])
+            context = get_context_from_project(kwargs["project"])
             obj: ContextEntity = build_entity_from_params(**kwargs)
         new_obj = self._create_context_entity(context, obj.ENTITY_TYPE, obj.to_dict())
         return build_entity_from_dict(new_obj)
@@ -607,7 +114,7 @@ class OperationsProcessor:
             Object instance.
         """
         source: SourcesOrListOfSources = kwargs.pop("source")
-        context = self._get_context(kwargs["project"])
+        context = get_context_from_project(kwargs["project"])
         obj = build_entity_from_params(**kwargs)
         if context.is_running:
             obj.add_relationship(Relationship.PRODUCEDBY.value, context.get_run_ctx())
@@ -649,14 +156,14 @@ class OperationsProcessor:
         dict
             Object instance.
         """
-        project, entity_type, _, entity_name, entity_id = self._parse_identifier(
+        project, entity_type, _, entity_name, entity_id = parse_identifier(
             identifier,
             project=project,
             entity_type=entity_type,
             entity_id=entity_id,
         )
 
-        kwargs = self._set_params(**kwargs)
+        kwargs = set_params(**kwargs)
 
         if entity_id is None:
             kwargs["params"]["name"] = entity_name
@@ -706,7 +213,7 @@ class OperationsProcessor:
         VersionedEntity
             Object instance.
         """
-        context = self._get_context_from_identifier(identifier, project)
+        context = get_context_from_identifier(identifier, project)
         obj = self._read_context_entity(
             context,
             identifier,
@@ -780,7 +287,7 @@ class OperationsProcessor:
         """
         dict_obj: dict = read_yaml(file)
         dict_obj["status"] = {}
-        context = self._get_context(dict_obj["project"])
+        context = get_context_from_project(dict_obj["project"])
         obj = build_entity_from_dict(dict_obj)
         try:
             self._create_context_entity(context, obj.ENTITY_TYPE, obj.to_dict())
@@ -817,7 +324,7 @@ class OperationsProcessor:
             exec_dict = dict_obj
             tsk_dicts = []
 
-        context = self._get_context(exec_dict["project"])
+        context = get_context_from_project(exec_dict["project"])
         obj: ExecutableEntity = build_entity_from_dict(exec_dict)
         try:
             self._create_context_entity(context, obj.ENTITY_TYPE, obj.to_dict())
@@ -846,7 +353,7 @@ class OperationsProcessor:
             Object instance.
         """
         dict_obj: dict = read_yaml(file)
-        context = self._get_context(dict_obj["project"])
+        context = get_context_from_project(dict_obj["project"])
         obj: ContextEntity = build_entity_from_dict(dict_obj)
         try:
             self._update_context_entity(context, obj.ENTITY_TYPE, obj.id, obj.to_dict())
@@ -879,7 +386,7 @@ class OperationsProcessor:
             exec_dict = dict_obj
             tsk_dicts = []
 
-        context = self._get_context(exec_dict["project"])
+        context = get_context_from_project(exec_dict["project"])
         obj: ExecutableEntity = build_entity_from_dict(exec_dict)
 
         try:
@@ -918,13 +425,13 @@ class OperationsProcessor:
         list[dict]
             Object instances.
         """
-        project, entity_type, _, entity_name, _ = self._parse_identifier(
+        project, entity_type, _, entity_name, _ = parse_identifier(
             identifier,
             project=project,
             entity_type=entity_type,
         )
 
-        kwargs = self._set_params(**kwargs)
+        kwargs = set_params(**kwargs)
         kwargs["params"]["name"] = entity_name
         kwargs["params"]["versions"] = "all"
 
@@ -962,7 +469,7 @@ class OperationsProcessor:
         list[ContextEntity]
             List of object instances.
         """
-        context = self._get_context_from_identifier(identifier, project)
+        context = get_context_from_identifier(identifier, project)
         objs = self._read_context_entity_versions(
             context,
             identifier,
@@ -1031,7 +538,7 @@ class OperationsProcessor:
         list[ContextEntity]
             List of object instances.
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         objs = self._list_context_entities(context, entity_type, **kwargs)
         objects = []
         for o in objs:
@@ -1107,7 +614,7 @@ class OperationsProcessor:
         ContextEntity
             Object instance.
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         obj = self._update_context_entity(
             context,
             entity_type,
@@ -1149,14 +656,14 @@ class OperationsProcessor:
         dict
             Response from backend.
         """
-        if not identifier.startswith("store://"):
-            if project is None or entity_type is None:
-                raise ValueError("Project must be provided.")
-            entity_name = identifier
-        else:
-            project, _, _, entity_name, entity_id = parse_entity_key(identifier)
+        project, entity_type, _, entity_name, entity_id = parse_identifier(
+            identifier,
+            project=project,
+            entity_type=entity_type,
+            entity_id=entity_id,
+        )
 
-        kwargs = self._set_params(**kwargs)
+        kwargs = set_params(**kwargs)
         if cascade := kwargs.pop("cascade", None) is not None:
             kwargs["params"]["cascade"] = str(cascade).lower()
 
@@ -1214,7 +721,7 @@ class OperationsProcessor:
         dict
             Response from backend.
         """
-        context = self._get_context_from_identifier(identifier, project)
+        context = get_context_from_identifier(identifier, project)
         return self._delete_context_entity(
             context,
             identifier,
@@ -1315,7 +822,7 @@ class OperationsProcessor:
         str
             Object key.
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         return self._build_context_entity_key(context, entity_type, entity_kind, entity_name, entity_id)
 
     def read_secret_data(
@@ -1341,7 +848,7 @@ class OperationsProcessor:
         dict
             Response from backend.
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.DATA.value,
@@ -1375,7 +882,7 @@ class OperationsProcessor:
         -------
         None
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.DATA.value,
@@ -1410,7 +917,7 @@ class OperationsProcessor:
         dict
             Response from backend.
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.LOGS.value,
@@ -1445,7 +952,7 @@ class OperationsProcessor:
         -------
         None
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.STOP.value,
@@ -1480,7 +987,7 @@ class OperationsProcessor:
         -------
         None
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.RESUME.value,
@@ -1516,7 +1023,7 @@ class OperationsProcessor:
         list[dict]
             Response from backend.
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.FILES.value,
@@ -1554,7 +1061,7 @@ class OperationsProcessor:
         -------
         None
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.FILES.value,
@@ -1591,7 +1098,7 @@ class OperationsProcessor:
         dict
             Response from backend.
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.METRICS.value,
@@ -1629,7 +1136,7 @@ class OperationsProcessor:
         -------
         None
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.METRICS.value,
@@ -1660,7 +1167,7 @@ class OperationsProcessor:
         dict
             Response from backend.
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.SEARCH.value,
@@ -1712,9 +1219,9 @@ class OperationsProcessor:
         list[ContextEntity]
             List of object instances.
         """
-        context = self._get_context(project)
+        context = get_context_from_project(project)
 
-        kwargs = self._set_params(**kwargs)
+        kwargs = set_params(**kwargs)
 
         # Add search query
         if query is not None:
@@ -1761,142 +1268,6 @@ class OperationsProcessor:
 
         objs = self._search(context, **kwargs)
         return objs
-        return [build_entity_from_dict(obj) for obj in objs]
-
-    ##############################
-    # Helpers
-    ##############################
-
-    @staticmethod
-    def _parse_identifier(
-        identifier: str,
-        project: str | None = None,
-        entity_type: str | None = None,
-        entity_kind: str | None = None,
-        entity_id: str | None = None,
-    ) -> tuple[str, str, str, str | None, str]:
-        """
-        Parse entity identifier.
-
-        Parameters
-        ----------
-        identifier : str
-            Entity key (store://...) or entity name.
-        project : str
-            Project name.
-        entity_type : str
-            Entity type.
-        entity_id : str
-            Entity ID.
-
-        Returns
-        -------
-        tuple[str, str, str, str | None, str]
-            Project name, entity type, entity kind, entity name, entity ID.
-        """
-        if not identifier.startswith("store://"):
-            if project is None or entity_type is None:
-                raise ValueError("Project and entity type must be specified.")
-            return project, entity_type, entity_kind, identifier, entity_id
-        return parse_entity_key(identifier)
-
-    @staticmethod
-    def _set_params(**kwargs) -> dict:
-        """
-        Format params parameter.
-
-        Parameters
-        ----------
-        **kwargs : dict
-            Keyword arguments.
-
-        Returns
-        -------
-        dict
-            Parameters with initialized params.
-        """
-        if not kwargs:
-            kwargs = {}
-        if "params" not in kwargs:
-            kwargs["params"] = {}
-        return kwargs
-
-    def _get_context_from_identifier(
-        self,
-        identifier: str,
-        project: str | None = None,
-    ) -> Context:
-        """
-        Get context from project.
-
-        Parameters
-        ----------
-        identifier : str
-            Entity key (store://...) or entity name.
-        project : str
-            Project name.
-
-        Returns
-        -------
-        Context
-            Context.
-        """
-        if not identifier.startswith("store://"):
-            if project is None:
-                raise EntityError("Specify project if you do not specify entity key.")
-        else:
-            project = get_project_from_key(identifier)
-
-        return self._get_context(project)
-
-    def _get_context(
-        self,
-        project: str,
-    ) -> Context:
-        """
-        Check if the given project is in the context.
-        Otherwise try to get the project from remote.
-        Finally return the client.
-
-        Parameters
-        ----------
-        project : str
-            Project name.
-
-        Returns
-        -------
-        Context
-            Context.
-        """
-        try:
-            return get_context(project)
-        except ContextError:
-            return self._get_context_from_remote(project)
-
-    def _get_context_from_remote(
-        self,
-        project: str,
-    ) -> Client:
-        """
-        Get context from remote.
-
-        Parameters
-        ----------
-        project : str
-            Project name.
-
-        Returns
-        -------
-        Client
-            Client.
-        """
-        try:
-            client = get_client()
-            obj = self._read_base_entity(client, EntityTypes.PROJECT.value, project)
-            build_entity_from_dict(obj)
-            return get_context(project)
-        except EntityNotExistsError:
-            raise ContextError(f"Project '{project}' not found.")
 
 
-processor = OperationsProcessor()
+context_processor = ContextEntityOperationsProcessor()

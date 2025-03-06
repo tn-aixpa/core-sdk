@@ -4,7 +4,7 @@ import typing
 from pathlib import Path
 
 from digitalhub.entities._base.versioned.entity import VersionedEntity
-from digitalhub.entities._operations.processor import processor
+from digitalhub.entities._processors.context import context_processor
 from digitalhub.stores.api import get_store
 from digitalhub.utils.types import SourcesOrListOfSources
 
@@ -59,7 +59,7 @@ class MaterialEntity(VersionedEntity):
 
         # Handle files info
         if files is not None:
-            processor.update_files_info(self.project, self.ENTITY_TYPE, self.id, files)
+            context_processor.update_files_info(self.project, self.ENTITY_TYPE, self.id, files)
             self.add_files_info(files)
 
         return obj
@@ -238,7 +238,7 @@ class MaterialEntity(VersionedEntity):
         None
         """
         if not self._context().local and not self.status.files:
-            files = processor.read_files_info(
+            files = context_processor.read_files_info(
                 project=self.project,
                 entity_type=self.ENTITY_TYPE,
                 entity_id=self.id,

@@ -4,8 +4,8 @@ import typing
 
 from digitalhub.entities._base.material.entity import MaterialEntity
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._commons.utils import validate_metric_value
-from digitalhub.entities._operations.processor import processor
+from digitalhub.entities._commons.metrics import MetricType, set_metrics, validate_metric_value
+from digitalhub.entities._processors.context import context_processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -35,9 +35,6 @@ class Model(MaterialEntity):
         self.spec: ModelSpec
         self.status: ModelStatus
 
-        # Initialize metrics
-        self._init_metrics()
-
     def save(self, update: bool = False) -> Model:
         """
         Save entity into backend.
@@ -59,7 +56,7 @@ class Model(MaterialEntity):
     def log_metric(
         self,
         key: str,
-        value: list[float | int] | float | int,
+        value: MetricType,
         overwrite: bool = False,
         single_value: bool = False,
     ) -> None:
@@ -73,7 +70,7 @@ class Model(MaterialEntity):
         ----------
         key : str
             Key of the metric.
-        value : list[float | int] | float | int
+        value : MetricType
             Value of the metric.
         overwrite : bool
             If True, overwrite existing metric.
@@ -101,31 +98,12 @@ class Model(MaterialEntity):
         Log a list of values and overwrite existing metric:
         >>> entity.log_metric("accuracy", [0.8, 0.9], overwrite=True)
         """
-        value = validate_metric_value(value)
-
-        if isinstance(value, list):
-            self._handle_metric_list(key, value, overwrite)
-        elif single_value:
-            self._handle_metric_single(key, value, overwrite)
-        else:
-            self._handle_metric_list_append(key, value, overwrite)
-
-        processor.update_metric(self.project, self.ENTITY_TYPE, self.id, key, self.status.metrics[key])
+        self._set_metrics(key, value, overwrite, single_value)
+        context_processor.update_metric(self.project, self.ENTITY_TYPE, self.id, key, self.status.metrics[key])
 
     ##############################
     # Helper methods
     ##############################
-
-    def _init_metrics(self) -> None:
-        """
-        Initialize metrics.
-
-        Returns
-        -------
-        None
-        """
-        if self.status.metrics is None:
-            self.status.metrics = {}
 
     def _get_metrics(self) -> None:
         """
@@ -135,72 +113,42 @@ class Model(MaterialEntity):
         -------
         None
         """
-        self.status.metrics = processor.read_metrics(
+        self.status.metrics = context_processor.read_metrics(
             project=self.project,
             entity_type=self.ENTITY_TYPE,
             entity_id=self.id,
         )
 
-    def _handle_metric_single(self, key: str, value: float | int, overwrite: bool = False) -> None:
+    def _set_metrics(
+        self,
+        key: str,
+        value: MetricType,
+        overwrite: bool,
+        single_value: bool,
+    ) -> None:
         """
-        Handle metric single value.
+        Set model metrics.
 
         Parameters
         ----------
         key : str
             Key of the metric.
-        value : float
+        value : MetricType
             Value of the metric.
         overwrite : bool
             If True, overwrite existing metric.
+        single_value : bool
+            If True, value is a single value.
 
         Returns
         -------
         None
         """
-        if key not in self.status.metrics or overwrite:
-            self.status.metrics[key] = value
-
-    def _handle_metric_list_append(self, key: str, value: float | int, overwrite: bool = False) -> None:
-        """
-        Handle metric list append.
-
-        Parameters
-        ----------
-        key : str
-            Key of the metric.
-        value : float
-            Value of the metric.
-        overwrite : bool
-            If True, overwrite existing metric.
-
-        Returns
-        -------
-        None
-        """
-        if key not in self.status.metrics or overwrite:
-            self.status.metrics[key] = [value]
-        else:
-            self.status.metrics[key].append(value)
-
-    def _handle_metric_list(self, key: str, value: list[int | float], overwrite: bool = False) -> None:
-        """
-        Handle metric list.
-
-        Parameters
-        ----------
-        key : str
-            Key of the metric.
-        value : list[int | float]
-            Value of the metric.
-        overwrite : bool
-            If True, overwrite existing metric.
-
-        Returns
-        -------
-        None
-        """
-        if key not in self.status.metrics or overwrite:
-            self.status.metrics[key] = value
-        else:
-            self.status.metrics[key].extend(value)
+        value = validate_metric_value(value)
+        self.status.metrics = set_metrics(
+            self.status.metrics,
+            key,
+            value,
+            overwrite,
+            single_value,
+        )

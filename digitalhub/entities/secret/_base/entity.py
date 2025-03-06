@@ -4,7 +4,7 @@ import typing
 
 from digitalhub.entities._base.versioned.entity import VersionedEntity
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._operations.processor import processor
+from digitalhub.entities._processors.context import context_processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -52,7 +52,7 @@ class Secret(VersionedEntity):
         None
         """
         obj = {self.name: value}
-        processor.update_secret_data(self.project, self.ENTITY_TYPE, obj)
+        context_processor.update_secret_data(self.project, self.ENTITY_TYPE, obj)
 
     def read_secret_value(self) -> dict:
         """
@@ -64,5 +64,5 @@ class Secret(VersionedEntity):
             Value of the secret.
         """
         params = {"keys": self.name}
-        data = processor.read_secret_data(self.project, self.ENTITY_TYPE, params=params)
+        data = context_processor.read_secret_data(self.project, self.ENTITY_TYPE, params=params)
         return data[self.name]

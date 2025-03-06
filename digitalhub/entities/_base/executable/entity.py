@@ -4,7 +4,7 @@ import typing
 
 from digitalhub.entities._base.versioned.entity import VersionedEntity
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._operations.processor import processor
+from digitalhub.entities._processors.context import context_processor
 from digitalhub.entities.run.crud import delete_run, get_run, list_runs
 from digitalhub.entities.task.crud import delete_task
 from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
@@ -247,7 +247,7 @@ class ExecutableEntity(VersionedEntity):
             Response from backend.
         """
         params = {self.ENTITY_TYPE: self._get_executable_string(), "kind": kind}
-        return processor.list_context_entities(self.project, EntityTypes.TASK.value, params=params)
+        return context_processor.list_context_entities(self.project, EntityTypes.TASK.value, params=params)
 
     def _check_task_in_backend(self, kind: str) -> bool:
         """

@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 
 
-class Extensions(Enum):
+class FileExtensions(Enum):
     """
     Supported file extensions.
     """

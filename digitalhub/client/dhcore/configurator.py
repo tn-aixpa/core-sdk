@@ -118,7 +118,7 @@ class ClientDHCoreConfigurator:
             The url.
         """
         api = api.removeprefix("/")
-        return f"{configurator.get_credentials(DhcoreEnvVar.ENDPOINT.value)}/{api}"
+        return f"{configurator.get_credential(DhcoreEnvVar.ENDPOINT.value)}/{api}"
 
     ##############################
     # Private methods
@@ -193,7 +193,7 @@ class ClientDHCoreConfigurator:
         -------
         bool
         """
-        auth_type = configurator.get_credentials(AUTH_KEY)
+        auth_type = configurator.get_credential(AUTH_KEY)
         return auth_type == AuthType.BASIC.value
 
     def oauth2_auth(self) -> bool:
@@ -204,7 +204,7 @@ class ClientDHCoreConfigurator:
         -------
         bool
         """
-        auth_type = configurator.get_credentials(AUTH_KEY)
+        auth_type = configurator.get_credential(AUTH_KEY)
         return auth_type == AuthType.OAUTH2.value
 
     def set_request_auth(self, kwargs: dict) -> dict:
@@ -221,7 +221,7 @@ class ClientDHCoreConfigurator:
         dict
             Authentication header.
         """
-        creds = configurator.get_all_cred()
+        creds = configurator.get_all_credentials()
         if AUTH_KEY not in creds:
             return kwargs
         if self.basic_auth():

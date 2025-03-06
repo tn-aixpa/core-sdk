@@ -2,4 +2,4 @@ from __future__ import annotations
 
 from typing import Union
 
-SourcesOrListOfSources = Union[str, list[str]]
+MetricType = Union[float, int, list[Union[float, int]]]

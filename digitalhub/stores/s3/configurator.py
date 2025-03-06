@@ -61,7 +61,7 @@ class S3StoreConfigurator:
         dict
             The credentials.
         """
-        creds = configurator.get_all_cred()
+        creds = configurator.get_all_credentials()
         try:
             return {
                 "endpoint_url": creds[S3StoreEnv.ENDPOINT_URL.value],

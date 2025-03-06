@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from digitalhub.entities._commons.enums import EntityTypes
 from digitalhub.entities._commons.models import Metric
-from digitalhub.utils.types import MetricType
+from digitalhub.entities._commons.types import MetricType
 
 
 def parse_entity_key(key: str) -> tuple[str, str, str, str | None, str]:

@@ -55,7 +55,7 @@ class SqlStoreConfigurator:
         str
             The connection string.
         """
-        creds = configurator.get_all_cred()
+        creds = configurator.get_all_credentials()
         try:
             user = creds[SqlStoreEnv.USERNAME.value]
             password = creds[SqlStoreEnv.PASSWORD.value]

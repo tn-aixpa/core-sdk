@@ -649,12 +649,12 @@ class OperationsProcessor:
         dict
             Object instance.
         """
-        if not identifier.startswith("store://"):
-            if project is None or entity_type is None:
-                raise ValueError("Project and entity type must be specified.")
-            entity_name = identifier
-        else:
-            project, entity_type, _, entity_name, entity_id = parse_entity_key(identifier)
+        project, entity_type, _, entity_name, entity_id = self._parse_identifier(
+            identifier,
+            project=project,
+            entity_type=entity_type,
+            entity_id=entity_id,
+        )
 
         kwargs = self._set_params(**kwargs)
 
@@ -918,12 +918,11 @@ class OperationsProcessor:
         list[dict]
             Object instances.
         """
-        if not identifier.startswith("store://"):
-            if project is None or entity_type is None:
-                raise ValueError("Project and entity type must be specified.")
-            entity_name = identifier
-        else:
-            project, entity_type, _, entity_name, _ = parse_entity_key(identifier)
+        project, entity_type, _, entity_name, _ = self._parse_identifier(
+            identifier,
+            project=project,
+            entity_type=entity_type,
+        )
 
         kwargs = self._set_params(**kwargs)
         kwargs["params"]["name"] = entity_name
@@ -1767,6 +1766,39 @@ class OperationsProcessor:
     ##############################
     # Helpers
     ##############################
+
+    @staticmethod
+    def _parse_identifier(
+        identifier: str,
+        project: str | None = None,
+        entity_type: str | None = None,
+        entity_kind: str | None = None,
+        entity_id: str | None = None,
+    ) -> tuple[str, str, str, str | None, str]:
+        """
+        Parse entity identifier.
+
+        Parameters
+        ----------
+        identifier : str
+            Entity key (store://...) or entity name.
+        project : str
+            Project name.
+        entity_type : str
+            Entity type.
+        entity_id : str
+            Entity ID.
+
+        Returns
+        -------
+        tuple[str, str, str, str | None, str]
+            Project name, entity type, entity kind, entity name, entity ID.
+        """
+        if not identifier.startswith("store://"):
+            if project is None or entity_type is None:
+                raise ValueError("Project and entity type must be specified.")
+            return project, entity_type, entity_kind, identifier, entity_id
+        return parse_entity_key(identifier)
 
     @staticmethod
     def _set_params(**kwargs) -> dict:

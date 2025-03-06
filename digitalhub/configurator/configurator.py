@@ -66,7 +66,7 @@ class EnvConfigurator:
         str | None
             Environment variable value.
         """
-        var = self.get_credentials(var_name)
+        var = self.get_credential(var_name)
         if var is None:
             var = self.load_from_env(var_name)
         if var is None:
@@ -123,7 +123,7 @@ class EnvConfigurator:
         """
         if key_to_include is None:
             key_to_include = []
-        creds = self.get_cred_list(key_to_include)
+        creds = self.get_credential_list(key_to_include)
         write_config(creds, self._environment)
 
     ##############################
@@ -147,9 +147,9 @@ class EnvConfigurator:
         """
         self._creds_store.set(self._environment, key, value)
 
-    def get_credentials(self, key: str) -> dict:
+    def get_credential(self, key: str) -> dict:
         """
-        Get the credentials.
+        Get single credential value from key.
 
         Parameters
         ----------
@@ -159,13 +159,13 @@ class EnvConfigurator:
         Returns
         -------
         dict
-            The credentials.
+            The credential.
         """
         return self._creds_store.get(self._environment, key)
 
-    def get_all_cred(self) -> dict:
+    def get_all_credentials(self) -> dict:
         """
-        Get all the credentials.
+        Get all the credentials from the current credentials set.
 
         Returns
         -------
@@ -174,7 +174,7 @@ class EnvConfigurator:
         """
         return self._creds_store.get_all(self._environment)
 
-    def get_cred_list(self, keys: list[str]) -> list[str]:
+    def get_credential_list(self, keys: list[str]) -> list[str]:
         """
         Get the list of credentials.
 
@@ -188,7 +188,8 @@ class EnvConfigurator:
         list[str]
             The list of credentials.
         """
-        return {k: v for k, v in self.get_all_cred().items() if k in keys}
+        return {k: v for k, v in self.get_all_credentials().items() if k in keys}
 
 
+# Define global configurator
 configurator = EnvConfigurator()

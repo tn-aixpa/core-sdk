@@ -10,7 +10,7 @@ from pandas.errors import ParserError
 
 from digitalhub.entities.dataitem.table.utils import check_preview_size, finalize_preview, prepare_data, prepare_preview
 from digitalhub.readers.data._base.reader import DataframeReader
-from digitalhub.readers.data.pandas.enums import Extensions
+from digitalhub.utils.enums import FileExtensions
 from digitalhub.utils.exceptions import ReaderError
 from digitalhub.utils.generic_utils import CustomJsonEncoder
 
@@ -42,17 +42,17 @@ class DataframeReaderPandas(DataframeReader):
         pd.DataFrame
             Pandas DataFrame.
         """
-        if extension == Extensions.CSV.value:
+        if extension == FileExtensions.CSV.value:
             return pd.read_csv(path_or_buffer, **kwargs)
-        if extension == Extensions.PARQUET.value:
+        if extension == FileExtensions.PARQUET.value:
             return pd.read_parquet(path_or_buffer, **kwargs)
-        if extension == Extensions.JSON.value:
+        if extension == FileExtensions.JSON.value:
             return pd.read_json(path_or_buffer, **kwargs)
-        if extension in (Extensions.EXCEL.value, Extensions.EXCEL_OLD.value):
+        if extension in (FileExtensions.EXCEL.value, FileExtensions.EXCEL_OLD.value):
             return pd.read_excel(path_or_buffer, **kwargs)
-        if extension in (Extensions.TXT.value, Extensions.FILE.value):
+        if extension in (FileExtensions.TXT.value, FileExtensions.FILE.value):
             try:
-                return self.read_df(path_or_buffer, Extensions.CSV.value, **kwargs)
+                return self.read_df(path_or_buffer, FileExtensions.CSV.value, **kwargs)
             except ParserError:
                 raise ReaderError(f"Unable to read from {path_or_buffer}.")
         else:
@@ -105,9 +105,9 @@ class DataframeReaderPandas(DataframeReader):
         -------
         None
         """
-        if extension == Extensions.CSV.value:
+        if extension == FileExtensions.CSV.value:
             return self.write_csv(df, dst, **kwargs)
-        if extension == Extensions.PARQUET.value:
+        if extension == FileExtensions.PARQUET.value:
             return self.write_parquet(df, dst, **kwargs)
         raise ReaderError(f"Unsupported extension '{extension}' for writing.")
 

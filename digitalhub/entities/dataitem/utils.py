@@ -10,6 +10,7 @@ from digitalhub.entities._base.material.utils import build_log_path_from_source,
 from digitalhub.entities._commons.enums import EntityKinds, EntityTypes
 from digitalhub.readers.data.api import get_reader_by_object
 from digitalhub.stores.api import get_store
+from digitalhub.utils.enums import FileExtensions
 from digitalhub.utils.generic_utils import slugify_string
 from digitalhub.utils.types import SourcesOrListOfSources
 
@@ -17,7 +18,7 @@ if typing.TYPE_CHECKING:
     from digitalhub.entities.dataitem._base.entity import Dataitem
 
 
-DEFAULT_EXTENSION = "parquet"
+DEFAULT_EXTENSION = FileExtensions.PARQUET.value
 
 
 def eval_source(

@@ -25,10 +25,10 @@ def import_module(package: str) -> ModuleType:
     """
     try:
         return importlib.import_module(package)
-    except ModuleNotFoundError:
-        raise ModuleNotFoundError(f"Package {package} not found.")
+    except ModuleNotFoundError as e:
+        raise ModuleNotFoundError(f"Package {package} not found.") from e
     except Exception as e:
-        raise e
+        raise RuntimeError(f"An error occurred while importing {package}.") from e
 
 
 def list_runtimes() -> list[str]:
@@ -37,18 +37,18 @@ def list_runtimes() -> list[str]:
 
     Returns
     -------
-    list
+    list[str]
         List of installed runtimes names.
     """
     pattern = r"digitalhub_runtime_.*"
-    runtimes = []
+    runtimes: list[str] = []
     try:
         for _, name, _ in pkgutil.iter_modules():
             if re.match(pattern, name):
                 runtimes.append(name)
         return runtimes
-    except Exception:
-        raise RuntimeError("Error listing installed runtimes.")
+    except Exception as e:
+        raise RuntimeError("Error listing installed runtimes.") from e
 
 
 def register_runtimes_entities() -> None:
@@ -86,5 +86,5 @@ def register_entities() -> None:
         for entity_builder_tuple in entities_builders_list:
             kind, builder = entity_builder_tuple
             factory.add_entity_builder(kind, builder)
-    except Exception:
-        raise
+    except Exception as e:
+        raise RuntimeError("Error registering entities.") from e

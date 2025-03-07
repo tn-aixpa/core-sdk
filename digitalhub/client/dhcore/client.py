@@ -11,6 +11,7 @@ from digitalhub.client.dhcore.api_builder import ClientDHCoreApiBuilder
 from digitalhub.client.dhcore.configurator import ClientDHCoreConfigurator
 from digitalhub.client.dhcore.error_parser import ErrorParser
 from digitalhub.client.dhcore.key_builder import ClientDHCoreKeyBuilder
+from digitalhub.client.dhcore.params_builder import ClientDHCoreParametersBuilder
 from digitalhub.utils.exceptions import BackendError
 from digitalhub.utils.generic_utils import dump_json
 
@@ -42,6 +43,9 @@ class ClientDHCore(Client):
 
         # Key builder
         self._key_builder = ClientDHCoreKeyBuilder()
+
+        # Parameters builder
+        self._params_builder = ClientDHCoreParametersBuilder()
 
         # Error parser
         self._error_parser = ErrorParser()

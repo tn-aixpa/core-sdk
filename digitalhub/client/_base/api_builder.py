@@ -10,7 +10,7 @@ class ClientApiBuilder:
     """
 
     @abstractmethod
-    def build_api(self) -> str:
+    def build_api(self, category: str, operation: str, **kwargs) -> str:
         """
         Build the API for the client.
         """

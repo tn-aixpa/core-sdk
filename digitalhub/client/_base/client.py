@@ -7,6 +7,7 @@ from typing import Any
 if typing.TYPE_CHECKING:
     from digitalhub.client._base.api_builder import ClientApiBuilder
     from digitalhub.client._base.key_builder import ClientKeyBuilder
+    from digitalhub.client._base.params_builder import ClientParametersBuilder
 
 
 class Client:
@@ -21,6 +22,7 @@ class Client:
     def __init__(self) -> None:
         self._api_builder: ClientApiBuilder = None
         self._key_builder: ClientKeyBuilder = None
+        self._params_builder: ClientParametersBuilder = None
 
     ##############################
     # CRUD methods
@@ -111,6 +113,26 @@ class Client:
             Key formatted.
         """
         return self._key_builder.build_key(category, *args, **kwargs)
+
+    def build_parameters(self, category: str, operation: str, **kwargs) -> dict:
+        """
+        Build the parameters for the client call.
+
+        Parameters
+        ----------
+        category : str
+            API category.
+        operation : str
+            API operation.
+        **kwargs : dict
+            Parameters to build.
+
+        Returns
+        -------
+        dict
+            Parameters formatted.
+        """
+        return self._params_builder.build_parameters(category, operation, **kwargs)
 
     ##############################
     # Interface methods

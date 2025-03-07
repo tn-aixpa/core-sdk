@@ -71,8 +71,11 @@ class ClientDHCoreApiBuilder(ClientApiBuilder):
         """
         Build the context API for the client.
         """
-        entity_type = kwargs["entity_type"] + "s"
         project = kwargs["project"]
+        if operation == BackendOperations.SEARCH.value:
+            return f"{API_CONTEXT}/{project}/solr/search/item"
+
+        entity_type = kwargs["entity_type"] + "s"
         if operation in (
             BackendOperations.CREATE.value,
             BackendOperations.LIST.value,
@@ -94,8 +97,6 @@ class ClientDHCoreApiBuilder(ClientApiBuilder):
             return f"{API_CONTEXT}/{project}/{entity_type}/data"
         elif operation == BackendOperations.FILES.value:
             return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}/files/info"
-        elif operation == BackendOperations.SEARCH.value:
-            return f"{API_CONTEXT}/{project}/solr/search/item"
         elif operation == BackendOperations.METRICS.value:
             if kwargs["metric_name"] is not None:
                 return f"{API_CONTEXT}/{project}/{entity_type}/{kwargs['entity_id']}/metrics/{kwargs['metric_name']}"

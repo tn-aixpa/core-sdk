@@ -5,12 +5,7 @@ from typing import Any
 
 from digitalhub.entities._commons.enums import ApiCategories, BackendOperations, Relationship
 from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
-from digitalhub.processors.utils import (
-    get_context_from_identifier,
-    get_context_from_project,
-    parse_identifier,
-    set_params,
-)
+from digitalhub.processors.utils import get_context_from_identifier, get_context_from_project, parse_identifier
 from digitalhub.utils.exceptions import EntityAlreadyExistsError, EntityError, EntityNotExistsError
 from digitalhub.utils.io_utils import read_yaml
 from digitalhub.utils.types import SourcesOrListOfSources
@@ -163,10 +158,15 @@ class ContextEntityOperationsProcessor:
             entity_id=entity_id,
         )
 
-        kwargs = set_params(**kwargs)
+        if entity_id is None:
+            kwargs["entity_name"] = entity_name
+        kwargs = context.client.build_parameters(
+            ApiCategories.CONTEXT.value,
+            BackendOperations.READ.value,
+            **kwargs,
+        )
 
         if entity_id is None:
-            kwargs["params"]["name"] = entity_name
             api = context.client.build_api(
                 ApiCategories.CONTEXT.value,
                 BackendOperations.LIST.value,
@@ -431,9 +431,12 @@ class ContextEntityOperationsProcessor:
             entity_type=entity_type,
         )
 
-        kwargs = set_params(**kwargs)
-        kwargs["params"]["name"] = entity_name
-        kwargs["params"]["versions"] = "all"
+        kwargs = context.client.build_parameters(
+            ApiCategories.CONTEXT.value,
+            BackendOperations.READ.value,
+            entity_name=entity_name,
+            **kwargs,
+        )
 
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
@@ -663,16 +666,16 @@ class ContextEntityOperationsProcessor:
             entity_id=entity_id,
         )
 
-        kwargs = set_params(**kwargs)
-        if cascade := kwargs.pop("cascade", None) is not None:
-            kwargs["params"]["cascade"] = str(cascade).lower()
-
         delete_all_versions: bool = kwargs.pop("delete_all_versions", False)
-
-        if not delete_all_versions and entity_id is None:
-            raise ValueError(
-                "If `delete_all_versions` is False, `entity_id` must be provided, either as an argument or in key `identifier`."
-            )
+        kwargs = context.client.build_parameters(
+            ApiCategories.CONTEXT.value,
+            BackendOperations.DELETE.value,
+            entity_id=entity_id,
+            entity_name=entity_name,
+            cascade=kwargs.pop("cascade", None),
+            delete_all_versions=delete_all_versions,
+            **kwargs,
+        )
 
         if delete_all_versions:
             api = context.client.build_api(
@@ -681,7 +684,6 @@ class ContextEntityOperationsProcessor:
                 project=context.name,
                 entity_type=entity_type,
             )
-            kwargs["params"]["name"] = entity_name
         else:
             api = context.client.build_api(
                 ApiCategories.CONTEXT.value,
@@ -1149,7 +1151,7 @@ class ContextEntityOperationsProcessor:
 
     def _search(
         self,
-        project: str,
+        context: Context,
         **kwargs,
     ) -> dict:
         """
@@ -1157,8 +1159,8 @@ class ContextEntityOperationsProcessor:
 
         Parameters
         ----------
-        project : str
-            Project name.
+        context : Context
+            Context instance.
         **kwargs : dict
             Parameters to pass to the API call.
 
@@ -1167,7 +1169,11 @@ class ContextEntityOperationsProcessor:
         dict
             Response from backend.
         """
-        context = get_context_from_project(project)
+        kwargs = context.client.build_parameters(
+            ApiCategories.CONTEXT.value,
+            BackendOperations.SEARCH.value,
+            **kwargs,
+        )
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.SEARCH.value,
@@ -1220,54 +1226,18 @@ class ContextEntityOperationsProcessor:
             List of object instances.
         """
         context = get_context_from_project(project)
-
-        kwargs = set_params(**kwargs)
-
-        # Add search query
-        if query is not None:
-            kwargs["params"]["q"] = query
-
-        # Add search filters
-        fq = []
-
-        # Entity types
-        if entity_types is not None:
-            if len(entity_types) == 1:
-                entity_types = entity_types[0]
-            else:
-                entity_types = " OR ".join(entity_types)
-            fq.append(f"type:({entity_types})")
-
-        # Name
-        if name is not None:
-            fq.append(f'metadata.name:"{name}"')
-
-        # Kind
-        if kind is not None:
-            fq.append(f'kind:"{kind}"')
-
-        # Time
-        created = created if created is not None else "*"
-        updated = updated if updated is not None else "*"
-        fq.append(f"metadata.updated:[{created} TO {updated}]")
-
-        # Description
-        if description is not None:
-            fq.append(f'metadata.description:"{description}"')
-
-        # Labels
-        if labels is not None:
-            if len(labels) == 1:
-                labels = labels[0]
-            else:
-                labels = " AND ".join(labels)
-            fq.append(f"metadata.labels:({labels})")
-
-        # Add filters
-        kwargs["params"]["fq"] = fq
-
-        objs = self._search(context, **kwargs)
-        return objs
+        return self._search(
+            context,
+            query=query,
+            entity_types=entity_types,
+            name=name,
+            kind=kind,
+            created=created,
+            updated=updated,
+            description=description,
+            labels=labels,
+            **kwargs,
+        )
 
 
 context_processor = ContextEntityOperationsProcessor()

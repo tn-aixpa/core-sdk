@@ -4,8 +4,6 @@ from typing import Any, Union
 
 from pydantic import BaseModel, ValidationError
 
-from digitalhub.entities._commons.models import Metric
-
 MetricType = Union[float, int, list[Union[float, int]]]
 
 

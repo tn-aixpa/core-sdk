@@ -70,7 +70,10 @@ class ClientLocalApiBuilder(ClientApiBuilder):
         """
         Build the context API for the client.
         """
-        entity_type = kwargs["entity_type"] + "s"
+        try:
+            entity_type = kwargs["entity_type"] + "s"
+        except KeyError:
+            pass
         project = kwargs["project"]
         if operation in (
             BackendOperations.CREATE.value,

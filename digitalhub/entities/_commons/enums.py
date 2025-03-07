@@ -73,6 +73,7 @@ class BackendOperations(Enum):
 
     CREATE = "create"
     READ = "read"
+    READ_ALL_VERSIONS = "read_all_versions"
     UPDATE = "update"
     DELETE = "delete"
     LIST = "list"

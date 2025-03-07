@@ -4,8 +4,12 @@ import typing
 from typing import Any
 
 from digitalhub.entities._commons.enums import ApiCategories, BackendOperations, Relationship
+from digitalhub.entities._processors.utils import (
+    get_context_from_identifier,
+    get_context_from_project,
+    parse_identifier,
+)
 from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
-from digitalhub.processors.utils import get_context_from_identifier, get_context_from_project, parse_identifier
 from digitalhub.utils.exceptions import EntityAlreadyExistsError, EntityError, EntityNotExistsError
 from digitalhub.utils.io_utils import read_yaml
 from digitalhub.utils.types import SourcesOrListOfSources

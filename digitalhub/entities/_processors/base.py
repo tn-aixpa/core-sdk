@@ -6,7 +6,6 @@ from digitalhub.client.api import get_client
 from digitalhub.context.api import delete_context
 from digitalhub.entities._commons.enums import ApiCategories, BackendOperations
 from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
-from digitalhub.processors.utils import set_params
 from digitalhub.utils.exceptions import EntityAlreadyExistsError, EntityError, EntityNotExistsError
 from digitalhub.utils.io_utils import read_yaml
 
@@ -377,6 +376,11 @@ class BaseEntityOperationsProcessor:
         dict
             Response from backend.
         """
+        kwargs = client.build_parameters(
+            ApiCategories.BASE.value,
+            BackendOperations.DELETE.value,
+            **kwargs,
+        )
         api = client.build_api(
             ApiCategories.BASE.value,
             BackendOperations.DELETE.value,
@@ -408,12 +412,8 @@ class BaseEntityOperationsProcessor:
         dict
             Response from backend.
         """
-        kwargs = set_params(**kwargs)
-        if cascade := kwargs.pop("cascade", None) is not None:
-            kwargs["params"]["cascade"] = str(cascade).lower()
         if kwargs.pop("clean_context", True):
             delete_context(entity_name)
-
         client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
         return self._delete_base_entity(
             client,
@@ -500,22 +500,27 @@ class BaseEntityOperationsProcessor:
             entity_type=entity_type,
             entity_name=entity_name,
         )
-        user = kwargs.pop("user")
-        unshare = kwargs.pop("unshare", False)
-        kwargs = set_params(**kwargs)
 
-        # Unshare
-        if unshare:
+        user = kwargs.pop("user", None)
+        if unshare := kwargs.pop("unshare", False):
             users = client.read_object(api, **kwargs)
             for u in users:
                 if u["user"] == user:
-                    kwargs["params"]["id"] = u["id"]
-                    client.delete_object(api, **kwargs)
-                    break
-            return
+                    kwargs["id"] = u["id"]
+                break
+            else:
+                raise ValueError(f"User '{user}' does not have access to project.")
 
-        # Share
-        kwargs["params"]["user"] = user
+        kwargs = client.build_parameters(
+            ApiCategories.BASE.value,
+            BackendOperations.SHARE.value,
+            unshare=unshare,
+            user=user,
+            **kwargs,
+        )
+        if unshare:
+            client.delete_object(api, **kwargs)
+            return
         client.create_object(api, obj={}, **kwargs)
 
 

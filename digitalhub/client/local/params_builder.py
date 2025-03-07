@@ -47,7 +47,11 @@ class ClientLocalParametersBuilder(ClientParametersBuilder):
         dict
             Parameters formatted.
         """
-        return {"operation": operation}
+        kwargs = self._set_params(**kwargs)
+        if operation == BackendOperations.DELETE.value:
+            if (cascade := kwargs.pop("cascade", None)) is not None:
+                kwargs["params"]["cascade"] = str(cascade).lower()
+        return kwargs
 
     def build_parameters_context(self, operation: str, **kwargs) -> dict:
         """

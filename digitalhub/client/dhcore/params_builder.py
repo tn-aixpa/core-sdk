@@ -47,7 +47,16 @@ class ClientDHCoreParametersBuilder(ClientParametersBuilder):
         dict
             Parameters formatted.
         """
-        return {"operation": operation}
+        kwargs = self._set_params(**kwargs)
+        if operation == BackendOperations.DELETE.value:
+            if (cascade := kwargs.pop("cascade", None)) is not None:
+                kwargs["params"]["cascade"] = str(cascade).lower()
+        elif operation == BackendOperations.SHARE.value:
+            kwargs["params"]["user"] = kwargs.pop("user")
+            if kwargs.pop("unshare", False):
+                kwargs["params"]["id"] = kwargs.pop("id")
+
+        return kwargs
 
     def build_parameters_context(self, operation: str, **kwargs) -> dict:
         """

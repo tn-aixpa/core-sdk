@@ -8,6 +8,7 @@ from digitalhub.client._base.client import Client
 from digitalhub.client.local.api_builder import ClientLocalApiBuilder
 from digitalhub.client.local.enums import LocalClientVar
 from digitalhub.client.local.key_builder import ClientLocalKeyBuilder
+from digitalhub.client.local.params_builder import ClientLocalParametersBuilder
 from digitalhub.utils.exceptions import BackendError
 
 
@@ -28,10 +29,12 @@ class ClientLocal(Client):
         super().__init__()
         self._api_builder = ClientLocalApiBuilder()
         self._key_builder = ClientLocalKeyBuilder()
+        self._params_builder = ClientLocalParametersBuilder()
         self._db: dict[str, dict[str, dict]] = {}
 
     ##############################
     # CRUD
+    ##############################
     ##############################
 
     def create_object(self, api: str, obj: Any, **kwargs) -> dict:
@@ -50,6 +53,8 @@ class ClientLocal(Client):
         dict
             The created object.
         """
+        if api == LocalClientVar.EMPTY.value:
+            return {}
         if not isinstance(obj, dict):
             raise TypeError("Object must be a dictionary")
 
@@ -178,6 +183,8 @@ class ClientLocal(Client):
         dict
             The updated object.
         """
+        if api == LocalClientVar.EMPTY.value:
+            return {}
         if not isinstance(obj, dict):
             raise TypeError("Object must be a dictionary")
 

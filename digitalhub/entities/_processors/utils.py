@@ -47,27 +47,6 @@ def parse_identifier(
     return parse_entity_key(identifier)
 
 
-def set_params(**kwargs) -> dict:
-    """
-    Format params parameter.
-
-    Parameters
-    ----------
-    **kwargs : dict
-        Keyword arguments.
-
-    Returns
-    -------
-    dict
-        Parameters with initialized params.
-    """
-    if not kwargs:
-        kwargs = {}
-    if "params" not in kwargs:
-        kwargs["params"] = {}
-    return kwargs
-
-
 def get_context_from_identifier(
     identifier: str,
     project: str | None = None,

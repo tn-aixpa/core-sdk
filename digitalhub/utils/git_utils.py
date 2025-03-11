@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import warnings
+from enums import Enum
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -11,6 +12,16 @@ try:
 except ImportError as e:
     if "Bad git executable." in e.args[0]:
         warnings.warn("git is not installed. Please install git and try again.", RuntimeWarning)
+
+
+class GitCredentialsType(Enum):
+    """
+    Supported git credentials types.
+    """
+
+    USERNAME = "GIT_USERNAME"
+    PASSWORD = "GIT_PASSWORD"
+    TOKEN = "GIT_TOKEN"
 
 
 def clone_repository(path: Path, url: str) -> None:
@@ -90,12 +101,8 @@ def get_git_username_password_from_token(token: str) -> tuple[str, str]:
     """
     # Mutued from mlrun
     if token.startswith("github_pat_") or token.startswith("glpat"):
-        username = "oauth2"
-        password = token
-    else:
-        username = token
-        password = "x-oauth-basic"
-    return username, password
+        return "oauth2", token
+    return token, "x-oauth-basic"
 
 
 def add_credentials_git_remote_url(url: str) -> str:
@@ -115,9 +122,9 @@ def add_credentials_git_remote_url(url: str) -> str:
     url_obj = urlparse(url)
 
     # Get credentials from environment variables
-    username = os.getenv("GIT_USERNAME")
-    password = os.getenv("GIT_PASSWORD")
-    token = os.getenv("GIT_TOKEN")
+    username = os.getenv(GitCredentialsType.USERNAME.value)
+    password = os.getenv(GitCredentialsType.PASSWORD.value)
+    token = os.getenv(GitCredentialsType.TOKEN.value)
 
     # Get credentials from token. Override username and password
     if token is not None:

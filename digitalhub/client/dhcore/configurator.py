@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import typing
 from warnings import warn
 
@@ -269,12 +270,16 @@ class ClientDHCoreConfigurator:
         # Set new credential in stores
         if (access_key := dict_response.get("aws_access_key_id")) is not None:
             configurator.set_credential(S3StoreEnv.ACCESS_KEY_ID.value, access_key)
+            os.environ[S3StoreEnv.ACCESS_KEY_ID.value] = access_key
         if (secret_key := dict_response.get("aws_secret_access_key")) is not None:
             configurator.set_credential(S3StoreEnv.SECRET_ACCESS_KEY.value,secret_key )
+            os.environ[S3StoreEnv.SECRET_ACCESS_KEY.value] = secret_key
         if (db_username := dict_response.get("db_username")) is not None:
             configurator.set_credential(SqlStoreEnv.USERNAME.value, db_username)
+            os.environ[SqlStoreEnv.USERNAME.value] = db_username
         if (db_password := dict_response.get("db_password")) is not None:
             configurator.set_credential(SqlStoreEnv.PASSWORD.value, db_password)
+            os.environ[SqlStoreEnv.PASSWORD.value] = db_password
 
         # Propagate new access token to config file
         self._write_env()

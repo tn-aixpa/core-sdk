@@ -267,10 +267,14 @@ class ClientDHCoreConfigurator:
         configurator.set_credential(DhcoreEnvVar.REFRESH_TOKEN.value, dict_response["refresh_token"])
 
         # Set new credential in stores
-        configurator.set_credential(S3StoreEnv.ACCESS_KEY_ID.value, dict_response["aws_access_key_id"])
-        configurator.set_credential(S3StoreEnv.SECRET_ACCESS_KEY.value, dict_response["aws_secret_access_key"])
-        configurator.set_credential(SqlStoreEnv.USERNAME.value, dict_response["db_username"])
-        configurator.set_credential(SqlStoreEnv.PASSWORD.value, dict_response["db_password"])
+        if (access_key := dict_response.get("aws_access_key_id")) is not None:
+            configurator.set_credential(S3StoreEnv.ACCESS_KEY_ID.value, access_key)
+        if (secret_key := dict_response.get("aws_secret_access_key")) is not None:
+            configurator.set_credential(S3StoreEnv.SECRET_ACCESS_KEY.value,secret_key )
+        if (db_username := dict_response.get("db_username")) is not None:
+            configurator.set_credential(SqlStoreEnv.USERNAME.value, db_username)
+        if (db_password := dict_response.get("db_password")) is not None:
+            configurator.set_credential(SqlStoreEnv.PASSWORD.value, db_password)
 
         # Propagate new access token to config file
         self._write_env()

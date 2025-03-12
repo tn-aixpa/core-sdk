@@ -437,7 +437,7 @@ class ContextEntityOperationsProcessor:
 
         kwargs = context.client.build_parameters(
             ApiCategories.CONTEXT.value,
-            BackendOperations.READ.value,
+            BackendOperations.READ_ALL_VERSIONS.value,
             entity_name=entity_name,
             **kwargs,
         )

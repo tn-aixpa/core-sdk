@@ -272,7 +272,7 @@ class ClientDHCoreConfigurator:
             configurator.set_credential(S3StoreEnv.ACCESS_KEY_ID.value, access_key)
             os.environ[S3StoreEnv.ACCESS_KEY_ID.value] = access_key
         if (secret_key := dict_response.get("aws_secret_access_key")) is not None:
-            configurator.set_credential(S3StoreEnv.SECRET_ACCESS_KEY.value,secret_key )
+            configurator.set_credential(S3StoreEnv.SECRET_ACCESS_KEY.value, secret_key)
             os.environ[S3StoreEnv.SECRET_ACCESS_KEY.value] = secret_key
         if (db_username := dict_response.get("db_username")) is not None:
             configurator.set_credential(SqlStoreEnv.USERNAME.value, db_username)
@@ -300,7 +300,7 @@ class ClientDHCoreConfigurator:
                 S3StoreEnv.ACCESS_KEY_ID.value,
                 S3StoreEnv.SECRET_ACCESS_KEY.value,
                 SqlStoreEnv.USERNAME.value,
-                SqlStoreEnv.PASSWORD.value
+                SqlStoreEnv.PASSWORD.value,
             ]
         )
 

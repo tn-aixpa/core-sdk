@@ -77,7 +77,11 @@ class ClientDHCoreParametersBuilder(ClientParametersBuilder):
         kwargs = self._set_params(**kwargs)
 
         # Handle read
-        if operation == BackendOperations.READ_ALL_VERSIONS.value:
+        if operation == BackendOperations.READ.value:
+            name = kwargs.pop("entity_name", None)
+            if name is not None:
+                kwargs["params"]["name"] = name
+        elif operation == BackendOperations.READ_ALL_VERSIONS.value:
             kwargs["params"]["versions"] = "all"
             kwargs["params"]["name"] = kwargs.pop("entity_name")
         # Handle delete

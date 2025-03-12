@@ -8,6 +8,8 @@ from requests import request
 from digitalhub.client.dhcore.enums import AuthType, DhcoreEnvVar
 from digitalhub.client.dhcore.models import BasicAuth, OAuth2TokenAuth
 from digitalhub.configurator.configurator import configurator
+from digitalhub.stores.s3.enums import S3StoreEnv
+from digitalhub.stores.sql.enums import SqlStoreEnv
 from digitalhub.utils.exceptions import ClientError
 from digitalhub.utils.uri_utils import has_remote_scheme
 
@@ -264,6 +266,12 @@ class ClientDHCoreConfigurator:
         configurator.set_credential(DhcoreEnvVar.ACCESS_TOKEN.value, dict_response["access_token"])
         configurator.set_credential(DhcoreEnvVar.REFRESH_TOKEN.value, dict_response["refresh_token"])
 
+        # Set new credential in stores
+        configurator.set_credential(S3StoreEnv.ACCESS_KEY_ID.value, dict_response["aws_access_key_id"])
+        configurator.set_credential(S3StoreEnv.SECRET_ACCESS_KEY.value, dict_response["aws_secret_access_key"])
+        configurator.set_credential(SqlStoreEnv.USERNAME.value, dict_response["db_username"])
+        configurator.set_credential(SqlStoreEnv.PASSWORD.value, dict_response["db_password"])
+
         # Propagate new access token to config file
         self._write_env()
 
@@ -334,6 +342,7 @@ class ClientDHCoreConfigurator:
             "grant_type": "refresh_token",
             "client_id": client_id,
             "refresh_token": refresh_token,
+            "scope": "openid credentials offline_access",
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         return request("POST", url, data=payload, headers=headers, timeout=60)

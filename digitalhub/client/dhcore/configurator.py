@@ -292,6 +292,10 @@ class ClientDHCoreConfigurator:
             [
                 DhcoreEnvVar.ACCESS_TOKEN.value,
                 DhcoreEnvVar.REFRESH_TOKEN.value,
+                S3StoreEnv.ACCESS_KEY_ID.value,
+                S3StoreEnv.SECRET_ACCESS_KEY.value,
+                SqlStoreEnv.USERNAME.value,
+                SqlStoreEnv.PASSWORD.value
             ]
         )
 

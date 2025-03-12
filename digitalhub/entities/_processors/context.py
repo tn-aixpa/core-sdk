@@ -1184,7 +1184,7 @@ class ContextEntityOperationsProcessor:
             project=context.name,
         )
         entities_dict = context.client.read_object(api, **kwargs)
-        return [self.read_context_entity(entity["key"]) for entity in entities_dict]
+        return [self.read_context_entity(entity["key"]) for entity in entities_dict["content"]]
 
     def search_entity(
         self,

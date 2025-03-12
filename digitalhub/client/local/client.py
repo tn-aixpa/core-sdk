@@ -35,7 +35,6 @@ class ClientLocal(Client):
     ##############################
     # CRUD
     ##############################
-    ##############################
 
     def create_object(self, api: str, obj: Any, **kwargs) -> dict:
         """

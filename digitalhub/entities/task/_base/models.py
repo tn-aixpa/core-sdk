@@ -236,3 +236,13 @@ class CoreServiceType(Enum):
     CLUSTER_IP = "ClusterIP"
     NODE_PORT = "NodePort"
     LOAD_BALANCER = "LoadBalancer"
+
+
+class CorePullPolicy(Enum):
+    """
+    CorePullPolicy enum.
+    """
+
+    ALWAYS = "Always"
+    IF_NOT_PRESENT = "IfNotPresent"
+    NEVER = "Never"

@@ -2,16 +2,16 @@ from __future__ import annotations
 
 import typing
 
-from digitalhub.client.api import get_client
 from digitalhub.context.api import get_context
 from digitalhub.entities._commons.enums import ApiCategories, BackendOperations, EntityTypes
 from digitalhub.entities._commons.utils import get_project_from_key, parse_entity_key
 from digitalhub.factory.api import build_entity_from_dict
+from digitalhub.stores.client.api import get_client
 from digitalhub.utils.exceptions import ContextError, EntityError, EntityNotExistsError
 
 if typing.TYPE_CHECKING:
-    from digitalhub.client._base.client import Client
     from digitalhub.context.context import Context
+    from digitalhub.stores.client._base.client import Client
 
 
 def parse_identifier(

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from digitalhub.entities.dataitem._base.entity import Dataitem
-from digitalhub.stores.api import get_store
+from digitalhub.stores.data.api import get_store
 from digitalhub.utils.uri_utils import has_sql_scheme
 
 if typing.TYPE_CHECKING:

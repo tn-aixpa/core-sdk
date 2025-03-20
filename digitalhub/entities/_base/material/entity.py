@@ -5,7 +5,7 @@ from pathlib import Path
 
 from digitalhub.entities._base.versioned.entity import VersionedEntity
 from digitalhub.entities._processors.context import context_processor
-from digitalhub.stores.api import get_store
+from digitalhub.stores.data.api import get_store
 from digitalhub.utils.types import SourcesOrListOfSources
 
 if typing.TYPE_CHECKING:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from digitalhub.stores.s3.utils import get_s3_bucket_from_env
+from digitalhub.stores.data.s3.utils import get_s3_bucket_from_env
 from digitalhub.utils.file_utils import eval_zip_type
 from digitalhub.utils.uri_utils import S3Schemes, has_local_scheme
 

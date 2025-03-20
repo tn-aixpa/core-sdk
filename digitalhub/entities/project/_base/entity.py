@@ -4,7 +4,6 @@ import typing
 from pathlib import Path
 from typing import Any
 
-from digitalhub.client.api import get_client
 from digitalhub.context.api import build_context
 from digitalhub.entities._base.entity.entity import Entity
 from digitalhub.entities._commons.enums import EntityTypes
@@ -69,6 +68,7 @@ from digitalhub.entities.workflow.crud import (
     update_workflow,
 )
 from digitalhub.factory.api import build_entity_from_dict
+from digitalhub.stores.client.api import get_client
 from digitalhub.utils.exceptions import BackendError, EntityAlreadyExistsError, EntityError
 from digitalhub.utils.generic_utils import get_timestamp
 from digitalhub.utils.io_utils import write_yaml

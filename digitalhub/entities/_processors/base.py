@@ -2,16 +2,16 @@ from __future__ import annotations
 
 import typing
 
-from digitalhub.client.api import get_client
 from digitalhub.context.api import delete_context
 from digitalhub.entities._commons.enums import ApiCategories, BackendOperations
 from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
+from digitalhub.stores.client.api import get_client
 from digitalhub.utils.exceptions import EntityAlreadyExistsError, EntityError, EntityNotExistsError
 from digitalhub.utils.io_utils import read_yaml
 
 if typing.TYPE_CHECKING:
-    from digitalhub.client._base.client import Client
     from digitalhub.entities.project._base.entity import Project
+    from digitalhub.stores.client._base.client import Client
 
 
 class BaseEntityOperationsProcessor:

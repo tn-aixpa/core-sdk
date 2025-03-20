@@ -8,8 +8,8 @@ from digitalhub.context.api import get_context
 from digitalhub.entities._base.entity._constructors.uuid import build_uuid
 from digitalhub.entities._base.material.utils import build_log_path_from_source, eval_local_source
 from digitalhub.entities._commons.enums import EntityKinds, EntityTypes
-from digitalhub.readers.data.api import get_reader_by_object
-from digitalhub.stores.api import get_store
+from digitalhub.stores.data.api import get_store
+from digitalhub.stores.readers.data.api import get_reader_by_object
 from digitalhub.utils.enums import FileExtensions
 from digitalhub.utils.generic_utils import slugify_string
 from digitalhub.utils.types import SourcesOrListOfSources

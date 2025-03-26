@@ -65,27 +65,31 @@ class SqlStoreConfigurator:
         database = creds[SqlStoreEnv.DATABASE.value]
         return f"postgresql://{user}:{password}@{host}:{port}/{database}"
 
-    def _get_env_config(self) -> None:
+    def _get_env_config(self) -> dict:
         """
         Get the store configuration from environment variables.
 
         Returns
         -------
-        None
+        dict
+            The credentials.
         """
         credentials = {var.value: configurator.load_from_env(var.value) for var in self.variables}
         self._set_credentials(credentials)
+        return credentials
 
-    def _get_file_config(self) -> None:
+    def _get_file_config(self) -> dict:
         """
         Get the store configuration from file.
 
         Returns
         -------
-        None
+        dict
+            The credentials.
         """
         credentials = {var.value: configurator.load_from_file(var.value) for var in self.variables}
         self._set_credentials(credentials)
+        return credentials
 
     def _check_credentials(self, credentials: dict) -> None:
         """

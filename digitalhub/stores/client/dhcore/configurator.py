@@ -248,10 +248,9 @@ class ClientDHCoreConfigurator:
         -------
         None
         """
-        core_vals = [i.removeprefix("dhcore_") for i in list_enum(DhcoreEnvVar)]
-        keys = core_vals + list_enum(S3StoreEnv) + list_enum(SqlStoreEnv)
+        keys = list_enum(DhcoreEnvVar) + list_enum(S3StoreEnv) + list_enum(SqlStoreEnv)
         for key in keys:
-            if (value := response.get(key.lower())) is not None:
+            if (value := response.get(key.removeprefix("dhcore_").lower())) is not None:
                 configurator.set_credential(key, value)
         configurator.write_env(keys)
 

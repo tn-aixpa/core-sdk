@@ -10,6 +10,7 @@ from sqlalchemy import MetaData, Table, create_engine, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
+from digitalhub.stores.configurator.enums import CredsOrigin
 from digitalhub.stores.data._base.store import Store
 from digitalhub.stores.data.sql.configurator import SqlStoreConfigurator
 from digitalhub.stores.readers.data.api import get_reader_by_object
@@ -284,23 +285,30 @@ class SqlStore(Store):
     # Helper methods
     ##############################
 
-    def _get_connection_string(self) -> str:
+    def _get_connection_string(self, origin: str) -> str:
         """
         Get the connection string.
+
+        Parameters
+        ----------
+        origin : str
+            The origin of the credentials.
 
         Returns
         -------
         str
             The connection string.
         """
-        return self._configurator.get_sql_conn_string()
+        return self._configurator.get_sql_conn_string(origin)
 
-    def _get_engine(self, schema: str | None = None) -> Engine:
+    def _get_engine(self, origin: str, schema: str | None = None) -> Engine:
         """
         Create engine from connection string.
 
         Parameters
         ----------
+        origin : str
+            The origin of the credentials.
         schema : str
             The schema.
 
@@ -309,7 +317,7 @@ class SqlStore(Store):
         Engine
             An SQLAlchemy engine.
         """
-        connection_string = self._get_connection_string()
+        connection_string = self._get_connection_string(origin)
         if not isinstance(connection_string, str):
             raise StoreError("Connection string must be a string.")
         try:
@@ -334,8 +342,12 @@ class SqlStore(Store):
         Engine
             The database engine.
         """
-        engine = self._get_engine(schema)
-        self._check_access_to_storage(engine)
+        try:
+            engine = self._get_engine(schema, CredsOrigin.ENV.value)
+            self._check_access_to_storage(engine)
+        except StoreError:
+            engine = self._get_engine(schema, CredsOrigin.FILE.value)
+            self._check_access_to_storage(engine)
         return engine
 
     @staticmethod

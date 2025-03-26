@@ -626,7 +626,7 @@ class S3Store(Store):
             self._check_access_to_storage(client, bucket)
 
         # Fallback to file
-        except StoreError as e:
+        except StoreError:
             cfg = self._configurator.get_boto3_client_config(CredsOrigin.FILE.value)
             client = self._get_client(cfg)
             self._check_access_to_storage(client, bucket)
@@ -655,7 +655,7 @@ class S3Store(Store):
         """
         try:
             client.head_bucket(Bucket=bucket)
-        except ClientError as e:
+        except ClientError:
             raise StoreError("No access to s3 bucket!")
 
     @staticmethod

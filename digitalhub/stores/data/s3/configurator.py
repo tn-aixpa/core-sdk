@@ -5,7 +5,6 @@ from botocore.config import Config
 from digitalhub.stores.configurator.configurator import configurator
 from digitalhub.stores.configurator.enums import CredsOrigin
 from digitalhub.stores.data.s3.enums import S3StoreEnv
-from digitalhub.stores.data.s3.models import S3StoreConfig
 from digitalhub.utils.exceptions import StoreError
 
 

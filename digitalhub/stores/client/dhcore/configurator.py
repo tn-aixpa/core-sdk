@@ -1,19 +1,17 @@
 from __future__ import annotations
 
-import os
 import typing
 from warnings import warn
 
 from requests import request
 
 from digitalhub.stores.client.dhcore.enums import AuthType, DhcoreEnvVar
-from digitalhub.stores.client.dhcore.models import BasicAuth, OAuth2TokenAuth
 from digitalhub.stores.configurator.configurator import configurator
 from digitalhub.stores.data.s3.enums import S3StoreEnv
 from digitalhub.stores.data.sql.enums import SqlStoreEnv
 from digitalhub.utils.exceptions import ClientError
-from digitalhub.utils.uri_utils import has_remote_scheme
 from digitalhub.utils.generic_utils import list_enum
+from digitalhub.utils.uri_utils import has_remote_scheme
 
 if typing.TYPE_CHECKING:
     from requests import Response
@@ -251,7 +249,7 @@ class ClientDHCoreConfigurator:
         None
         """
         core_vals = [i.removeprefix("dhcore_") for i in list_enum(DhcoreEnvVar)]
-        keys  = core_vals + list_enum(S3StoreEnv) + list_enum(SqlStoreEnv)
+        keys = core_vals + list_enum(S3StoreEnv) + list_enum(SqlStoreEnv)
         for key in keys:
             if (value := response.get(key.lower())) is not None:
                 configurator.set_credential(key, value)
@@ -272,7 +270,6 @@ class ClientDHCoreConfigurator:
             raise ClientError("Issuer endpoint not set.")
         endpoint_issuer = self._sanitize_endpoint(endpoint_issuer)
         configurator.set_credential(DhcoreEnvVar.ISSUER.value, endpoint_issuer)
-
 
         # Standard issuer endpoint path
         url = endpoint_issuer + "/.well-known/openid-configuration"

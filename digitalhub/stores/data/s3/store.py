@@ -592,16 +592,20 @@ class S3Store(Store):
         """
         return get_bucket_name(root)
 
-    def _get_client(self) -> S3Client:
+    def _get_client(self, cfg: dict) -> S3Client:
         """
         Get an S3 client object.
+
+        Parameters
+        ----------
+        cfg : dict
+            The configuration of the S3 client.
 
         Returns
         -------
         S3Client
             Returns a client object that interacts with the S3 storage service.
         """
-        cfg = self._configurator.get_boto3_client_config()
         return boto3.client("s3", **cfg)
 
     def _check_factory(self, root: str) -> tuple[S3Client, str]:
@@ -617,12 +621,14 @@ class S3Store(Store):
 
         # Try to get client from environment variables
         try:
-            client = self._get_client(CredsOrigin.ENV.value)
+            cfg = self._configurator.get_boto3_client_config(CredsOrigin.ENV.value)
+            client = self._get_client(cfg)
             self._check_access_to_storage(client, bucket)
 
         # Fallback to file
         except StoreError as e:
-            client = self._get_client(CredsOrigin.FILE.value)
+            cfg = self._configurator.get_boto3_client_config(CredsOrigin.FILE.value)
+            client = self._get_client(cfg)
             self._check_access_to_storage(client, bucket)
 
         return client, bucket

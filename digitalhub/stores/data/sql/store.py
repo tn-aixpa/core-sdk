@@ -343,10 +343,10 @@ class SqlStore(Store):
             The database engine.
         """
         try:
-            engine = self._get_engine(schema, CredsOrigin.ENV.value)
+            engine = self._get_engine(CredsOrigin.ENV.value, schema)
             self._check_access_to_storage(engine)
         except StoreError:
-            engine = self._get_engine(schema, CredsOrigin.FILE.value)
+            engine = self._get_engine(CredsOrigin.FILE.value, schema)
             self._check_access_to_storage(engine)
         return engine
 

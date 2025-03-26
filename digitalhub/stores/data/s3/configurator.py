@@ -68,6 +68,8 @@ class S3StoreConfigurator:
             creds = self._get_env_config()
         elif origin == CredsOrigin.FILE.value:
             creds = self._get_file_config()
+        else:
+            raise StoreError(f"Unknown origin: {origin}")
         return {
             "endpoint_url": creds[S3StoreEnv.ENDPOINT_URL.value],
             "aws_access_key_id": creds[S3StoreEnv.ACCESS_KEY_ID.value],

@@ -55,6 +55,8 @@ class SqlStoreConfigurator:
             creds = self._get_env_config()
         elif origin == CredsOrigin.FILE.value:
             creds = self._get_file_config()
+        else:
+            raise StoreError(f"Unknown origin: {origin}")
 
         user = creds[SqlStoreEnv.USERNAME.value]
         password = creds[SqlStoreEnv.PASSWORD.value]

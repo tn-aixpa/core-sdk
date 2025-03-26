@@ -13,7 +13,7 @@ from digitalhub.utils.exceptions import ClientError
 ENV_FILE = Path.home() / ".dhcore.ini"
 
 
-def load_from_config(var: str) -> str | None:
+def load_from_file(var: str) -> str | None:
     """
     Load variable from config file.
 

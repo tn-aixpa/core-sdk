@@ -13,6 +13,7 @@ from digitalhub.stores.data.s3.enums import S3StoreEnv
 from digitalhub.stores.data.sql.enums import SqlStoreEnv
 from digitalhub.utils.exceptions import ClientError
 from digitalhub.utils.uri_utils import has_remote_scheme
+from digitalhub.utils.generic_utils import list_enum
 
 if typing.TYPE_CHECKING:
     from requests import Response
@@ -54,37 +55,8 @@ class ClientDHCoreConfigurator:
         -------
         None
         """
-        if config is None:
-            self._get_core_endpoint()
-            self._get_auth_vars()
-            return
-
-        # Read passed config
-        # Validate and save credentials
-        if config.get("access_token") is not None:
-            config = OAuth2TokenAuth(**config)
-            for pair in [
-                (AUTH_KEY, AuthType.OAUTH2.value),
-                (DhcoreEnvVar.ENDPOINT.value, config.endpoint),
-                (DhcoreEnvVar.ISSUER.value, config.issuer),
-                (DhcoreEnvVar.ACCESS_TOKEN.value, config.access_token),
-                (DhcoreEnvVar.REFRESH_TOKEN.value, config.refresh_token),
-                (DhcoreEnvVar.CLIENT_ID.value, config.client_id),
-            ]:
-                configurator.set_credential(*pair)
-
-        elif config.get("user") is not None and config.get("password") is not None:
-            config = BasicAuth(**config)
-            for pair in [
-                (AUTH_KEY, AuthType.BASIC.value),
-                (DhcoreEnvVar.ENDPOINT.value, config.endpoint),
-                (DhcoreEnvVar.USER.value, config.user),
-                (DhcoreEnvVar.PASSWORD.value, config.password),
-            ]:
-                configurator.set_credential(*pair)
-
-        else:
-            raise ClientError("Invalid credentials format.")
+        self._get_core_endpoint()
+        self._get_auth_vars()
 
     def check_core_version(self, response: Response) -> None:
         """
@@ -257,52 +229,33 @@ class ClientDHCoreConfigurator:
 
         # Otherwise try token from file
         if response.status_code in (400, 401, 403):
-            refresh_token = configurator.load_from_config(DhcoreEnvVar.REFRESH_TOKEN.value)
+            refresh_token = configurator.load_from_file(DhcoreEnvVar.REFRESH_TOKEN.value)
             response = self._call_refresh_token_endpoint(url, refresh_token)
 
         response.raise_for_status()
-        dict_response = response.json()
 
-        # Read new access token and refresh token
-        configurator.set_credential(DhcoreEnvVar.ACCESS_TOKEN.value, dict_response["access_token"])
-        configurator.set_credential(DhcoreEnvVar.REFRESH_TOKEN.value, dict_response["refresh_token"])
+        # Read new credentials and propagate to config file
+        self._set_creds(response.json())
 
-        # Set new credential in stores
-        if (access_key := dict_response.get("aws_access_key_id")) is not None:
-            configurator.set_credential(S3StoreEnv.ACCESS_KEY_ID.value, access_key)
-            os.environ[S3StoreEnv.ACCESS_KEY_ID.value] = access_key
-        if (secret_key := dict_response.get("aws_secret_access_key")) is not None:
-            configurator.set_credential(S3StoreEnv.SECRET_ACCESS_KEY.value, secret_key)
-            os.environ[S3StoreEnv.SECRET_ACCESS_KEY.value] = secret_key
-        if (db_username := dict_response.get("db_username")) is not None:
-            configurator.set_credential(SqlStoreEnv.USERNAME.value, db_username)
-            os.environ[SqlStoreEnv.USERNAME.value] = db_username
-        if (db_password := dict_response.get("db_password")) is not None:
-            configurator.set_credential(SqlStoreEnv.PASSWORD.value, db_password)
-            os.environ[SqlStoreEnv.PASSWORD.value] = db_password
-
-        # Propagate new access token to config file
-        self._write_env()
-
-    def _write_env(self) -> None:
+    def _set_creds(self, response: dict) -> None:
         """
-        Write the env variables to the .dhcore.ini file.
-        It will overwrite any existing env variables.
+        Set new credentials.
+
+        Parameters
+        ----------
+        response : dict
+            Response from refresh token endpoint.
 
         Returns
         -------
         None
         """
-        configurator.write_env(
-            [
-                DhcoreEnvVar.ACCESS_TOKEN.value,
-                DhcoreEnvVar.REFRESH_TOKEN.value,
-                S3StoreEnv.ACCESS_KEY_ID.value,
-                S3StoreEnv.SECRET_ACCESS_KEY.value,
-                SqlStoreEnv.USERNAME.value,
-                SqlStoreEnv.PASSWORD.value,
-            ]
-        )
+        core_vals = [i.removeprefix("dhcore_") for i in list_enum(DhcoreEnvVar)]
+        keys  = core_vals + list_enum(S3StoreEnv) + list_enum(SqlStoreEnv)
+        for key in keys:
+            if (value := response.get(key.lower())) is not None:
+                configurator.set_credential(key, value)
+        configurator.write_env(keys)
 
     def _get_refresh_endpoint(self) -> str:
         """
@@ -315,11 +268,11 @@ class ClientDHCoreConfigurator:
         """
         # Get issuer endpoint
         endpoint_issuer = configurator.load_var(DhcoreEnvVar.ISSUER.value)
-        if endpoint_issuer is not None:
-            endpoint_issuer = self._sanitize_endpoint(endpoint_issuer)
-            configurator.set_credential(DhcoreEnvVar.ISSUER.value, endpoint_issuer)
-        else:
+        if endpoint_issuer is None:
             raise ClientError("Issuer endpoint not set.")
+        endpoint_issuer = self._sanitize_endpoint(endpoint_issuer)
+        configurator.set_credential(DhcoreEnvVar.ISSUER.value, endpoint_issuer)
+
 
         # Standard issuer endpoint path
         url = endpoint_issuer + "/.well-known/openid-configuration"

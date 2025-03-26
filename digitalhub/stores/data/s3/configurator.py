@@ -3,6 +3,7 @@ from __future__ import annotations
 from botocore.config import Config
 
 from digitalhub.stores.configurator.configurator import configurator
+from digitalhub.stores.configurator.enums import CredsOrigin
 from digitalhub.stores.data.s3.enums import S3StoreEnv
 from digitalhub.stores.data.s3.models import S3StoreConfig
 from digitalhub.utils.exceptions import StoreError
@@ -13,6 +14,18 @@ class S3StoreConfigurator:
     Configure the store by getting the credentials from user
     provided config or from environment.
     """
+
+    required_vars = [
+        S3StoreEnv.ENDPOINT_URL,
+        S3StoreEnv.ACCESS_KEY_ID,
+        S3StoreEnv.SECRET_ACCESS_KEY,
+        S3StoreEnv.BUCKET_NAME,
+    ]
+    optional_vars = [
+        S3StoreEnv.REGION,
+        S3StoreEnv.SIGNATURE_VERSION,
+        S3StoreEnv.SESSION_TOKEN,
+    ]
 
     def __init__(self, config: dict | None = None) -> None:
         self.configure(config)
@@ -35,74 +48,94 @@ class S3StoreConfigurator:
         -------
         None
         """
-        # Validate config
-        if config is None:
-            self._get_config()
-        else:
-            config = S3StoreConfig(**config)
-            for pair in [
-                (S3StoreEnv.ENDPOINT_URL.value, config.endpoint),
-                (S3StoreEnv.ACCESS_KEY_ID.value, config.access_key),
-                (S3StoreEnv.SECRET_ACCESS_KEY.value, config.secret_key),
-                (S3StoreEnv.SESSION_TOKEN.value, config.session_token),
-                (S3StoreEnv.BUCKET_NAME.value, config.bucket_name),
-                (S3StoreEnv.REGION.value, config.region),
-                (S3StoreEnv.SIGNATURE_VERSION.value, config.signature_version),
-            ]:
-                configurator.set_credential(*pair)
+        self._get_env_config()
 
-    def get_boto3_client_config(self) -> dict:
+    def get_boto3_client_config(self, origin: str) -> dict:
         """
         Get S3 credentials (access key, secret key,
         session token and other config).
+
+        Parameters
+        ----------
+        origin : str
+            The origin of the credentials.
 
         Returns
         -------
         dict
             The credentials.
         """
-        creds = configurator.get_all_credentials()
-        try:
-            return {
-                "endpoint_url": creds[S3StoreEnv.ENDPOINT_URL.value],
-                "aws_access_key_id": creds[S3StoreEnv.ACCESS_KEY_ID.value],
-                "aws_secret_access_key": creds[S3StoreEnv.SECRET_ACCESS_KEY.value],
-                "aws_session_token": creds[S3StoreEnv.SESSION_TOKEN.value],
-                "config": Config(
-                    region_name=creds[S3StoreEnv.REGION.value],
-                    signature_version=creds[S3StoreEnv.SIGNATURE_VERSION.value],
-                ),
-            }
-        except KeyError as e:
-            raise StoreError(f"Missing credentials for S3 store. {str(e)}")
+        if origin == CredsOrigin.ENV.value:
+            creds = self._get_env_config()
+        elif origin == CredsOrigin.FILE.value:
+            creds = self._get_file_config()
+        return {
+            "endpoint_url": creds[S3StoreEnv.ENDPOINT_URL.value],
+            "aws_access_key_id": creds[S3StoreEnv.ACCESS_KEY_ID.value],
+            "aws_secret_access_key": creds[S3StoreEnv.SECRET_ACCESS_KEY.value],
+            "aws_session_token": creds[S3StoreEnv.SESSION_TOKEN.value],
+            "config": Config(
+                region_name=creds[S3StoreEnv.REGION.value],
+                signature_version=creds[S3StoreEnv.SIGNATURE_VERSION.value],
+            ),
+        }
 
-    def _get_config(self) -> None:
+    def _get_env_config(self) -> None:
         """
-        Get the store configuration.
+        Get the store configuration from environment variables.
 
         Returns
         -------
         None
         """
-        required_vars = [
-            S3StoreEnv.ENDPOINT_URL,
-            S3StoreEnv.ACCESS_KEY_ID,
-            S3StoreEnv.SECRET_ACCESS_KEY,
-            S3StoreEnv.BUCKET_NAME,
-        ]
-        optional_vars = [S3StoreEnv.REGION, S3StoreEnv.SIGNATURE_VERSION, S3StoreEnv.SESSION_TOKEN]
+        credentials = {
+            var.value: configurator.load_from_env(var.value) for var in self.required_vars + self.optional_vars
+        }
+        self._set_credentials(credentials)
 
-        # Load required environment variables
-        credentials = {var.value: configurator.load_var(var.value) for var in required_vars}
+    def _get_file_config(self) -> None:
+        """
+        Get the store configuration from file.
 
-        # Check for missing required credentials
-        missing_vars = [key for key, value in credentials.items() if value is None]
+        Returns
+        -------
+        None
+        """
+        credentials = {
+            var.value: configurator.load_from_file(var.value) for var in self.required_vars + self.optional_vars
+        }
+        self._set_credentials(credentials)
+
+    def _check_credentials(self, credentials: dict) -> None:
+        """
+        Check for missing credentials.
+
+        Parameters
+        ----------
+        credentials : dict
+            The credentials.
+
+        Returns
+        -------
+        None
+        """
+        missing_vars = [key for key, value in credentials.items() if value is None and key in self.required_vars]
         if missing_vars:
             raise StoreError(f"Missing credentials for S3 store: {', '.join(missing_vars)}")
 
-        # Load optional environment variables
-        credentials.update({var.value: configurator.load_var(var.value) for var in optional_vars})
+    def _set_credentials(self, credentials: dict) -> None:
+        """
+        Set the store credentials into the configurator.
 
+        Parameters
+        ----------
+        credentials : dict
+            The credentials.
+
+        Returns
+        -------
+        None
+        """
         # Set credentials
         for key, value in credentials.items():
             configurator.set_credential(key, value)

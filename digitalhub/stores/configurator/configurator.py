@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 
 from digitalhub.stores.configurator.credentials_store import CredentialsStore
-from digitalhub.stores.configurator.ini_module import load_from_config, write_config
+from digitalhub.stores.configurator.ini_module import load_from_file, write_config
 
 
 class EnvConfigurator:
@@ -70,7 +70,7 @@ class EnvConfigurator:
         if var is None:
             var = self.load_from_env(var_name)
         if var is None:
-            var = self.load_from_config(var_name)
+            var = self.load_from_file(var_name)
         return var
 
     def load_from_env(self, var: str) -> str | None:
@@ -91,7 +91,7 @@ class EnvConfigurator:
         if env_var != "":
             return env_var
 
-    def load_from_config(self, var: str) -> str | None:
+    def load_from_file(self, var: str) -> str | None:
         """
         Load variable from config file.
 
@@ -105,7 +105,7 @@ class EnvConfigurator:
         str | None
             Environment variable value.
         """
-        return load_from_config(var)
+        return load_from_file(var)
 
     def write_env(self, key_to_include: list[str] | None = None) -> None:
         """

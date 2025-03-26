@@ -10,6 +10,7 @@ import boto3
 import botocore.client  # pylint: disable=unused-import
 from botocore.exceptions import ClientError
 
+from digitalhub.stores.configurator.enums import CredsOrigin
 from digitalhub.stores.data._base.store import Store
 from digitalhub.stores.data.s3.configurator import S3StoreConfigurator
 from digitalhub.stores.data.s3.utils import get_bucket_name
@@ -612,9 +613,18 @@ class S3Store(Store):
         tuple[S3Client, str]
             A tuple containing the S3 client object and the name of the S3 bucket.
         """
-        client = self._get_client()
         bucket = self._get_bucket(root)
-        self._check_access_to_storage(client, bucket)
+
+        # Try to get client from environment variables
+        try:
+            client = self._get_client(CredsOrigin.ENV.value)
+            self._check_access_to_storage(client, bucket)
+
+        # Fallback to file
+        except StoreError as e:
+            client = self._get_client(CredsOrigin.FILE.value)
+            self._check_access_to_storage(client, bucket)
+
         return client, bucket
 
     def _check_access_to_storage(self, client: S3Client, bucket: str) -> None:
@@ -640,7 +650,7 @@ class S3Store(Store):
         try:
             client.head_bucket(Bucket=bucket)
         except ClientError as e:
-            raise ClientError("No access to s3 bucket!") from e
+            raise StoreError("No access to s3 bucket!")
 
     @staticmethod
     def _get_key(path: str) -> str:

@@ -210,6 +210,36 @@ class Run(UnversionedEntity):
         self._set_metrics(key, value, overwrite, single_value)
         context_processor.update_metric(self.project, self.ENTITY_TYPE, self.id, key, self.status.metrics[key])
 
+    def log_metrics(
+        self,
+        metrics: dict[str, MetricType],
+        overwrite: bool = False,
+    ) -> None:
+        """
+        Log metrics into entity status. If a metric is a list, it will be logged as a list.
+        Otherwise, it will be logged as a single value.
+
+        Parameters
+        ----------
+        metrics : dict[str, MetricType]
+            Dict of metrics to log.
+        overwrite : bool
+            If True, overwrite existing metrics.
+
+        Returns
+        -------
+        None
+
+        See also
+        --------
+        log_metric
+        """
+        for key, value in metrics.items():
+            if isinstance(value, list):
+                self.log_metric(key, value, overwrite)
+            else:
+                self.log_metric(key, value, overwrite, single_value=True)
+
     ##############################
     #  Helpers
     ##############################

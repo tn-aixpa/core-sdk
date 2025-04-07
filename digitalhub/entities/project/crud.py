@@ -75,7 +75,6 @@ def new_project(
 def get_project(
     name: str,
     local: bool = False,
-    config: dict | None = None,
     setup_kwargs: dict | None = None,
     **kwargs,
 ) -> Project:
@@ -88,8 +87,6 @@ def get_project(
         The Project name.
     local : bool
         Flag to determine if backend is local.
-    config : dict
-        DHCore environment configuration.
     setup_kwargs : dict
         Setup keyword arguments passed to setup_project() function.
     **kwargs : dict
@@ -108,7 +105,6 @@ def get_project(
         entity_type=ENTITY_TYPE,
         entity_name=name,
         local=local,
-        config=config,
         **kwargs,
     )
     return setup_project(obj, setup_kwargs)
@@ -117,7 +113,6 @@ def get_project(
 def import_project(
     file: str,
     local: bool = False,
-    config: dict | None = None,
     setup_kwargs: dict | None = None,
 ) -> Project:
     """
@@ -129,8 +124,6 @@ def import_project(
         Path to YAML file.
     local : bool
         Flag to determine if backend is local.
-    config : dict
-        DHCore environment configuration.
     setup_kwargs : dict
         Setup keyword arguments passed to setup_project() function.
 
@@ -143,14 +136,13 @@ def import_project(
     --------
     >>> obj = import_project("my-project.yaml")
     """
-    obj = base_processor.import_project_entity(file=file, local=local, config=config)
+    obj = base_processor.import_project_entity(file=file, local=local)
     return setup_project(obj, setup_kwargs)
 
 
 def load_project(
     file: str,
     local: bool = False,
-    config: dict | None = None,
     setup_kwargs: dict | None = None,
 ) -> Project:
     """
@@ -162,8 +154,6 @@ def load_project(
         Path to YAML file.
     local : bool
         Flag to determine if backend is local.
-    config : dict
-        DHCore environment configuration.
     setup_kwargs : dict
         Setup keyword arguments passed to setup_project() function.
 
@@ -176,7 +166,7 @@ def load_project(
     --------
     >>> obj = load_project("my-project.yaml")
     """
-    obj = base_processor.load_project_entity(file=file, local=local, config=config)
+    obj = base_processor.load_project_entity(file=file, local=local)
     return setup_project(obj, setup_kwargs)
 
 
@@ -234,7 +224,6 @@ def get_or_create_project(
         return get_project(
             name,
             local=local,
-            config=config,
             setup_kwargs=setup_kwargs,
             **kwargs,
         )

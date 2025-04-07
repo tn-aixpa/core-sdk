@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 from digitalhub.stores.configurator.credentials_store import CredentialsStore
+from digitalhub.stores.configurator.enums import SetCreds
 from digitalhub.stores.configurator.ini_module import load_from_file, write_config
 
 
@@ -16,7 +17,7 @@ class EnvConfigurator:
         self._creds_store = CredentialsStore()
 
         # Current credentials set (__default by default)
-        self._environment = "__default"
+        self._environment = os.getenv(SetCreds.DH_ENV.value, SetCreds.DEFAULT.value)
 
     ##############################
     # Public methods

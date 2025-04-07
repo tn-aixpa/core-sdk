@@ -26,6 +26,7 @@ class ProjectProjectBuilder(EntityBuilder):
         description: str | None = None,
         labels: list[str] | None = None,
         local: bool = False,
+        config: dict | None = None,
         context: str | None = None,
         **kwargs,
     ) -> Project:
@@ -44,6 +45,8 @@ class ProjectProjectBuilder(EntityBuilder):
             List of labels.
         local : bool
             If True, use local backend, if False use DHCore backend. Default to False.
+        config : dict
+            DHCore environment configuration.
         context : str
             The context local folder of the project.
         **kwargs : dict
@@ -62,6 +65,7 @@ class ProjectProjectBuilder(EntityBuilder):
             labels=labels,
         )
         spec = self.build_spec(
+            config=config,
             context=context,
             **kwargs,
         )

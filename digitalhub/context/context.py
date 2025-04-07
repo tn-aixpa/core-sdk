@@ -18,6 +18,7 @@ class Context:
     def __init__(self, project: Project) -> None:
         self.name = project.name
         self.client = project._client
+        self.config = project.spec.config
         self.local = project._client.is_local()
         self.root = Path(project.spec.context)
         self.root.mkdir(parents=True, exist_ok=True)

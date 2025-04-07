@@ -12,19 +12,27 @@ class SqlStoreConfigurator:
     provided config or from environment.
     """
 
-    variables = [SqlStoreEnv.USERNAME, SqlStoreEnv.PASSWORD, SqlStoreEnv.HOST, SqlStoreEnv.PORT, SqlStoreEnv.DATABASE]
+    required_vars = [
+        SqlStoreEnv.USERNAME,
+        SqlStoreEnv.PASSWORD,
+        SqlStoreEnv.HOST,
+        SqlStoreEnv.PORT,
+        SqlStoreEnv.DATABASE,
+    ]
+    project_vars = [
+        SqlStoreEnv.DATABASE,
+    ]
 
-    def __init__(self, config: dict | None = None) -> None:
-        self.configure(config)
+    def __init__(self, config: dict) -> None:
+        self.config = self.configure(config)
 
     ##############################
     # Configuration methods
     ##############################
 
-    def configure(self, config: dict | None = None) -> None:
+    def configure(self, config: dict) -> dict:
         """
-        Configure the store by getting the credentials from user
-        provided config or from environment.
+        Configure the store by getting vars from project.
 
         Parameters
         ----------
@@ -33,9 +41,10 @@ class SqlStoreConfigurator:
 
         Returns
         -------
-        None
+        dict
+            Configuration dictionary.
         """
-        self._get_env_config()
+        return {k: v for k, v in config.items() if k in self.project_vars}
 
     def get_sql_conn_string(self, origin: str) -> str:
         """
@@ -74,7 +83,7 @@ class SqlStoreConfigurator:
         dict
             The credentials.
         """
-        credentials = {var.value: configurator.load_from_env(var.value) for var in self.variables}
+        credentials = {var.value: configurator.load_from_env(var.value) for var in self.required_vars}
         self._set_credentials(credentials)
         return credentials
 
@@ -87,7 +96,7 @@ class SqlStoreConfigurator:
         dict
             The credentials.
         """
-        credentials = {var.value: configurator.load_from_file(var.value) for var in self.variables}
+        credentials = {var.value: configurator.load_from_file(var.value) for var in self.required_vars}
         self._set_credentials(credentials)
         return credentials
 

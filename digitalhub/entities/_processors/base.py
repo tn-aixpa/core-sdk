@@ -84,7 +84,7 @@ class BaseEntityOperationsProcessor:
             client = _entity._client
             obj = _entity
         else:
-            client = get_client(kwargs.get("local"), kwargs.pop("config", None))
+            client = get_client(kwargs.get("local"))
             obj = build_entity_from_params(**kwargs)
         ent = self._create_base_entity(client, obj.ENTITY_TYPE, obj.to_dict())
         ent["local"] = client.is_local()
@@ -147,7 +147,7 @@ class BaseEntityOperationsProcessor:
         Project
             Object instance.
         """
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
+        client = get_client(kwargs.pop("local", False))
         obj = self._read_base_entity(client, entity_type, entity_name, **kwargs)
         obj["local"] = client.is_local()
         return build_entity_from_dict(obj)
@@ -172,7 +172,7 @@ class BaseEntityOperationsProcessor:
         Project
             Object instance.
         """
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
+        client = get_client(kwargs.pop("local", False))
         obj: dict = read_yaml(file)
         obj["status"] = {}
         obj["local"] = client.is_local()
@@ -208,7 +208,7 @@ class BaseEntityOperationsProcessor:
         Project
             Object instance.
         """
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
+        client = get_client(kwargs.pop("local", False))
         obj: dict = read_yaml(file)
         obj["local"] = client.is_local()
         ent: Project = build_entity_from_dict(obj)
@@ -345,7 +345,7 @@ class BaseEntityOperationsProcessor:
         Project
             Object instance.
         """
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
+        client = get_client(kwargs.pop("local", False))
         obj = self._update_base_entity(client, entity_type, entity_name, entity_dict, **kwargs)
         obj["local"] = client.is_local()
         return build_entity_from_dict(obj)
@@ -414,7 +414,7 @@ class BaseEntityOperationsProcessor:
         """
         if kwargs.pop("clean_context", True):
             delete_context(entity_name)
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
+        client = get_client(kwargs.pop("local", False))
         return self._delete_base_entity(
             client,
             entity_type,
@@ -493,7 +493,7 @@ class BaseEntityOperationsProcessor:
         -------
         None
         """
-        client = get_client(kwargs.pop("local", False), kwargs.pop("config", None))
+        client = get_client(kwargs.pop("local", False))
         api = client.build_api(
             ApiCategories.BASE.value,
             BackendOperations.SHARE.value,

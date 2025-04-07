@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 import boto3
 import botocore.client  # pylint: disable=unused-import
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError
 
 from digitalhub.stores.configurator.enums import CredsOrigin
 from digitalhub.stores.data._base.store import Store
@@ -19,8 +19,6 @@ from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
 from digitalhub.utils.types import SourcesOrListOfSources
 
-if typing.TYPE_CHECKING:
-    pass
 
 # Type aliases
 S3Client = Type["botocore.client.S3"]
@@ -32,10 +30,8 @@ class S3Store(Store):
     artifacts on S3 based storage.
     """
 
-    def __init__(self, config: dict | None = None) -> None:
-        super().__init__()
-        self._configurator = S3StoreConfigurator()
-        self._configurator.configure(config)
+    def __init__(self, config: dict) -> None:
+        self._configurator = S3StoreConfigurator(config)
 
     ##############################
     # I/O methods
@@ -655,7 +651,7 @@ class S3Store(Store):
         """
         try:
             client.head_bucket(Bucket=bucket)
-        except ClientError:
+        except (ClientError, NoCredentialsError):
             raise StoreError("No access to s3 bucket!")
 
     @staticmethod

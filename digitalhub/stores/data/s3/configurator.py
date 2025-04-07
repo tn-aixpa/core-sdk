@@ -25,18 +25,20 @@ class S3StoreConfigurator:
         S3StoreEnv.SIGNATURE_VERSION,
         S3StoreEnv.SESSION_TOKEN,
     ]
+    project_vars = [
+        S3StoreEnv.BUCKET_NAME,
+    ]
 
-    def __init__(self, config: dict | None = None) -> None:
-        self.configure(config)
+    def __init__(self, config: dict) -> None:
+        self.config = self.configure(config)
 
     ##############################
     # Configuration methods
     ##############################
 
-    def configure(self, config: dict | None = None) -> None:
+    def configure(self, config: dict) -> dict:
         """
-        Configure the store by getting the credentials from user
-        provided config or from environment.
+        Configure the store by getting vars from project.
 
         Parameters
         ----------
@@ -45,9 +47,10 @@ class S3StoreConfigurator:
 
         Returns
         -------
-        None
+        dict
+            Configuration dictionary.
         """
-        self._get_env_config()
+        return {k: v for k, v in config.items() if k in self.project_vars}
 
     def get_boto3_client_config(self, origin: str) -> dict:
         """
@@ -70,6 +73,7 @@ class S3StoreConfigurator:
             creds = self._get_file_config()
         else:
             raise StoreError(f"Unknown origin: {origin}")
+        creds = {**creds, **self.config}
         return {
             "endpoint_url": creds[S3StoreEnv.ENDPOINT_URL.value],
             "aws_access_key_id": creds[S3StoreEnv.ACCESS_KEY_ID.value],

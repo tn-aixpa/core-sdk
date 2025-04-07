@@ -27,10 +27,8 @@ class SqlStore(Store):
     artifacts on SQL based storage.
     """
 
-    def __init__(self, config: dict | None = None) -> None:
-        super().__init__()
-        self._configurator = SqlStoreConfigurator()
-        self._configurator.configure(config)
+    def __init__(self, config: dict) -> None:
+        self._configurator = SqlStoreConfigurator(config)
 
     ##############################
     # I/O methods

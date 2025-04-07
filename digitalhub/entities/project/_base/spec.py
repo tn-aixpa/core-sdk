@@ -18,6 +18,7 @@ class ProjectSpec(Spec):
         workflows: list | None = None,
         dataitems: list | None = None,
         models: list | None = None,
+        config: dict | None = None,
         **kwargs,
     ) -> None:
         self.context = context if context is not None else "./"
@@ -26,6 +27,7 @@ class ProjectSpec(Spec):
         self.workflows = workflows if workflows is not None else []
         self.dataitems = dataitems if dataitems is not None else []
         self.models = models if models is not None else []
+        self.config = config if config is not None else {}
 
 
 class ProjectValidator(SpecValidator):
@@ -50,3 +52,6 @@ class ProjectValidator(SpecValidator):
 
     models: Optional[list] = None
     """List of project's models."""
+
+    config: Optional[dict] = None
+    """Project's config."""

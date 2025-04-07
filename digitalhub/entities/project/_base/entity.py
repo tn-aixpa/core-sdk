@@ -106,6 +106,9 @@ class Project(Entity):
         local: bool = False,
     ) -> None:
         super().__init__(kind, metadata, spec, status, user)
+        self.spec: ProjectSpec
+        self.status: ProjectStatus
+
         self.id = name
         self.name = name
         self.key = base_processor.build_project_key(self.name, local=local)

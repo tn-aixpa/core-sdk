@@ -16,8 +16,8 @@ class RemoteStore(Store):
     artifacts from remote HTTP based storage.
     """
 
-    def __init__(self, config: dict | None = None) -> None:
-        super().__init__()
+    def __init__(self, config: dict):
+        pass
 
     ##############################
     # I/O methods

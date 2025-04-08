@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import typing
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Type
@@ -18,7 +17,6 @@ from digitalhub.stores.readers.data.api import get_reader_by_object
 from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
 from digitalhub.utils.types import SourcesOrListOfSources
-
 
 # Type aliases
 S3Client = Type["botocore.client.S3"]

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-import importlib.metadata
 import pkgutil
 import re
 from types import ModuleType
@@ -11,17 +10,24 @@ from digitalhub.factory.factory import factory
 
 def import_module(package: str) -> ModuleType:
     """
-    Import modules from package name.
+    Import a module dynamically by package name.
 
     Parameters
     ----------
     package : str
-        Package name.
+        The fully qualified package name to import.
 
     Returns
     -------
     ModuleType
-        Module.
+        The imported module object.
+
+    Raises
+    ------
+    ModuleNotFoundError
+        If the specified package cannot be found.
+    RuntimeError
+        If any other error occurs during import.
     """
     try:
         return importlib.import_module(package)
@@ -33,12 +39,20 @@ def import_module(package: str) -> ModuleType:
 
 def list_runtimes() -> list[str]:
     """
-    List installed runtimes for digitalhub.
+    List all installed DigitalHub runtime packages.
+
+    Scans installed packages for those matching the pattern
+    'digitalhub_runtime_*'.
 
     Returns
     -------
     list[str]
-        List of installed runtimes names.
+        List of runtime package names.
+
+    Raises
+    ------
+    RuntimeError
+        If an error occurs while scanning for runtime packages.
     """
     pattern = r"digitalhub_runtime_.*"
     runtimes: list[str] = []
@@ -53,11 +67,10 @@ def list_runtimes() -> list[str]:
 
 def register_runtimes_entities() -> None:
     """
-    Register runtimes and related entities into registry.
+    Register all runtime builders and their entities into the factory.
 
-    Returns
-    -------
-    None
+    Imports each runtime package and registers its entity and runtime
+    builders with the global factory instance.
     """
     for package in list_runtimes():
         module = import_module(package)
@@ -74,11 +87,15 @@ def register_runtimes_entities() -> None:
 
 def register_entities() -> None:
     """
-    Register layer and related entities into registry.
+    Register core entity builders into the factory.
 
-    Returns
-    -------
-    None
+    Imports the core entities module and registers all entity builders
+    with the global factory instance.
+
+    Raises
+    ------
+    RuntimeError
+        If registration of core entities fails.
     """
     try:
         module = import_module("digitalhub.entities.builders")

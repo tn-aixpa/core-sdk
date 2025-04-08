@@ -15,17 +15,22 @@ if typing.TYPE_CHECKING:
 
 def build_entity_from_params(**kwargs) -> Entity:
     """
-    Build an entity.
+    Build an entity from keyword parameters.
 
     Parameters
     ----------
-    **kwargs
-        Entity parameters.
+    **kwargs : dict
+        Entity parameters. Must include 'kind' parameter specifying entity type.
 
     Returns
     -------
     Entity
-        Entity object.
+        The constructed entity instance.
+
+    Raises
+    ------
+    BuilderError
+        If 'kind' parameter is missing or builder not found.
     """
     try:
         kind = kwargs["kind"]
@@ -37,17 +42,22 @@ def build_entity_from_params(**kwargs) -> Entity:
 
 def build_entity_from_dict(obj: dict) -> Entity:
     """
-    Build an entity from a dictionary.
+    Build an entity from a dictionary representation.
 
     Parameters
     ----------
     obj : dict
-        Dictionary with entity data.
+        Dictionary containing entity data. Must include 'kind' key.
 
     Returns
     -------
     Entity
-        Entity object.
+        The constructed entity instance.
+
+    Raises
+    ------
+    BuilderError
+        If 'kind' key is missing or builder not found.
     """
     try:
         kind = obj["kind"]
@@ -245,16 +255,17 @@ def get_run_kind(kind: str) -> str:
 
 def _raise_if_entity_builder_not_found(kind: str) -> None:
     """
-    Raise error if entity builder not found.
+    Verify entity builder existence.
 
     Parameters
     ----------
     kind : str
-        Entity type.
+        The entity kind to verify.
 
-    Returns
-    -------
-    None
+    Raises
+    ------
+    BuilderError
+        If no builder exists for the specified kind.
     """
     if kind not in factory._entity_builders:
         raise BuilderError(f"Builder for kind '{kind}' not found.")
@@ -262,16 +273,17 @@ def _raise_if_entity_builder_not_found(kind: str) -> None:
 
 def _raise_if_runtime_builder_not_found(kind: str) -> None:
     """
-    Raise error if runtime builder not found.
+    Verify runtime builder existence.
 
     Parameters
     ----------
     kind : str
-        Runtime type.
+        The runtime kind to verify.
 
-    Returns
-    -------
-    None
+    Raises
+    ------
+    BuilderError
+        If no builder exists for the specified kind.
     """
     if kind not in factory._runtime_builders:
         raise BuilderError(f"Builder for kind '{kind}' not found.")

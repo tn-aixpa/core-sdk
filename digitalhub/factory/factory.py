@@ -17,7 +17,23 @@ if typing.TYPE_CHECKING:
 
 class Factory:
     """
-    Factory class for building entities and runtimes.
+    Factory for creating and managing entity and runtime builders.
+
+    This class implements the Factory pattern to manage the creation of
+    entities and runtimes through their respective builders. It maintains
+    separate registries for entity and runtime builders.
+
+    Attributes
+    ----------
+    _entity_builders : dict[str, EntityBuilder | RuntimeEntityBuilder]
+        Registry of entity builders indexed by kind.
+    _runtime_builders : dict[str, RuntimeBuilder]
+        Registry of runtime builders indexed by kind.
+
+    Notes
+    -----
+    All builder methods may raise BuilderError if the requested kind
+    is not found in the registry.
     """
 
     def __init__(self):
@@ -26,18 +42,19 @@ class Factory:
 
     def add_entity_builder(self, name: str, builder: EntityBuilder | RuntimeEntityBuilder) -> None:
         """
-        Add a builder to the factory.
+        Register an entity builder.
 
         Parameters
         ----------
         name : str
-            Builder name.
-        builder : EntityBuilder
-            Builder object.
+            The unique identifier for the builder.
+        builder : EntityBuilder | RuntimeEntityBuilder
+            The builder instance to register.
 
-        Returns
-        -------
-        None
+        Raises
+        ------
+        BuilderError
+            If a builder with the same name already exists.
         """
         if name in self._entity_builders:
             raise BuilderError(f"Builder {name} already exists.")
@@ -45,18 +62,19 @@ class Factory:
 
     def add_runtime_builder(self, name: str, builder: RuntimeBuilder) -> None:
         """
-        Add a builder to the factory.
+        Register a runtime builder.
 
         Parameters
         ----------
         name : str
-            Builder name.
+            The unique identifier for the builder.
         builder : RuntimeBuilder
-            Builder object.
+            The builder instance to register.
 
-        Returns
-        -------
-        None
+        Raises
+        ------
+        BuilderError
+            If a builder with the same name already exists.
         """
         if name in self._runtime_builders:
             raise BuilderError(f"Builder {name} already exists.")

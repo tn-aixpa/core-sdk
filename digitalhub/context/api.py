@@ -9,20 +9,26 @@ if typing.TYPE_CHECKING:
     from digitalhub.entities.project._base.entity import Project
 
 
-def build_context(project: Project, overwrite: bool = False) -> None:
+def build_context(project: Project, overwrite: bool = False) -> Context:
     """
-    Wrapper for ContextBuilder.build().
+    Build a new context for a project.
+
+    Creates or updates a context instance for the given project in the global
+    context registry.
 
     Parameters
     ----------
     project : Project
         The project object used to build the context.
+    overwrite : bool, optional
+        If True, overwrites existing context if it exists, by default False.
 
     Returns
     -------
-    None
+    Context
+        The newly created or existing context instance.
     """
-    context_builder.build(project, overwrite)
+    return context_builder.build(project, overwrite)
 
 
 def get_context(project: str) -> Context:

@@ -5,61 +5,71 @@ from pathlib import Path
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities.project._base.entity import Project
+    from digitalhub.stores.client._base.client import Client
 
 
 class Context:
     """
-    Context class built forom a `Project` instance. It contains
-    some information about the project, such as the project name,
-    a client instance (local or non-local), the local context
-    project path and information about client locality.
+    Context class built from a Project instance.
+
+    Contains project-specific information and state, including project name,
+    client instance, local context paths, and run-time information.
+
+    Attributes
+    ----------
+    name : str
+        The name of the project.
+    client : BaseClient
+        The client instance (local or remote) associated with the project.
+    config : dict
+        Project configuration profile.
+    local : bool
+        Whether the client is local or remote.
+    root : Path
+        The local context project path.
+    is_running : bool
+        Flag indicating if the context has an active run.
+    _run_ctx : str | None
+        Current run key, if any.
     """
 
     def __init__(self, project: Project) -> None:
-        self.name = project.name
-        self.client = project._client
-        self.config = project.spec.config
-        self.local = project._client.is_local()
-        self.root = Path(project.spec.context)
+        self.name: str = project.name
+        self.client: Client = project._client
+        self.config: dict = project.spec.config
+        self.local: bool = project._client.is_local()
+        self.root: Path = Path(project.spec.context)
         self.root.mkdir(parents=True, exist_ok=True)
 
         self.is_running: bool = False
-        self._run_ctx: str = None
+        self._run_ctx: str | None = None
 
     def set_run(self, run_ctx: str) -> None:
         """
-        Set run identifier.
+        Set the current run key.
 
         Parameters
         ----------
         run_ctx : str
-            Run key.
-
-        Returns
-        -------
-        None
+            The run key to set.
         """
         self.is_running = True
         self._run_ctx = run_ctx
 
     def unset_run(self) -> None:
         """
-        Unset run identifier.
-
-        Returns
-        -------
-        None
+        Clear the current run key and reset running state.
         """
         self.is_running = False
         self._run_ctx = None
 
-    def get_run_ctx(self) -> str:
+    def get_run_ctx(self) -> str | None:
         """
-        Get run identifier.
+        Get the current run key.
 
         Returns
         -------
-        str
-            Run key.
+        str | None
+            The current run key if set, None otherwise.
         """
         return self._run_ctx

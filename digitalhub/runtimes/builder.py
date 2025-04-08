@@ -10,10 +10,23 @@ if typing.TYPE_CHECKING:
 
 class RuntimeBuilder:
     """
-    Builder class for building runtimes.
+    Builder class for instantiating runtime objects.
+
+    This class implements the Builder pattern to create Runtime instances.
+    Subclasses must set the RUNTIME_CLASS class variable to specify which
+    Runtime implementation to build.
+
+    Attributes
+    ----------
+    RUNTIME_CLASS : Runtime
+        The Runtime class to be instantiated by this builder.
+
+    Raises
+    ------
+    BuilderError
+        If RUNTIME_CLASS is not set in the implementing class.
     """
 
-    # Class variables
     RUNTIME_CLASS: Runtime = None
 
     def __init__(self) -> None:
@@ -27,6 +40,6 @@ class RuntimeBuilder:
         Returns
         -------
         Runtime
-            Runtime object.
+            A new instance of the configured Runtime class.
         """
         return self.RUNTIME_CLASS(project, *args, **kwargs)

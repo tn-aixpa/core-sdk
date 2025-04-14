@@ -17,6 +17,7 @@ class EntityTypes(Enum):
     WORKFLOW = "workflow"
     TASK = "task"
     RUN = "run"
+    TRIGGER = "trigger"
 
 
 class Relationship(Enum):
@@ -103,3 +104,4 @@ class EntityKinds(Enum):
     MODEL_HUGGINGFACE = "huggingface"
     MODEL_SKLEARN = "sklearn"
     SECRET_SECRET = "secret"
+    TRIGGER_TRIGGER = "trigger"

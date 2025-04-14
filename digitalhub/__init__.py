@@ -72,6 +72,16 @@ from digitalhub.entities.task.crud import (
     new_task,
     update_task,
 )
+from digitalhub.entities.trigger.crud import (
+    delete_trigger,
+    get_trigger,
+    get_trigger_versions,
+    import_trigger,
+    list_triggers,
+    load_trigger,
+    new_trigger,
+    update_trigger,
+)
 from digitalhub.entities.workflow.crud import (
     delete_workflow,
     get_workflow,

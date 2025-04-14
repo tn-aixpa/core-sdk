@@ -6,6 +6,7 @@ from digitalhub.entities.dataitem.table.builder import DataitemTableBuilder
 from digitalhub.entities.model.mlflow.builder import ModelModelBuilder
 from digitalhub.entities.project._base.builder import ProjectProjectBuilder
 from digitalhub.entities.secret._base.builder import SecretSecretBuilder
+from digitalhub.entities.trigger._base.builder import TriggerTriggerBuilder
 
 entity_builders: tuple = (
     (ProjectProjectBuilder.ENTITY_KIND, ProjectProjectBuilder),
@@ -14,6 +15,7 @@ entity_builders: tuple = (
     (DataitemDataitemBuilder.ENTITY_KIND, DataitemDataitemBuilder),
     (DataitemTableBuilder.ENTITY_KIND, DataitemTableBuilder),
     (ModelModelBuilder.ENTITY_KIND, ModelModelBuilder),
+    (TriggerTriggerBuilder.ENTITY_KIND, TriggerTriggerBuilder),
 )
 
 ##############################

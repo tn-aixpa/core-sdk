@@ -23,6 +23,9 @@ class Factory:
     entities and runtimes through their respective builders. It maintains
     separate registries for entity and runtime builders.
 
+    Many function arguments are called kind_to_build_from to avoid overwriting
+    kind in kwargs.
+
     Attributes
     ----------
     _entity_builders : dict[str, EntityBuilder | RuntimeEntityBuilder]
@@ -80,14 +83,12 @@ class Factory:
             raise BuilderError(f"Builder {name} already exists.")
         self._runtime_builders[name] = builder()
 
-    def build_entity_from_params(self, kind_to_build_from: str, **kwargs) -> Entity:
+    def build_entity_from_params(self, **kwargs) -> Entity:
         """
         Build an entity from parameters.
 
         Parameters
         ----------
-        kind_to_build_from : str
-            Entity type.
         **kwargs
             Entity parameters.
 
@@ -96,17 +97,20 @@ class Factory:
         Entity
             Entity object.
         """
-        return self._entity_builders[kind_to_build_from].build(**kwargs)
+        try:
+            kind = kwargs["kind"]
+        except KeyError:
+            raise BuilderError("Missing 'kind' parameter.")
+        self._raise_if_entity_builder_not_found(kind)
+        return self._entity_builders[kind].build(**kwargs)
 
-    def build_entity_from_dict(self, kind_to_build_from: str, obj: dict) -> Entity:
+    def build_entity_from_dict(self, obj: dict) -> Entity:
         """
         Build an entity from a dictionary.
 
         Parameters
         ----------
-        kind_to_build_from : str
-            Entity type.
-        dict_data : dict
+        obj : dict
             Dictionary with entity data.
 
         Returns
@@ -114,7 +118,12 @@ class Factory:
         Entity
             Entity object.
         """
-        return self._entity_builders[kind_to_build_from].from_dict(obj)
+        try:
+            kind = obj["kind"]
+        except KeyError:
+            raise BuilderError("Missing 'kind' parameter.")
+        self._raise_if_entity_builder_not_found(kind)
+        return self._entity_builders[kind].from_dict(obj)
 
     def build_spec(self, kind_to_build_from: str, **kwargs) -> Spec:
         """
@@ -130,6 +139,7 @@ class Factory:
         Spec
             Spec object.
         """
+        self._raise_if_entity_builder_not_found(kind_to_build_from)
         return self._entity_builders[kind_to_build_from].build_spec(**kwargs)
 
     def build_metadata(self, kind_to_build_from: str, **kwargs) -> Metadata:
@@ -146,6 +156,7 @@ class Factory:
         Metadata
             Metadata object.
         """
+        self._raise_if_entity_builder_not_found(kind_to_build_from)
         return self._entity_builders[kind_to_build_from].build_metadata(**kwargs)
 
     def build_status(self, kind_to_build_from: str, **kwargs) -> Status:
@@ -162,6 +173,7 @@ class Factory:
         Status
             Status object.
         """
+        self._raise_if_entity_builder_not_found(kind_to_build_from)
         return self._entity_builders[kind_to_build_from].build_status(**kwargs)
 
     def build_runtime(self, kind_to_build_from: str, project: str) -> Runtime:
@@ -180,6 +192,7 @@ class Factory:
         Runtime
             Runtime object.
         """
+        self._raise_if_runtime_builder_not_found(kind_to_build_from)
         return self._runtime_builders[kind_to_build_from].build(project=project)
 
     def get_entity_type_from_kind(self, kind: str) -> str:
@@ -196,6 +209,7 @@ class Factory:
         str
             Entity type.
         """
+        self._raise_if_entity_builder_not_found(kind)
         return self._entity_builders[kind].get_entity_type()
 
     def get_executable_kind(self, kind: str) -> str:
@@ -212,6 +226,7 @@ class Factory:
         str
             Executable kind.
         """
+        self._raise_if_entity_builder_not_found(kind)
         return self._entity_builders[kind].get_executable_kind()
 
     def get_action_from_task_kind(self, kind: str, task_kind: str) -> str:
@@ -230,6 +245,7 @@ class Factory:
         str
             Action.
         """
+        self._raise_if_entity_builder_not_found(kind)
         return self._entity_builders[kind].get_action_from_task_kind(task_kind)
 
     def get_task_kind_from_action(self, kind: str, action: str) -> list[str]:
@@ -248,6 +264,7 @@ class Factory:
         list[str]
             Task kinds.
         """
+        self._raise_if_entity_builder_not_found(kind)
         return self._entity_builders[kind].get_task_kind_from_action(action)
 
     def get_run_kind(self, kind: str) -> str:
@@ -264,6 +281,7 @@ class Factory:
         str
             Run kind.
         """
+        self._raise_if_entity_builder_not_found(kind)
         return self._entity_builders[kind].get_run_kind()
 
     def get_all_kinds(self, kind: str) -> list[str]:
@@ -281,6 +299,40 @@ class Factory:
             All kinds.
         """
         return self._entity_builders[kind].get_all_kinds()
+
+    def _raise_if_entity_builder_not_found(self, kind: str) -> None:
+        """
+        Verify entity builder existence.
+
+        Parameters
+        ----------
+        kind : str
+            The entity kind to verify.
+
+        Raises
+        ------
+        BuilderError
+            If no builder exists for the specified kind.
+        """
+        if kind not in self._entity_builders:
+            raise BuilderError(f"Entity builder for kind '{kind}' not found.")
+
+    def _raise_if_runtime_builder_not_found(self, kind: str) -> None:
+        """
+        Verify runtime builder existence.
+
+        Parameters
+        ----------
+        kind : str
+            The runtime kind to verify.
+
+        Raises
+        ------
+        BuilderError
+            If no builder exists for the specified kind.
+        """
+        if kind not in self._runtime_builders:
+            raise BuilderError(f"Runtime builder for kind '{kind}' not found.")
 
 
 factory = Factory()

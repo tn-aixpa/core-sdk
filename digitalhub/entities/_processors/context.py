@@ -9,7 +9,7 @@ from digitalhub.entities._processors.utils import (
     get_context_from_project,
     parse_identifier,
 )
-from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
+from digitalhub.factory.factory import factory
 from digitalhub.utils.exceptions import EntityAlreadyExistsError, EntityError, EntityNotExistsError
 from digitalhub.utils.io_utils import read_yaml
 from digitalhub.utils.types import SourcesOrListOfSources
@@ -91,9 +91,9 @@ class ContextEntityOperationsProcessor:
             obj = _entity
         else:
             context = get_context_from_project(kwargs["project"])
-            obj: ContextEntity = build_entity_from_params(**kwargs)
+            obj: ContextEntity = factory.build_entity_from_params(**kwargs)
         new_obj = self._create_context_entity(context, obj.ENTITY_TYPE, obj.to_dict())
-        return build_entity_from_dict(new_obj)
+        return factory.build_entity_from_dict(new_obj)
 
     def log_material_entity(
         self,
@@ -114,12 +114,12 @@ class ContextEntityOperationsProcessor:
         """
         source: SourcesOrListOfSources = kwargs.pop("source")
         context = get_context_from_project(kwargs["project"])
-        obj = build_entity_from_params(**kwargs)
+        obj = factory.build_entity_from_params(**kwargs)
         if context.is_running:
             obj.add_relationship(Relationship.PRODUCEDBY.value, context.get_run_ctx())
 
         new_obj: MaterialEntity = self._create_context_entity(context, obj.ENTITY_TYPE, obj.to_dict())
-        new_obj = build_entity_from_dict(new_obj)
+        new_obj = factory.build_entity_from_dict(new_obj)
         new_obj.upload(source)
         return new_obj
 
@@ -226,7 +226,7 @@ class ContextEntityOperationsProcessor:
             entity_id=entity_id,
             **kwargs,
         )
-        entity = build_entity_from_dict(obj)
+        entity = factory.build_entity_from_dict(obj)
         return self._post_process_get(entity)
 
     def read_unversioned_entity(
@@ -292,7 +292,7 @@ class ContextEntityOperationsProcessor:
         dict_obj: dict = read_yaml(file)
         dict_obj["status"] = {}
         context = get_context_from_project(dict_obj["project"])
-        obj = build_entity_from_dict(dict_obj)
+        obj = factory.build_entity_from_dict(dict_obj)
         try:
             self._create_context_entity(context, obj.ENTITY_TYPE, obj.to_dict())
         except EntityAlreadyExistsError:
@@ -329,7 +329,7 @@ class ContextEntityOperationsProcessor:
             tsk_dicts = []
 
         context = get_context_from_project(exec_dict["project"])
-        obj: ExecutableEntity = build_entity_from_dict(exec_dict)
+        obj: ExecutableEntity = factory.build_entity_from_dict(exec_dict)
         try:
             self._create_context_entity(context, obj.ENTITY_TYPE, obj.to_dict())
         except EntityAlreadyExistsError:
@@ -358,7 +358,7 @@ class ContextEntityOperationsProcessor:
         """
         dict_obj: dict = read_yaml(file)
         context = get_context_from_project(dict_obj["project"])
-        obj: ContextEntity = build_entity_from_dict(dict_obj)
+        obj: ContextEntity = factory.build_entity_from_dict(dict_obj)
         try:
             self._update_context_entity(context, obj.ENTITY_TYPE, obj.id, obj.to_dict())
         except EntityNotExistsError:
@@ -391,7 +391,7 @@ class ContextEntityOperationsProcessor:
             tsk_dicts = []
 
         context = get_context_from_project(exec_dict["project"])
-        obj: ExecutableEntity = build_entity_from_dict(exec_dict)
+        obj: ExecutableEntity = factory.build_entity_from_dict(exec_dict)
 
         try:
             self._update_context_entity(context, obj.ENTITY_TYPE, obj.id, obj.to_dict())
@@ -486,7 +486,7 @@ class ContextEntityOperationsProcessor:
         )
         objects = []
         for o in objs:
-            entity: ContextEntity = build_entity_from_dict(o)
+            entity: ContextEntity = factory.build_entity_from_dict(o)
             entity = self._post_process_get(entity)
             objects.append(entity)
         return objects
@@ -549,7 +549,7 @@ class ContextEntityOperationsProcessor:
         objs = self._list_context_entities(context, entity_type, **kwargs)
         objects = []
         for o in objs:
-            entity: ContextEntity = build_entity_from_dict(o)
+            entity: ContextEntity = factory.build_entity_from_dict(o)
             entity = self._post_process_get(entity)
             objects.append(entity)
         return objects
@@ -629,7 +629,7 @@ class ContextEntityOperationsProcessor:
             entity_dict,
             **kwargs,
         )
-        return build_entity_from_dict(obj)
+        return factory.build_entity_from_dict(obj)
 
     def _delete_context_entity(
         self,

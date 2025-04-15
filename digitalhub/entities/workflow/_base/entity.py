@@ -4,7 +4,7 @@ import typing
 
 from digitalhub.entities._base.executable.entity import ExecutableEntity
 from digitalhub.entities._commons.enums import EntityTypes, Relationship
-from digitalhub.factory.api import get_run_kind, get_task_kind_from_action
+from digitalhub.factory.factory import factory
 from digitalhub.utils.exceptions import BackendError
 
 if typing.TYPE_CHECKING:
@@ -68,8 +68,8 @@ class Workflow(ExecutableEntity):
             Run instance.
         """
         # Get task and run kind
-        task_kind = get_task_kind_from_action(self.kind, action)
-        run_kind = get_run_kind(self.kind)
+        task_kind = factory.get_task_kind_from_action(self.kind, action)
+        run_kind = factory.get_run_kind(self.kind)
 
         # Create or update new task
         task = self._get_or_create_task(task_kind)

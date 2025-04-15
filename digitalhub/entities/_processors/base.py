@@ -4,7 +4,7 @@ import typing
 
 from digitalhub.context.api import delete_context
 from digitalhub.entities._commons.enums import ApiCategories, BackendOperations
-from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
+from digitalhub.factory.factory import factory
 from digitalhub.stores.client.api import get_client
 from digitalhub.utils.exceptions import EntityAlreadyExistsError, EntityError, EntityNotExistsError
 from digitalhub.utils.io_utils import read_yaml
@@ -85,10 +85,10 @@ class BaseEntityOperationsProcessor:
             obj = _entity
         else:
             client = get_client(kwargs.get("local"))
-            obj = build_entity_from_params(**kwargs)
+            obj = factory.build_entity_from_params(**kwargs)
         ent = self._create_base_entity(client, obj.ENTITY_TYPE, obj.to_dict())
         ent["local"] = client.is_local()
-        return build_entity_from_dict(ent)
+        return factory.build_entity_from_dict(ent)
 
     def _read_base_entity(
         self,
@@ -150,7 +150,7 @@ class BaseEntityOperationsProcessor:
         client = get_client(kwargs.pop("local", False))
         obj = self._read_base_entity(client, entity_type, entity_name, **kwargs)
         obj["local"] = client.is_local()
-        return build_entity_from_dict(obj)
+        return factory.build_entity_from_dict(obj)
 
     def import_project_entity(
         self,
@@ -176,7 +176,7 @@ class BaseEntityOperationsProcessor:
         obj: dict = read_yaml(file)
         obj["status"] = {}
         obj["local"] = client.is_local()
-        ent: Project = build_entity_from_dict(obj)
+        ent: Project = factory.build_entity_from_dict(obj)
 
         try:
             self._create_base_entity(ent._client, ent.ENTITY_TYPE, ent.to_dict())
@@ -211,7 +211,7 @@ class BaseEntityOperationsProcessor:
         client = get_client(kwargs.pop("local", False))
         obj: dict = read_yaml(file)
         obj["local"] = client.is_local()
-        ent: Project = build_entity_from_dict(obj)
+        ent: Project = factory.build_entity_from_dict(obj)
 
         try:
             self._update_base_entity(ent._client, ent.ENTITY_TYPE, ent.name, ent.to_dict())
@@ -278,7 +278,7 @@ class BaseEntityOperationsProcessor:
         entities = []
         for obj in objs:
             obj["local"] = client.is_local()
-            ent = build_entity_from_dict(obj)
+            ent = factory.build_entity_from_dict(obj)
             entities.append(ent)
         return entities
 
@@ -348,7 +348,7 @@ class BaseEntityOperationsProcessor:
         client = get_client(kwargs.pop("local", False))
         obj = self._update_base_entity(client, entity_type, entity_name, entity_dict, **kwargs)
         obj["local"] = client.is_local()
-        return build_entity_from_dict(obj)
+        return factory.build_entity_from_dict(obj)
 
     def _delete_base_entity(
         self,

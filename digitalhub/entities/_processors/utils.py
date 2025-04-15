@@ -5,7 +5,7 @@ import typing
 from digitalhub.context.api import get_context
 from digitalhub.entities._commons.enums import ApiCategories, BackendOperations, EntityTypes
 from digitalhub.entities._commons.utils import get_project_from_key, parse_entity_key
-from digitalhub.factory.api import build_entity_from_dict
+from digitalhub.factory.factory import factory
 from digitalhub.stores.client.api import get_client
 from digitalhub.utils.exceptions import ContextError, EntityError, EntityNotExistsError
 
@@ -118,7 +118,7 @@ def get_context_from_remote(
     try:
         client = get_client()
         obj = _read_base_entity(client, EntityTypes.PROJECT.value, project)
-        build_entity_from_dict(obj)
+        factory.build_entity_from_dict(obj)
         return get_context(project)
     except EntityNotExistsError:
         raise ContextError(f"Project '{project}' not found.")

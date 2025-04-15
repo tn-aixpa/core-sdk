@@ -7,7 +7,7 @@ from digitalhub.entities._commons.enums import EntityTypes
 from digitalhub.entities._processors.context import context_processor
 from digitalhub.entities.run.crud import delete_run, get_run, list_runs
 from digitalhub.entities.task.crud import delete_task
-from digitalhub.factory.api import build_entity_from_dict, build_entity_from_params
+from digitalhub.factory.factory import factory
 from digitalhub.utils.exceptions import EntityAlreadyExistsError, EntityError
 
 if typing.TYPE_CHECKING:
@@ -102,7 +102,7 @@ class ExecutableEntity(VersionedEntity):
             # Create a new object from dictionary.
             # the form in which tasks are stored in function
             # status
-            task_obj = build_entity_from_dict(task)
+            task_obj: Task = factory.build_entity_from_dict(task)
 
             # Try to save it in backend to been able to use
             # it for launching runs. In fact, tasks must be
@@ -145,7 +145,7 @@ class ExecutableEntity(VersionedEntity):
         kwargs["kind"] = task_kind
 
         # Create object instance
-        task = build_entity_from_params(**kwargs)
+        task: Task = factory.build_entity_from_params(**kwargs)
         task.save()
 
         self._tasks[task_kind] = task
@@ -207,7 +207,7 @@ class ExecutableEntity(VersionedEntity):
         kwargs["uuid"] = self._tasks[kind].id
 
         # Update task
-        task = build_entity_from_params(**kwargs)
+        task: Task = factory.build_entity_from_params(**kwargs)
         task.save(update=True)
         self._tasks[kind] = task
         return task

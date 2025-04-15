@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Any, Callable
 
-from digitalhub.factory.api import get_action_from_task_kind
+from digitalhub.factory.factory import factory
 from digitalhub.utils.exceptions import EntityError
 from digitalhub.utils.logger import LOGGER
 
@@ -68,7 +68,7 @@ class Runtime:
             raise RuntimeError(msg)
 
         try:
-            return get_action_from_task_kind(task_kind, task_kind)
+            return factory.get_action_from_task_kind(task_kind, task_kind)
         except EntityError:
             msg = f"Task {task_kind} not allowed."
             LOGGER.exception(msg)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from enum import Enum
 from urllib.parse import unquote, urlparse
 
@@ -95,6 +96,10 @@ def map_uri_scheme(uri: str) -> str:
     ValueError
         If the scheme is unknown or invalid.
     """
+    # Check for Windows paths (e.g. C:\path\to\file or \\network\share)
+    if re.match(r"^[a-zA-Z]:\\", uri) or uri.startswith(r"\\"):
+        return SchemeCategory.LOCAL.value
+
     scheme = urlparse(uri).scheme
     if scheme in list_enum(LocalSchemes):
         return SchemeCategory.LOCAL.value

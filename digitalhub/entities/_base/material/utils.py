@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from digitalhub.stores.data.s3.utils import get_s3_bucket_from_env
+from digitalhub.stores.data.utils import get_default_store
 from digitalhub.utils.file_utils import eval_zip_type
-from digitalhub.utils.uri_utils import S3Schemes, has_local_scheme
+from digitalhub.utils.uri_utils import has_local_scheme
 
 
 def eval_local_source(source: str | list[str]) -> None:
@@ -34,7 +34,7 @@ def eval_local_source(source: str | list[str]) -> None:
         raise ValueError("Invalid source path. Source must be a local path.")
 
 
-def eval_zip_sources(source: str | list[str]) -> str:
+def eval_zip_sources(source: str | list[str]) -> bool:
     """
     Evaluate zip sources.
 
@@ -45,21 +45,21 @@ def eval_zip_sources(source: str | list[str]) -> str:
 
     Returns
     -------
-    str
-        S3Schemes.
+    bool
+        True if source is zip.
     """
     if isinstance(source, list):
         if len(source) > 1:
-            return S3Schemes.S3.value
+            return False
         path = source[0]
     else:
         if Path(source).is_dir():
-            return S3Schemes.S3.value
+            return False
         path = source
 
     if not eval_zip_type(path):
-        return S3Schemes.S3.value
-    return S3Schemes.ZIP_S3.value
+        return False
+    return True
 
 
 def build_log_path_from_source(
@@ -90,8 +90,8 @@ def build_log_path_from_source(
     str
         Log path.
     """
-    scheme = eval_zip_sources(source)
-    path = f"{scheme}://{get_s3_bucket_from_env()}/{project}/{entity_type}/{name}/{uuid}"
+    prefix = "zip+" if eval_zip_sources(source) else ""
+    path = f"{prefix}{get_default_store(project)}/{project}/{entity_type}/{name}/{uuid}"
 
     if isinstance(source, list) and len(source) >= 1:
         if len(source) > 1:

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional
 
 from digitalhub.entities._base.entity.spec import Spec, SpecValidator
+from digitalhub.entities.project._base.models import ProfileConfig
 
 
 class ProjectSpec(Spec):
@@ -53,5 +54,5 @@ class ProjectValidator(SpecValidator):
     models: Optional[list] = None
     """List of project's models."""
 
-    config: Optional[dict] = None
+    config: Optional[ProfileConfig] = None
     """Project's config."""

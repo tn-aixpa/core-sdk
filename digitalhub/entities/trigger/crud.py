@@ -16,10 +16,13 @@ def new_trigger(
     project: str,
     name: str,
     kind: str,
+    task: str,
+    function: str | None = None,
     uuid: str | None = None,
     description: str | None = None,
     labels: list[str] | None = None,
     embedded: bool = False,
+    template: dict | None = None,
     **kwargs,
 ) -> Trigger:
     """
@@ -55,6 +58,13 @@ def new_trigger(
     >>>                   kind="trigger",
     >>>                   name="my-trigger",)
     """
+    if kwargs is None:
+        kwargs = {}
+    if template is None:
+        template = {}
+    template["task"] = task
+    template["function"] = function
+    kwargs["template"] = template
     return context_processor.create_context_entity(
         project=project,
         name=name,

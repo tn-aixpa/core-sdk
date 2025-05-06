@@ -1,23 +1,16 @@
 from __future__ import annotations
 
 from digitalhub.entities._base.versioned.builder import VersionedBuilder
-from digitalhub.entities._commons.enums import EntityKinds, EntityTypes
+from digitalhub.entities._commons.enums import EntityTypes
 from digitalhub.entities.trigger._base.entity import Trigger
-from digitalhub.entities.trigger._base.spec import TriggerSpec, TriggerValidator
-from digitalhub.entities.trigger._base.status import TriggerStatus
 
 
-class TriggerTriggerBuilder(VersionedBuilder):
+class TriggerBuilder(VersionedBuilder):
     """
     TriggerTriggerBuilder builder.
     """
 
     ENTITY_TYPE = EntityTypes.TRIGGER.value
-    ENTITY_CLASS = Trigger
-    ENTITY_SPEC_CLASS = TriggerSpec
-    ENTITY_SPEC_VALIDATOR = TriggerValidator
-    ENTITY_STATUS_CLASS = TriggerStatus
-    ENTITY_KIND = EntityKinds.TRIGGER_TRIGGER.value
 
     def build(
         self,

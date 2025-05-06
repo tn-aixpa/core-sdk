@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from digitalhub.context.api import get_context
-from digitalhub.stores.data.enums import StoreEnv
 from digitalhub.stores.configurator.configurator import configurator
+from digitalhub.stores.data.enums import StoreEnv
 
 
 def get_default_store(project: str) -> str:

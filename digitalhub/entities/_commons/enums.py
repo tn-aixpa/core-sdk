@@ -104,4 +104,4 @@ class EntityKinds(Enum):
     MODEL_HUGGINGFACE = "huggingface"
     MODEL_SKLEARN = "sklearn"
     SECRET_SECRET = "secret"
-    TRIGGER_TRIGGER = "trigger"
+    TRIGGER_SCHEDULER = "scheduler"

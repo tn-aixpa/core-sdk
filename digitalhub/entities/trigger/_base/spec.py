@@ -8,9 +8,6 @@ class TriggerSpec(Spec):
     TriggerSpec specifications.
     """
 
-    def __init__(self, **kwargs) -> None:
-        ...
-
 
 class TriggerValidator(SpecValidator):
     """

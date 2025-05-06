@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,6 +13,26 @@ class VolumeType(Enum):
 
     PERSISTENT_VOLUME_CLAIM = "persistent_volume_claim"
     EMPTY_DIR = "empty_dir"
+
+
+class SpecEmptyDir(BaseModel):
+    """
+    Spec empty dir model.
+    """
+
+    medium: Optional[str] = None
+
+    size_limit: Optional[str] = "128Mi"
+
+
+class SpecPVC(BaseModel):
+    """
+    Spec PVC model.
+    """
+
+    size: str
+
+    storage_class: str
 
 
 class Volume(BaseModel):
@@ -31,7 +51,7 @@ class Volume(BaseModel):
     mount_path: str
     """Volume mount path inside the container."""
 
-    spec: Optional[dict[str, str]] = None
+    spec: Optional[Union[SpecEmptyDir, SpecPVC]] = None
     """Volume spec."""
 
 

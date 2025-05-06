@@ -8,7 +8,7 @@ if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.builder import EntityBuilder
     from digitalhub.entities._base.entity.entity import Entity
     from digitalhub.entities._base.entity.metadata import Metadata
-    from digitalhub.entities._base.entity.spec import Spec
+    from digitalhub.entities._base.entity.spec import Spec, SpecValidator
     from digitalhub.entities._base.entity.status import Status
     from digitalhub.entities._base.runtime_entity.builder import RuntimeEntityBuilder
     from digitalhub.runtimes._base import Runtime
@@ -299,6 +299,23 @@ class Factory:
             All kinds.
         """
         return self._entity_builders[kind].get_all_kinds()
+
+    def get_spec_validator(self, kind: str) -> SpecValidator:
+        """
+        Get spec validators.
+
+        Parameters
+        ----------
+        kind : str
+            Kind.
+
+        Returns
+        -------
+        SpecValidator
+            Spec validator.
+        """
+        self._raise_if_entity_builder_not_found(kind)
+        return self._entity_builders[kind].get_spec_validator()
 
     def _raise_if_entity_builder_not_found(self, kind: str) -> None:
         """

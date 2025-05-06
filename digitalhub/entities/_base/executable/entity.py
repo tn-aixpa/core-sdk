@@ -16,6 +16,7 @@ if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.status import Status
     from digitalhub.entities.run._base.entity import Run
     from digitalhub.entities.task._base.entity import Task
+    from digitalhub.entities.trigger._base.entity import Trigger
 
 
 class ExecutableEntity(VersionedEntity):
@@ -403,3 +404,28 @@ class ExecutableEntity(VersionedEntity):
             project=self.project,
             **kwargs,
         )
+
+    ##############################
+    #  Trigger
+    ##############################
+
+    def new_trigger(self, trigger_kind: str, **kwargs) -> Trigger:
+        """
+        Create new trigger.
+
+        Parameters
+        ----------
+        trigger_kind : str
+            Kind the object.
+        **kwargs : dict
+            Keyword arguments.
+
+        Returns
+        -------
+        Trigger
+            New trigger.
+        """
+        # Create object instance
+        trigger: Trigger = factory.build_entity_from_params(**kwargs)
+        trigger.save()
+        return trigger

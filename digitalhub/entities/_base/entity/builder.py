@@ -178,3 +178,14 @@ class EntityBuilder:
             Entity kind.
         """
         return self.ENTITY_KIND
+
+    def get_spec_validator(self) -> type[SpecValidator]:
+        """
+        Get entity spec validator.
+
+        Returns
+        -------
+        type[SpecValidator]
+            Entity spec validator.
+        """
+        return self.ENTITY_SPEC_VALIDATOR

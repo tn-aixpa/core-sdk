@@ -13,6 +13,23 @@ from digitalhub.utils.exceptions import ClientError
 ENV_FILE = Path.home() / ".dhcore.ini"
 
 
+def load_file() -> ConfigParser:
+    """
+    Load current credentials set from the .dhcore.ini file.
+
+    Returns
+    -------
+    ConfigParser
+        Credentials set name.
+    """
+    try:
+        file = ConfigParser()
+        file.read(ENV_FILE)
+        return file
+    except Exception as e:
+        raise ClientError(f"Failed to read env file: {e}")
+
+
 def load_from_file(var: str) -> str | None:
     """
     Load variable from config file.
@@ -29,9 +46,8 @@ def load_from_file(var: str) -> str | None:
     str | None
         Environment variable value.
     """
-    cfg = ConfigParser()
-    cfg.read(ENV_FILE)
     try:
+        cfg = load_file()
         profile = cfg["DEFAULT"]["current_environment"]
         return cfg[profile].get(var)
     except KeyError:
@@ -55,8 +71,7 @@ def write_config(creds: dict, environment: str) -> None:
     None
     """
     try:
-        cfg = ConfigParser()
-        cfg.read(ENV_FILE)
+        cfg = load_file()
 
         sections = cfg.sections()
         if environment not in sections:
@@ -72,3 +87,42 @@ def write_config(creds: dict, environment: str) -> None:
 
     except Exception as e:
         raise ClientError(f"Failed to write env file: {e}")
+
+
+def set_current_env(environment: str) -> None:
+    """
+    Set the current credentials set.
+
+    Parameters
+    ----------
+    environment : str
+        Credentials set name.
+
+    Returns
+    -------
+    None
+    """
+    try:
+        cfg = load_file()
+        cfg["DEFAULT"]["current_environment"] = environment
+        with open(ENV_FILE, "w") as inifile:
+            cfg.write(inifile)
+
+    except Exception as e:
+        raise ClientError(f"Failed to write env file: {e}")
+
+
+def read_env_from_file() -> str:
+    """
+    Read the current credentials set from the .dhcore.ini file.
+
+    Returns
+    -------
+    str
+        Credentials set name.
+    """
+    try:
+        cfg = load_file()
+        return cfg["DEFAULT"]["current_environment"]
+    except Exception as e:
+        raise ClientError(f"Failed to read env file: {e}")

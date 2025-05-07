@@ -276,6 +276,7 @@ class ClientDHCore(Client):
         dict
             Response object.
         """
+        self._configurator.check_config()
         if kwargs is None:
             kwargs = {}
         url = self._configurator.build_url(api)

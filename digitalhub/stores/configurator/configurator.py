@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 
 from digitalhub.stores.configurator.credentials_store import CredentialsStore
-from digitalhub.stores.configurator.ini_module import load_from_file, write_config
+from digitalhub.stores.configurator.enums import SetCreds
+from digitalhub.stores.configurator.ini_module import load_from_file, read_env_from_file, set_current_env, write_config
 
 
 class EnvConfigurator:
@@ -36,6 +37,7 @@ class EnvConfigurator:
         None
         """
         self._environment = creds_set
+        set_current_env(creds_set)
 
     def get_current_env(self) -> str:
         """
@@ -105,6 +107,7 @@ class EnvConfigurator:
         str | None
             Environment variable value.
         """
+        self._environment = read_env_from_file()
         return load_from_file(var)
 
     def write_env(self, key_to_include: list[str] | None = None) -> None:

@@ -31,9 +31,28 @@ class ClientDHCoreConfigurator:
     Configurator object used to configure the client.
     """
 
+    def __init__(self) -> None:
+        self._current_env = configurator.get_current_env()
+
     ##############################
     # Configuration methods
     ##############################
+
+    def check_config(self) -> None:
+        """
+        Check if the config is valid.
+
+        Parameters
+        ----------
+        config : dict
+            Configuration dictionary.
+
+        Returns
+        -------
+        None
+        """
+        if configurator.get_current_env() != self._current_env:
+            self.configure()
 
     def configure(self, config: dict | None = None) -> None:
         """

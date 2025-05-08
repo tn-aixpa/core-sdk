@@ -18,6 +18,7 @@ class S3StoreConfigurator:
         S3StoreEnv.ENDPOINT_URL,
         S3StoreEnv.ACCESS_KEY_ID,
         S3StoreEnv.SECRET_ACCESS_KEY,
+        S3StoreEnv.BUCKET_NAME,
     ]
     optional_vars = [
         S3StoreEnv.REGION,

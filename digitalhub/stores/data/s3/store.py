@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 import boto3
 import botocore.client  # pylint: disable=unused-import
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError
 
 from digitalhub.stores.configurator.enums import CredsOrigin
 from digitalhub.stores.data._base.store import Store
@@ -651,7 +651,7 @@ class S3Store(Store):
         """
         try:
             client.head_bucket(Bucket=bucket)
-        except ClientError:
+        except (ClientError, NoCredentialsError):
             raise StoreError("No access to s3 bucket!")
 
     @staticmethod

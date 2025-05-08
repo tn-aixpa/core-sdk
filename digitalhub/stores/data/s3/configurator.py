@@ -18,7 +18,6 @@ class S3StoreConfigurator:
         S3StoreEnv.ENDPOINT_URL,
         S3StoreEnv.ACCESS_KEY_ID,
         S3StoreEnv.SECRET_ACCESS_KEY,
-        S3StoreEnv.BUCKET_NAME,
     ]
     optional_vars = [
         S3StoreEnv.REGION,
@@ -26,28 +25,12 @@ class S3StoreConfigurator:
         S3StoreEnv.SESSION_TOKEN,
     ]
 
-    def __init__(self, config: dict | None = None) -> None:
-        self.configure(config)
+    def __init__(self, config: dict) -> None:
+        ...
 
     ##############################
     # Configuration methods
     ##############################
-
-    def configure(self, config: dict | None = None) -> None:
-        """
-        Configure the store by getting the credentials from user
-        provided config or from environment.
-
-        Parameters
-        ----------
-        config : dict
-            Configuration dictionary.
-
-        Returns
-        -------
-        None
-        """
-        self._get_env_config()
 
     def get_boto3_client_config(self, origin: str) -> dict:
         """

@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 
 from digitalhub.stores.configurator.credentials_store import CredentialsStore
-from digitalhub.stores.configurator.enums import SetCreds
 from digitalhub.stores.configurator.ini_module import load_from_file, read_env_from_file, set_current_env, write_config
 
 

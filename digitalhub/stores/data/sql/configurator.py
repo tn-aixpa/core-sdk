@@ -12,30 +12,11 @@ class SqlStoreConfigurator:
     provided config or from environment.
     """
 
-    variables = [SqlStoreEnv.USERNAME, SqlStoreEnv.PASSWORD, SqlStoreEnv.HOST, SqlStoreEnv.PORT, SqlStoreEnv.DATABASE]
-
-    def __init__(self, config: dict | None = None) -> None:
-        self.configure(config)
+    variables = [SqlStoreEnv.USERNAME, SqlStoreEnv.PASSWORD, SqlStoreEnv.HOST, SqlStoreEnv.PORT, SqlStoreEnv.DATABASE,]
 
     ##############################
     # Configuration methods
     ##############################
-
-    def configure(self, config: dict | None = None) -> None:
-        """
-        Configure the store by getting the credentials from user
-        provided config or from environment.
-
-        Parameters
-        ----------
-        config : dict
-            Configuration dictionary.
-
-        Returns
-        -------
-        None
-        """
-        self._get_env_config()
 
     def get_sql_conn_string(self, origin: str) -> str:
         """

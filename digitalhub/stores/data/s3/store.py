@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import typing
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Type
@@ -19,8 +18,6 @@ from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
 from digitalhub.utils.types import SourcesOrListOfSources
 
-if typing.TYPE_CHECKING:
-    pass
 
 # Type aliases
 S3Client = Type["botocore.client.S3"]
@@ -32,10 +29,9 @@ class S3Store(Store):
     artifacts on S3 based storage.
     """
 
-    def __init__(self, config: dict | None = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self._configurator = S3StoreConfigurator()
-        self._configurator.configure(config)
 
     ##############################
     # I/O methods

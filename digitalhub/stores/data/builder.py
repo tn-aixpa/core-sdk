@@ -64,7 +64,7 @@ class StoreBuilder:
         env = get_current_env()
         if env not in self._instances:
             self._instances[env] = {}
-        self._instances[env][store_type] = _get_class_from_type(store_type)(config)
+        self._instances[env][store_type] = _get_class_from_type(store_type)()
 
     def get(self, uri: str, config: dict | None = None) -> Store:
         """

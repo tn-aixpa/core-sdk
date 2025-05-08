@@ -26,9 +26,6 @@ class S3StoreConfigurator:
         S3StoreEnv.SESSION_TOKEN,
     ]
 
-    def __init__(self, config: dict | None = None) -> None:
-        ...
-
     ##############################
     # Configuration methods
     ##############################

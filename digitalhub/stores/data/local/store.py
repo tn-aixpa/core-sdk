@@ -17,9 +17,6 @@ class LocalStore(Store):
     artifacts on local filesystem based storage.
     """
 
-    def __init__(self, config: dict | None = None) -> None:
-        super().__init__()
-
     ##############################
     # I/O methods
     ##############################

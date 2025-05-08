@@ -28,8 +28,8 @@ class S3Store(Store):
     artifacts on S3 based storage.
     """
 
-    def __init__(self, config: dict) -> None:
-        self._configurator = S3StoreConfigurator(config)
+    def __init__(self) -> None:
+        self._configurator = S3StoreConfigurator()
 
     ##############################
     # I/O methods

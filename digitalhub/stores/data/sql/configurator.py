@@ -19,32 +19,13 @@ class SqlStoreConfigurator:
         SqlStoreEnv.PORT,
         SqlStoreEnv.DATABASE,
     ]
-    project_vars = [
-        SqlStoreEnv.DATABASE,
-    ]
 
-    def __init__(self, config: dict) -> None:
-        self.config = self.configure(config)
+    def __init__(self) -> None:
+        self.config = self.configure()
 
     ##############################
     # Configuration methods
     ##############################
-
-    def configure(self, config: dict) -> dict:
-        """
-        Configure the store by getting vars from project.
-
-        Parameters
-        ----------
-        config : dict
-            Configuration dictionary.
-
-        Returns
-        -------
-        dict
-            Configuration dictionary.
-        """
-        return {k: v for k, v in config.items() if k in self.project_vars}
 
     def get_sql_conn_string(self, origin: str) -> str:
         """

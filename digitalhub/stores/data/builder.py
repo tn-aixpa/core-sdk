@@ -46,7 +46,7 @@ class StoreBuilder:
     def __init__(self) -> None:
         self._instances: dict[str, dict[str, Store]] = {}
 
-    def build(self, project: str, store_type: str, config: dict) -> None:
+    def build(self, project: str, store_type: str) -> None:
         """
         Build a store instance and register it.
 
@@ -55,7 +55,6 @@ class StoreBuilder:
         store_type : str
             Store type.
         config : dict
-            Store configuration.
 
         Returns
         -------
@@ -64,9 +63,9 @@ class StoreBuilder:
         env = get_current_env()
         if env not in self._instances:
             self._instances[env] = {}
-        self._instances[env][store_type] = _get_class_from_type(store_type)(config)
+        self._instances[env][store_type] = _get_class_from_type(store_type)()
 
-    def get(self, project: str, uri: str, config: dict) -> Store:
+    def get(self, project: str, uri: str) -> Store:
         """
         Get a store instance by URI.
 
@@ -87,7 +86,7 @@ class StoreBuilder:
         try:
             return self._instances[env][store_type]
         except KeyError:
-            self.build(project, store_type, config)
+            self.build(project, store_type)
             return self._instances[env][store_type]
 
 

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from urllib.parse import urlparse
 
 from boto3 import client as boto3_client
 
-from digitalhub.stores.data.s3.enums import S3StoreEnv
-
-DEFAULT_BUCKET = "datalake"
+from digitalhub.stores.configurator.enums import CredsOrigin
+from digitalhub.stores.data.s3.configurator import S3StoreConfigurator
+from digitalhub.utils.exceptions import StoreError
 
 
 def get_bucket_name(path: str) -> str:
@@ -63,17 +62,13 @@ def get_s3_source(bucket: str, key: str, filename: Path) -> None:
     -------
     None
     """
-    s3 = boto3_client("s3", endpoint_url=os.getenv(S3StoreEnv.ENDPOINT_URL.value))
-    s3.download_file(bucket, key, filename)
+    # Try to get client from environment variables
+    try:
+        cfg = S3StoreConfigurator().get_boto3_client_config(CredsOrigin.ENV.value)
+        s3 = boto3_client("s3", **cfg)
+        s3.download_file(bucket, key, filename)
 
-
-def get_s3_bucket_from_env() -> str | None:
-    """
-    Function to get S3 bucket name.
-
-    Returns
-    -------
-    str
-        The S3 bucket name.
-    """
-    return os.getenv(S3StoreEnv.BUCKET_NAME.value, DEFAULT_BUCKET)
+    # Fallback to file
+    except StoreError:
+        cfg = S3StoreConfigurator().get_boto3_client_config(CredsOrigin.FILE.value)
+        s3.download_file(bucket, key, filename)

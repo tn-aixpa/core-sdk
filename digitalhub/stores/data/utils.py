@@ -20,7 +20,7 @@ def get_default_store(project: str) -> str:
         Default store URI.
     """
     context = get_context(project)
-    store = context.config.get("default_files_store")
+    store = context.config.get(StoreEnv.DEFAULT_FILES_STORE.value.lower())
     if store is not None:
         return store
     store = configurator.load_var(StoreEnv.DEFAULT_FILES_STORE.value)

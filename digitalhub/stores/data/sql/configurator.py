@@ -20,9 +20,6 @@ class SqlStoreConfigurator:
         SqlStoreEnv.DATABASE,
     ]
 
-    def __init__(self) -> None:
-        self.config = self.configure()
-
     ##############################
     # Configuration methods
     ##############################

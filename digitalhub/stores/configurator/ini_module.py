@@ -112,7 +112,7 @@ def set_current_env(environment: str) -> None:
         raise ClientError(f"Failed to write env file: {e}")
 
 
-def read_env_from_file() -> str:
+def read_env_from_file() -> str | None:
     """
     Read the current credentials set from the .dhcore.ini file.
 
@@ -124,5 +124,5 @@ def read_env_from_file() -> str:
     try:
         cfg = load_file()
         return cfg["DEFAULT"]["current_environment"]
-    except Exception as e:
-        raise ClientError(f"Failed to read env file: {e}")
+    except Exception:
+        return None

@@ -54,7 +54,7 @@ class ClientDHCoreConfigurator:
         if configurator.get_current_env() != self._current_env:
             self.configure()
 
-    def configure(self, config: dict | None = None) -> None:
+    def configure(self) -> None:
         """
         Configure the client attributes with config (given or from
         environment).
@@ -62,11 +62,6 @@ class ClientDHCoreConfigurator:
         takes precedence over the env variables, and the token
         over the basic auth. Furthermore, the config parameter is
         validated against the proper pydantic model.
-
-        Parameters
-        ----------
-        config : dict
-            Configuration dictionary.
 
         Returns
         -------
@@ -159,10 +154,10 @@ class ClientDHCoreConfigurator:
         None
         """
         # Give priority to access token
-        access_token = configurator.load_var(DhcoreEnvVar.ACCESS_TOKEN.value)
+        access_token = self._load_dhcore_oauth_vars(DhcoreEnvVar.ACCESS_TOKEN.value)
         if access_token is not None:
             configurator.set_credential(AUTH_KEY, AuthType.OAUTH2.value)
-            configurator.set_credential(DhcoreEnvVar.ACCESS_TOKEN.value, access_token)
+            configurator.set_credential(DhcoreEnvVar.ACCESS_TOKEN.value.removeprefix("DHCORE_"), access_token)
 
         # Fallback to basic
         else:
@@ -223,7 +218,7 @@ class ClientDHCoreConfigurator:
         elif self.oauth2_auth():
             if "headers" not in kwargs:
                 kwargs["headers"] = {}
-            access_token = creds[DhcoreEnvVar.ACCESS_TOKEN.value]
+            access_token = creds[DhcoreEnvVar.ACCESS_TOKEN.value.removeprefix("DHCORE_")]
             kwargs["headers"]["Authorization"] = f"Bearer {access_token}"
         return kwargs
 
@@ -246,7 +241,7 @@ class ClientDHCoreConfigurator:
 
         # Otherwise try token from file
         if response.status_code in (400, 401, 403):
-            refresh_token = configurator.load_from_file(DhcoreEnvVar.REFRESH_TOKEN.value)
+            refresh_token = configurator.load_from_file(DhcoreEnvVar.REFRESH_TOKEN.value.removeprefix("DHCORE_"))
             response = self._call_refresh_token_endpoint(url, refresh_token)
 
         response.raise_for_status()
@@ -267,11 +262,40 @@ class ClientDHCoreConfigurator:
         -------
         None
         """
-        keys = list_enum(DhcoreEnvVar) + list_enum(S3StoreEnv) + list_enum(SqlStoreEnv)
+        keys = [
+            *self._remove_prefix_dhcore(list_enum(DhcoreEnvVar)),
+            *list_enum(S3StoreEnv),
+            *list_enum(SqlStoreEnv),
+            ]
         for key in keys:
-            if (value := response.get(key.lower().removeprefix("dhcore_"))) is not None:
+            if (value := response.get(key.lower())) is not None:
                 configurator.set_credential(key, value)
         configurator.write_env(keys)
+
+    def _remove_prefix_dhcore(self, keys: list[str]) -> list[str]:
+        """
+        Remove prefix from selected keys. (Compatibility with CLI)
+
+        Parameters
+        ----------
+        keys : list[str]
+            List of keys.
+
+        Returns
+        -------
+        list[str]
+            List of keys without prefix.
+        """
+        new_list = []
+        for key in keys:
+            if key in (DhcoreEnvVar.REFRESH_TOKEN.value,
+                       DhcoreEnvVar.ACCESS_TOKEN.value,
+                       DhcoreEnvVar.ISSUER.value,
+                       ):
+                new_list.append(key.removeprefix("DHCORE_"))
+            else:
+                new_list.append(key)
+        return new_list
 
     def _get_refresh_endpoint(self) -> str:
         """
@@ -283,11 +307,11 @@ class ClientDHCoreConfigurator:
             Refresh endpoint.
         """
         # Get issuer endpoint
-        endpoint_issuer = configurator.load_var(DhcoreEnvVar.ISSUER.value)
+        endpoint_issuer = self._load_dhcore_oauth_vars(DhcoreEnvVar.ISSUER.value)
         if endpoint_issuer is None:
             raise ClientError("Issuer endpoint not set.")
         endpoint_issuer = self._sanitize_endpoint(endpoint_issuer)
-        configurator.set_credential(DhcoreEnvVar.ISSUER.value, endpoint_issuer)
+        configurator.set_credential(DhcoreEnvVar.ISSUER.value.removeprefix("DHCORE_"), endpoint_issuer)
 
         # Standard issuer endpoint path
         url = endpoint_issuer + "/.well-known/openid-configuration"
@@ -327,3 +351,22 @@ class ClientDHCoreConfigurator:
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         return request("POST", url, data=payload, headers=headers, timeout=60)
+
+    def _load_dhcore_oauth_vars(self, oauth_var: str) -> str | None:
+        """
+        Load DHCore oauth variables.
+
+        Parameters
+        ----------
+        oauth_var : str
+            The oauth variable to load.
+
+        Returns
+        -------
+        str
+            The oauth variable.
+        """
+        read_var = configurator.load_from_env(oauth_var)
+        if read_var is None:
+            read_var = configurator.load_from_file(oauth_var.removeprefix("DHCORE_"))
+        return read_var

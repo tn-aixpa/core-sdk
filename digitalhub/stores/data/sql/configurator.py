@@ -12,7 +12,13 @@ class SqlStoreConfigurator:
     provided config or from environment.
     """
 
-    variables = [SqlStoreEnv.USERNAME, SqlStoreEnv.PASSWORD, SqlStoreEnv.HOST, SqlStoreEnv.PORT, SqlStoreEnv.DATABASE,]
+    variables = [
+        SqlStoreEnv.USERNAME,
+        SqlStoreEnv.PASSWORD,
+        SqlStoreEnv.HOST,
+        SqlStoreEnv.PORT,
+        SqlStoreEnv.DATABASE,
+    ]
 
     ##############################
     # Configuration methods

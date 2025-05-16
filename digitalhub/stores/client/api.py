@@ -24,4 +24,4 @@ def get_client(local: bool = False, config: dict | None = None) -> Client:
     Client
         The client instance.
     """
-    return client_builder.build(local, config)
+    return client_builder.build(local)

@@ -35,7 +35,7 @@ class ClientDHCore(Client):
     configuration, otherwise it simply set the environment variables.
     """
 
-    def __init__(self, config: dict | None = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
 
         # API builder
@@ -52,7 +52,7 @@ class ClientDHCore(Client):
 
         # Client Configurator
         self._configurator = ClientDHCoreConfigurator()
-        self._configurator.configure(config)
+        self._configurator.configure()
 
     ##############################
     # CRUD methods

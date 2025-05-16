@@ -18,7 +18,6 @@ from digitalhub.utils.exceptions import StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
 from digitalhub.utils.types import SourcesOrListOfSources
 
-
 # Type aliases
 S3Client = Type["botocore.client.S3"]
 

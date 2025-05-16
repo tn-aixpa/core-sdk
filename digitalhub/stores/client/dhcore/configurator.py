@@ -266,7 +266,7 @@ class ClientDHCoreConfigurator:
             *self._remove_prefix_dhcore(list_enum(DhcoreEnvVar)),
             *list_enum(S3StoreEnv),
             *list_enum(SqlStoreEnv),
-            ]
+        ]
         for key in keys:
             if (value := response.get(key.lower())) is not None:
                 configurator.set_credential(key, value)
@@ -288,10 +288,11 @@ class ClientDHCoreConfigurator:
         """
         new_list = []
         for key in keys:
-            if key in (DhcoreEnvVar.REFRESH_TOKEN.value,
-                       DhcoreEnvVar.ACCESS_TOKEN.value,
-                       DhcoreEnvVar.ISSUER.value,
-                       ):
+            if key in (
+                DhcoreEnvVar.REFRESH_TOKEN.value,
+                DhcoreEnvVar.ACCESS_TOKEN.value,
+                DhcoreEnvVar.ISSUER.value,
+            ):
                 new_list.append(key.removeprefix("DHCORE_"))
             else:
                 new_list.append(key)

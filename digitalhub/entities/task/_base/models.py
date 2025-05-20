@@ -19,6 +19,7 @@ class SpecEmptyDir(BaseModel):
     """
     Spec empty dir model.
     """
+
     size_limit: str
 
     medium: Optional[str] = None

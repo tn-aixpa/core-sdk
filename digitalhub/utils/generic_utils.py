@@ -8,6 +8,7 @@ from enum import Enum, EnumMeta
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Callable
+from warnings import warn
 from zipfile import ZipFile
 
 import numpy as np
@@ -235,3 +236,20 @@ def list_enum(enum: EnumMeta) -> list[Any]:
     """
     vals: MappingProxyType[str, Enum] = enum.__members__
     return [member.value for member in vals.values()]
+
+
+def carriage_return_warn(string: str) -> None:
+    """
+    Print a warning message if string contains a carriage return (\r\n).
+
+    Parameters
+    ----------
+    string : str
+        The string to check.
+
+    Returns
+    -------
+    None
+    """
+    if "\r\n" in string:
+        warn("String contains a carriage return. It may not be parsed correctly from remote runtimes.")

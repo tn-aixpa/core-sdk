@@ -28,7 +28,7 @@ def get_default_store(project: str) -> str:
         raise ValueError(
             "No default store found. "
             "Please set a default store "
-            "in your environment (e.g. export DEFAULT_FILES_STORE=) "
+            f"in your environment (e.g. export {StoreEnv.DEFAULT_FILES_STORE.value}=) "
             "or set it in project config."
         )
     return store

@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing
 from typing import Any
 
-from digitalhub.entities._commons.enums import ApiCategories, BackendOperations, Relationship
+from digitalhub.entities._commons.enums import ApiCategories, BackendOperations, Relationship, State
 from digitalhub.entities._processors.utils import (
     get_context_from_identifier,
     get_context_from_project,
@@ -120,7 +120,25 @@ class ContextEntityOperationsProcessor:
 
         new_obj: MaterialEntity = self._create_context_entity(context, obj.ENTITY_TYPE, obj.to_dict())
         new_obj = factory.build_entity_from_dict(new_obj)
-        new_obj.upload(source)
+
+        new_obj.status.state = State.UPLOADING.value
+        new_obj = self._update_material_entity(new_obj)
+
+        # Handle file upload
+        try:
+            new_obj.upload(source)
+            uploaded = True
+        except Exception:
+            uploaded = False
+
+        # Update status after upload
+        if uploaded:
+            new_obj.status.state = State.READY.value
+            new_obj = self._update_material_entity(new_obj)
+        else:
+            new_obj.status.state = State.ERROR.value
+            new_obj = self._update_material_entity(new_obj)
+
         return new_obj
 
     def _read_context_entity(
@@ -553,6 +571,30 @@ class ContextEntityOperationsProcessor:
             entity = self._post_process_get(entity)
             objects.append(entity)
         return objects
+
+    def _update_material_entity(
+        self,
+        new_obj: MaterialEntity,
+    ) -> dict:
+        """
+        Update material object shortcut.
+
+        Parameters
+        ----------
+        new_obj : MaterialEntity
+            Object instance.
+
+        Returns
+        -------
+        dict
+            Response from backend.
+        """
+        return self.update_context_entity(
+            new_obj.project,
+            new_obj.ENTITY_TYPE,
+            new_obj.id,
+            new_obj.to_dict(),
+        )
 
     def _update_context_entity(
         self,

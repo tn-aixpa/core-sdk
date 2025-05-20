@@ -56,6 +56,7 @@ class State(Enum):
     STOPPED = "STOPPED"
     SUCCESS = "SUCCESS"
     UNKNOWN = "UNKNOWN"
+    UPLOADING = "UPLOADING"
 
 
 class ApiCategories(Enum):

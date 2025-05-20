@@ -271,7 +271,7 @@ class ClientDHCoreConfigurator:
             *self._remove_prefix_dhcore(list_enum(DhcoreEnvVar)),
             *list_enum(S3StoreEnv),
             *list_enum(SqlStoreEnv),
-            ]
+        ]
         for key in keys:
             if (value := response.get(key.lower())) is not None:
                 configurator.set_credential(key, value)
@@ -293,11 +293,12 @@ class ClientDHCoreConfigurator:
         """
         new_list = []
         for key in keys:
-            if key in (DhcoreEnvVar.REFRESH_TOKEN.value,
-                       DhcoreEnvVar.ACCESS_TOKEN.value,
-                       DhcoreEnvVar.ISSUER.value,
-                       #DhcoreEnvVar.CLIENT_ID.value,
-                       ):
+            if key in (
+                DhcoreEnvVar.REFRESH_TOKEN.value,
+                DhcoreEnvVar.ACCESS_TOKEN.value,
+                DhcoreEnvVar.ISSUER.value,
+                # DhcoreEnvVar.CLIENT_ID.value,
+            ):
                 new_list.append(key.removeprefix("DHCORE_"))
             else:
                 new_list.append(key)
@@ -345,7 +346,7 @@ class ClientDHCoreConfigurator:
         """
         # Get client id
         client_id = configurator.load_var(DhcoreEnvVar.CLIENT_ID.value)
-        #client_id = self._load_dhcore_oauth_vars(DhcoreEnvVar.CLIENT_ID.value)
+        # client_id = self._load_dhcore_oauth_vars(DhcoreEnvVar.CLIENT_ID.value)
         if client_id is None:
             raise ClientError("Client id not set.")
 

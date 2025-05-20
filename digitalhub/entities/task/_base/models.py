@@ -19,10 +19,9 @@ class SpecEmptyDir(BaseModel):
     """
     Spec empty dir model.
     """
+    size_limit: str
 
     medium: Optional[str] = None
-
-    size_limit: Optional[str] = "128Mi"
 
 
 class SpecPVC(BaseModel):
@@ -31,8 +30,6 @@ class SpecPVC(BaseModel):
     """
 
     size: str
-
-    storage_class: str
 
 
 class Volume(BaseModel):

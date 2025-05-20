@@ -8,4 +8,4 @@ class StoreEnv(Enum):
     Environment variables for data stores.
     """
 
-    DEFAULT_FILES_STORE = "DEFAULT_FILES_STORE"
+    DEFAULT_FILES_STORE = "DHCORE_DEFAULT_FILES_STORE"

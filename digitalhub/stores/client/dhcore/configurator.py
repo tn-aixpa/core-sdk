@@ -297,7 +297,7 @@ class ClientDHCoreConfigurator:
                 DhcoreEnvVar.REFRESH_TOKEN.value,
                 DhcoreEnvVar.ACCESS_TOKEN.value,
                 DhcoreEnvVar.ISSUER.value,
-                # DhcoreEnvVar.CLIENT_ID.value,
+                DhcoreEnvVar.CLIENT_ID.value,
             ):
                 new_list.append(key.removeprefix("DHCORE_"))
             else:
@@ -345,8 +345,7 @@ class ClientDHCoreConfigurator:
             Response object.
         """
         # Get client id
-        client_id = configurator.load_var(DhcoreEnvVar.CLIENT_ID.value)
-        # client_id = self._load_dhcore_oauth_vars(DhcoreEnvVar.CLIENT_ID.value)
+        client_id = self._load_dhcore_oauth_vars(DhcoreEnvVar.CLIENT_ID.value)
         if client_id is None:
             raise ClientError("Client id not set.")
 

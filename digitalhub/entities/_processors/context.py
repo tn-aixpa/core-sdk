@@ -128,8 +128,12 @@ class ContextEntityOperationsProcessor:
         try:
             new_obj.upload(source)
             uploaded = True
-        except Exception:
+            msg = None
+        except Exception as e:
             uploaded = False
+            msg = str(e)
+
+        new_obj.status.message = msg
 
         # Update status after upload
         if uploaded:
@@ -138,6 +142,7 @@ class ContextEntityOperationsProcessor:
         else:
             new_obj.status.state = State.ERROR.value
             new_obj = self._update_material_entity(new_obj)
+            raise EntityError(msg)
 
         return new_obj
 

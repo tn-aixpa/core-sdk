@@ -649,8 +649,8 @@ class S3Store(Store):
         """
         try:
             client.head_bucket(Bucket=bucket)
-        except (ClientError, NoCredentialsError):
-            raise StoreError("No access to s3 bucket!")
+        except (ClientError, NoCredentialsError) as err:
+            raise StoreError(f"No access to s3 bucket! Error: {err}")
 
     @staticmethod
     def _get_key(path: str) -> str:

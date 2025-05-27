@@ -8,11 +8,18 @@ class TriggerSpec(Spec):
     TriggerSpec specifications.
     """
 
-    def __init__(self, task: str, function: str, template: dict) -> None:
+    def __init__(
+        self,
+        task: str,
+        template: dict,
+        function: str | None = None,
+        workflow: str | None = None,
+    ) -> None:
         super().__init__()
         self.task = task
-        self.function = function
         self.template = template
+        self.function = function
+        self.workflow = workflow
 
 
 class TriggerValidator(SpecValidator):
@@ -23,8 +30,11 @@ class TriggerValidator(SpecValidator):
     task: str
     """Task string."""
 
-    function: str
+    template: dict
+    """Template map."""
+
+    function: str = None
     """Function string."""
 
-    template: dict
-    """Template string."""
+    workflow: str = None
+    """Workflow string."""

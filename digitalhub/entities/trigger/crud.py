@@ -18,6 +18,7 @@ def new_trigger(
     kind: str,
     task: str,
     function: str | None = None,
+    workflow: str | None = None,
     uuid: str | None = None,
     description: str | None = None,
     labels: list[str] | None = None,
@@ -58,12 +59,17 @@ def new_trigger(
     >>>                   kind="trigger",
     >>>                   name="my-trigger",)
     """
+    if workflow is None and function is None:
+        raise ValueError("Workflow or function must be provided")
     if kwargs is None:
         kwargs = {}
     if template is None:
         template = {}
     template["task"] = task
-    template["function"] = function
+    if workflow is not None:
+        template["workflow"] = workflow
+    if function is not None:
+        template["function"] = function
     kwargs["template"] = template
     return context_processor.create_context_entity(
         project=project,

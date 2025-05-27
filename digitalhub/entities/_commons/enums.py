@@ -106,3 +106,4 @@ class EntityKinds(Enum):
     MODEL_SKLEARN = "sklearn"
     SECRET_SECRET = "secret"
     TRIGGER_SCHEDULER = "scheduler"
+    TRIGGER_LIFECYCLE = "lifecycle"

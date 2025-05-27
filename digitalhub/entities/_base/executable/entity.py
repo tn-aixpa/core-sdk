@@ -437,16 +437,14 @@ class ExecutableEntity(VersionedEntity):
         run_validator: SpecValidator = factory.get_spec_validator(run_kind)
         if kwargs is None:
             kwargs = {}
-        kwargs[self.ENTITY_TYPE] = self._get_executable_string()
-        kwargs["task"] = task_string
-
-        template = run_validator(**kwargs).to_dict()
 
         # Override kwargs
         kwargs["project"] = self.project
         kwargs["kind"] = trigger_kind
         kwargs["name"] = trigger_name
-        kwargs["template"] = template
+        kwargs[self.ENTITY_TYPE] = self._get_executable_string()
+        kwargs["task"] = task_string
+        kwargs["template"] = run_validator(**kwargs).to_dict()
 
         # Create object instance
         trigger: Trigger = factory.build_entity_from_params(**kwargs)

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from digitalhub_runtime_kfp.dsl import pipeline_context
 
 

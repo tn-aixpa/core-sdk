@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 import digitalhub
 import dotenv
 from digitalhub.entities.task._base.entity import Task

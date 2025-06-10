@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 import digitalhub
 import dotenv
 from digitalhub.entities.run._base.entity import Run

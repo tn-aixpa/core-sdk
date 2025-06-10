@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from digitalhub.entities.artifact.crud import (
     delete_artifact,
     get_artifact,

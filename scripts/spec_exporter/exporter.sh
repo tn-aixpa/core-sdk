@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 read -p "Enter DTO uppercase: " DTO
 read -p "Enter KIND: " KIND
 

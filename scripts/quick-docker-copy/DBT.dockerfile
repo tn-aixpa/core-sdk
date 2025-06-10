@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 ARG VERSION=latest
 FROM ghcr.io/scc-digitalhub/digitalhub-sdk/wrapper-dbt:${VERSION}
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 VERSION=${1:-latest}
 docker build --no-cache --build-arg VERSION=$VERSION -t ghcr.io/scc-digitalhub/digitalhub-sdk/wrapper-dbt:test  -f DBT.dockerfile .
 docker build --no-cache --build-arg VERSION=$VERSION -t ghcr.io/scc-digitalhub/digitalhub-sdk/wrapper-kfp:test  -f KFP.dockerfile .

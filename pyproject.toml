@@ -8,7 +8,7 @@ version = "0.11.0"
 description = "Python SDK for Digitalhub"
 readme = "README.md"
 authors = [
-    { name = "Fondazione Bruno Kessler", email = "dslab@fbk.eu" },
+    { name = "Fondazione Bruno Kessler", email = "digitalhub@fbk.eu" },
     { name = "Matteo Martini", email = "mmartini@fbk.eu" }
 ]
 license = { file = "LICENSE" }

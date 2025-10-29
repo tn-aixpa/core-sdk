@@ -17,15 +17,15 @@ def build_context(project: Project, overwrite: bool = False) -> Context:
     """
     Build a new context for a project.
 
-    Creates or updates a context instance for the given project in the global
-    context registry.
+    Creates or updates a context instance for the given project
+    in the global context registry.
 
     Parameters
     ----------
     project : Project
         The project object used to build the context.
-    overwrite : bool, optional
-        If True, overwrites existing context if it exists, by default False.
+    overwrite : bool
+        If True, overwrites existing context if it exists. Default is False.
 
     Returns
     -------
@@ -37,7 +37,7 @@ def build_context(project: Project, overwrite: bool = False) -> Context:
 
 def get_context(project: str) -> Context:
     """
-    Wrapper for ContextBuilder.get().
+    Get the context for a given project name.
 
     Parameters
     ----------
@@ -54,15 +54,11 @@ def get_context(project: str) -> Context:
 
 def delete_context(project: str) -> None:
     """
-    Wrapper for ContextBuilder.remove().
+    Delete the context for a given project name.
 
     Parameters
     ----------
     project : str
         Project name.
-
-    Returns
-    -------
-    None
     """
     context_builder.remove(project)

@@ -17,7 +17,7 @@ class ProjectSpec(Spec):
 
     def __init__(
         self,
-        context: str | None = None,
+        source: str | None = None,
         functions: list | None = None,
         artifacts: list | None = None,
         workflows: list | None = None,
@@ -26,7 +26,7 @@ class ProjectSpec(Spec):
         config: dict | None = None,
         **kwargs,
     ) -> None:
-        self.context = context if context is not None else "./"
+        self.source = source if source is not None else "./"
         self.functions = functions if functions is not None else []
         self.artifacts = artifacts if artifacts is not None else []
         self.workflows = workflows if workflows is not None else []
@@ -39,9 +39,8 @@ class ProjectValidator(SpecValidator):
     """
     ProjectValidator validator.
     """
-
-    context: Optional[str] = None
-    """The project's context."""
+    source: Optional[str] = None
+    """The project's source."""
 
     functions: Optional[list] = None
     """List of project's functions."""

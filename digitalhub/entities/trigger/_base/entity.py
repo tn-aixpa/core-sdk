@@ -8,6 +8,7 @@ import typing
 
 from digitalhub.entities._base.versioned.entity import VersionedEntity
 from digitalhub.entities._commons.enums import EntityTypes
+from digitalhub.entities._processors.processors import context_processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -36,3 +37,9 @@ class Trigger(VersionedEntity):
         super().__init__(project, name, uuid, kind, metadata, spec, status, user)
         self.spec: TriggerSpec
         self.status: TriggerStatus
+
+    def stop(self) -> None:
+        """
+        Stop trigger.
+        """
+        return context_processor.stop_entity(self.project, self.ENTITY_TYPE, self.id)

@@ -33,10 +33,6 @@ class ReaderFactory:
             Reader name.
         builder : DataframeReader
             Builder object.
-
-        Returns
-        -------
-        None
         """
         if self._engine_builders is None:
             self._engine_builders = {}
@@ -104,10 +100,6 @@ class ReaderFactory:
         ----------
         engine : str
             Engine name.
-
-        Returns
-        -------
-        None
         """
         if engine not in self._engine_builders:
             raise BuilderError(f"Engine {engine} not found.")

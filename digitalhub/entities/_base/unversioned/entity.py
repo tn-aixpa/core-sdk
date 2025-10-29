@@ -7,7 +7,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._base.context.entity import ContextEntity
-from digitalhub.entities._processors.context import context_processor
+from digitalhub.entities._processors.processors import context_processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata

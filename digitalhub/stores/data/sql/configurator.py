@@ -4,114 +4,109 @@
 
 from __future__ import annotations
 
-from digitalhub.stores.configurator.configurator import configurator
-from digitalhub.stores.configurator.enums import CredsOrigin
-from digitalhub.stores.data.sql.enums import SqlStoreEnv
-from digitalhub.utils.exceptions import StoreError
+from digitalhub.stores.credentials.configurator import Configurator
+from digitalhub.stores.credentials.enums import CredsEnvVar
 
 
-class SqlStoreConfigurator:
+class SqlStoreConfigurator(Configurator):
     """
-    Configure the store by getting the credentials from user
-    provided config or from environment.
+    SQL store configuration manager for database connections.
+
+    Handles credential management and configuration for SQL database
+    connections. Loads credentials from environment variables or
+    configuration files and provides connection string generation
+    for database access.
+
+    Attributes
+    ----------
+    keys : list[str]
+        List of all supported credential keys for SQL connections.
+    required_keys : list[str]
+        List of mandatory credential keys that must be provided.
     """
 
-    required_vars = [
-        SqlStoreEnv.USERNAME,
-        SqlStoreEnv.PASSWORD,
-        SqlStoreEnv.HOST,
-        SqlStoreEnv.PORT,
-        SqlStoreEnv.DATABASE,
+    keys = [
+        CredsEnvVar.DB_USERNAME.value,
+        CredsEnvVar.DB_PASSWORD.value,
+        CredsEnvVar.DB_HOST.value,
+        CredsEnvVar.DB_PORT.value,
+        CredsEnvVar.DB_DATABASE.value,
+        CredsEnvVar.DB_PLATFORM.value,
     ]
+    required_keys = [
+        CredsEnvVar.DB_USERNAME.value,
+        CredsEnvVar.DB_PASSWORD.value,
+        CredsEnvVar.DB_HOST.value,
+        CredsEnvVar.DB_PORT.value,
+        CredsEnvVar.DB_DATABASE.value,
+    ]
+
+    def __init__(self):
+        super().__init__()
+        self.load_configs()
 
     ##############################
     # Configuration methods
     ##############################
 
-    def get_sql_conn_string(self, origin: str) -> str:
+    def load_env_vars(self) -> None:
         """
-        Get the connection string from environment variables.
+        Load database credentials from environment variables.
 
-        Parameters
-        ----------
-        origin : str
-            The origin of the credentials.
+        Retrieves SQL database connection credentials from the system
+        environment variables and stores them in the configurator's
+        credential handler for use in database connections.
+        """
+        env_creds = self._creds_handler.load_from_env(self.keys)
+        self._creds_handler.set_credentials(self._env, env_creds)
+
+    def load_file_vars(self) -> None:
+        """
+        Load database credentials from configuration file.
+
+        Retrieves SQL database connection credentials from a
+        configuration file and stores them in the configurator's
+        credential handler for use in database connections.
+        """
+        file_creds = self._creds_handler.load_from_file(self.keys)
+        self._creds_handler.set_credentials(self._file, file_creds)
+
+    def get_sql_conn_string(self) -> str:
+        """
+        Generate PostgreSQL connection string from stored credentials.
+
+        Constructs a PostgreSQL connection string using the configured
+        database credentials including username, password, host, port,
+        and database name.
 
         Returns
         -------
         str
-            The connection string.
+            A PostgreSQL connection string in the format:
+            'postgresql://username:password@host:port/database'
         """
-        if origin == CredsOrigin.ENV.value:
-            creds = self._get_env_config()
-        elif origin == CredsOrigin.FILE.value:
-            creds = self._get_file_config()
-        else:
-            raise StoreError(f"Unknown origin: {origin}")
-
-        user = creds[SqlStoreEnv.USERNAME.value]
-        password = creds[SqlStoreEnv.PASSWORD.value]
-        host = creds[SqlStoreEnv.HOST.value]
-        port = creds[SqlStoreEnv.PORT.value]
-        database = creds[SqlStoreEnv.DATABASE.value]
+        creds = self.get_sql_credentials()
+        user = creds[CredsEnvVar.DB_USERNAME.value]
+        password = creds[CredsEnvVar.DB_PASSWORD.value]
+        host = creds[CredsEnvVar.DB_HOST.value]
+        port = creds[CredsEnvVar.DB_PORT.value]
+        database = creds[CredsEnvVar.DB_DATABASE.value]
         return f"postgresql://{user}:{password}@{host}:{port}/{database}"
 
-    def _get_env_config(self) -> dict:
+    def get_sql_credentials(self) -> dict:
         """
-        Get the store configuration from environment variables.
+        Get all configured database credentials as a dictionary.
+
+        Retrieves all available database credentials from the configured
+        source and returns them as a dictionary with all credential keys
+        from self.keys mapped to their values.
 
         Returns
         -------
         dict
-            The credentials.
+            Dictionary containing all credential key-value pairs from self.keys.
+            Keys correspond to database connection parameters such as
+            username, password, host, port, database, and platform.
         """
-        credentials = {var.value: configurator.load_from_env(var.value) for var in self.required_vars}
-        self._set_credentials(credentials)
-        return credentials
-
-    def _get_file_config(self) -> dict:
-        """
-        Get the store configuration from file.
-
-        Returns
-        -------
-        dict
-            The credentials.
-        """
-        credentials = {var.value: configurator.load_from_file(var.value) for var in self.required_vars}
-        self._set_credentials(credentials)
-        return credentials
-
-    def _check_credentials(self, credentials: dict) -> None:
-        """
-        Check for missing credentials.
-
-        Parameters
-        ----------
-        credentials : dict
-            The credentials.
-
-        Returns
-        -------
-        None
-        """
-        missing_vars = [key for key, value in credentials.items() if value is None and key in self.required_vars]
-        if missing_vars:
-            raise StoreError(f"Missing credentials for SQL store: {', '.join(missing_vars)}")
-
-    def _set_credentials(self, credentials: dict) -> None:
-        """
-        Set the store credentials into the configurator.
-
-        Parameters
-        ----------
-        credentials : dict
-            The credentials.
-
-        Returns
-        -------
-        None
-        """
-        # Set credentials
-        for key, value in credentials.items():
-            configurator.set_credential(key, value)
+        creds = self.get_credentials(self._origin)
+        return {key: creds.get(key) for key in self.keys}

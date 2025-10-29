@@ -85,10 +85,6 @@ class TaskBuilder(UnversionedBuilder, RuntimeEntityBuilder):
         ----------
         executable : str
             Executable string.
-
-        Returns
-        -------
-        None
         """
         exec_kind = executable.split("://")[0]
         if self.EXECUTABLE_KIND != exec_kind:

@@ -7,8 +7,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._processors.context import context_processor
-from digitalhub.utils.exceptions import EntityError
+from digitalhub.entities._processors.processors import context_processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities.run._base.entity import Run
@@ -71,7 +70,6 @@ def new_run(
 def get_run(
     identifier: str,
     project: str | None = None,
-    **kwargs,
 ) -> Run:
     """
     Get object from backend.
@@ -82,8 +80,6 @@ def get_run(
         Entity key (store://...) or entity ID.
     project : str
         Project name.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
     Returns
     -------
@@ -100,14 +96,26 @@ def get_run(
     >>>               project="my-project")
     """
     return context_processor.read_unversioned_entity(
-        identifier,
+        identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
-        **kwargs,
     )
 
 
-def list_runs(project: str, **kwargs) -> list[Run]:
+def list_runs(
+    project: str,
+    q: str | None = None,
+    name: str | None = None,
+    kind: str | None = None,
+    user: str | None = None,
+    state: str | None = None,
+    created: str | None = None,
+    updated: str | None = None,
+    function: str | None = None,
+    workflow: str | None = None,
+    task: str | None = None,
+    action: str | None = None,
+) -> list[Run]:
     """
     List all latest version objects from backend.
 
@@ -115,34 +123,74 @@ def list_runs(project: str, **kwargs) -> list[Run]:
     ----------
     project : str
         Project name.
-    **kwargs : dict
-        Parameters to pass to the API call.
+    q : str
+        Query string to filter objects.
+    name : str
+        Object name.
+    kind : str
+        Kind of the object.
+    user : str
+        User that created the object.
+    state : str
+        Object state.
+    created : str
+        Creation date filter.
+    updated : str
+        Update date filter.
+    function : str
+        Function key filter.
+    workflow : str
+        Workflow key filter.
+    task : str
+        Task string filter.
+    action : str
+        Action name filter.
 
     Returns
     -------
-    list[Run]
+    list[Model]
         List of object instances.
 
     Examples
     --------
     >>> objs = list_runs(project="my-project")
     """
-    # TODO more examples: search by function, latest for task and function
     return context_processor.list_context_entities(
         project=project,
         entity_type=ENTITY_TYPE,
-        **kwargs,
+        q=q,
+        name=name,
+        kind=kind,
+        user=user,
+        state=state,
+        created=created,
+        updated=updated,
+        function=function,
+        workflow=workflow,
+        task=task,
+        action=action,
     )
 
 
-def import_run(file: str) -> Run:
+def import_run(
+    file: str | None = None,
+    key: str | None = None,
+    reset_id: bool = False,
+    context: str | None = None,
+) -> Run:
     """
-    Import object from a YAML file and create a new object into the backend.
+    Import an object from a YAML file or from a storage key.
 
     Parameters
     ----------
     file : str
-        Path to YAML file.
+        Path to the YAML file.
+    key : str
+        Entity key (store://...).
+    reset_id : bool
+        Flag to determine if the ID of executable entities should be reset.
+    context : str
+        Project name to use for context resolution.
 
     Returns
     -------
@@ -153,7 +201,12 @@ def import_run(file: str) -> Run:
     -------
     >>> obj = import_run("my-run.yaml")
     """
-    return context_processor.import_context_entity(file)
+    return context_processor.import_context_entity(
+        file,
+        key,
+        reset_id,
+        context,
+    )
 
 
 def load_run(file: str) -> Run:
@@ -206,7 +259,7 @@ def update_run(entity: Run) -> Run:
 def delete_run(
     identifier: str,
     project: str | None = None,
-    **kwargs,
+    entity_id: str | None = None,
 ) -> dict:
     """
     Delete object from backend.
@@ -214,11 +267,11 @@ def delete_run(
     Parameters
     ----------
     identifier : str
-        Entity key (store://...) or entity ID.
+        Entity key (store://...) or entity name.
     project : str
         Project name.
-    **kwargs : dict
-        Parameters to pass to the API call.
+    entity_id : str
+        Entity ID.
 
     Returns
     -------
@@ -228,14 +281,14 @@ def delete_run(
     Examples
     --------
     >>> obj = delete_run("store://my-run-key")
-    >>> obj = delete_run("my-run-id", project="my-project")
+    >>> obj = delete_run(
+    ...     "my-run-id",
+    ...     project="my-project",
+    ... )
     """
-    if not identifier.startswith("store://") and project is None:
-        raise EntityError("Specify entity key or entity ID combined with project")
     return context_processor.delete_context_entity(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
-        entity_id=identifier,
-        **kwargs,
+        entity_id=entity_id,
     )

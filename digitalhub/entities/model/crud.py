@@ -7,8 +7,8 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._processors.context import context_processor
-from digitalhub.entities.artifact.utils import eval_source, process_kwargs
+from digitalhub.entities._processors.processors import context_processor
+from digitalhub.entities.model.utils import eval_source, process_kwargs
 from digitalhub.utils.types import SourcesOrListOfSources
 
 if typing.TYPE_CHECKING:
@@ -131,7 +131,6 @@ def get_model(
     identifier: str,
     project: str | None = None,
     entity_id: str | None = None,
-    **kwargs,
 ) -> Model:
     """
     Get object from backend.
@@ -144,8 +143,6 @@ def get_model(
         Project name.
     entity_id : str
         Entity ID.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
     Returns
     -------
@@ -167,14 +164,12 @@ def get_model(
         entity_type=ENTITY_TYPE,
         project=project,
         entity_id=entity_id,
-        **kwargs,
     )
 
 
 def get_model_versions(
     identifier: str,
     project: str | None = None,
-    **kwargs,
 ) -> list[Model]:
     """
     Get object versions from backend.
@@ -185,8 +180,6 @@ def get_model_versions(
         Entity key (store://...) or entity name.
     project : str
         Project name.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
     Returns
     -------
@@ -206,11 +199,20 @@ def get_model_versions(
         identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
-        **kwargs,
     )
 
 
-def list_models(project: str, **kwargs) -> list[Model]:
+def list_models(
+    project: str,
+    q: str | None = None,
+    name: str | None = None,
+    kind: str | None = None,
+    user: str | None = None,
+    state: str | None = None,
+    created: str | None = None,
+    updated: str | None = None,
+    version: str | None = None,
+) -> list[Model]:
     """
     List all latest version objects from backend.
 
@@ -218,8 +220,22 @@ def list_models(project: str, **kwargs) -> list[Model]:
     ----------
     project : str
         Project name.
-    **kwargs : dict
-        Parameters to pass to the API call.
+    q : str
+        Query string to filter objects.
+    name : str
+        Object name.
+    kind : str
+        Kind of the object.
+    user : str
+        User that created the object.
+    state : str
+        Object state.
+    created : str
+        Creation date filter.
+    updated : str
+        Update date filter.
+    version : str
+        Object version, default is latest.
 
     Returns
     -------
@@ -233,18 +249,36 @@ def list_models(project: str, **kwargs) -> list[Model]:
     return context_processor.list_context_entities(
         project=project,
         entity_type=ENTITY_TYPE,
-        **kwargs,
+        q=q,
+        name=name,
+        kind=kind,
+        user=user,
+        state=state,
+        created=created,
+        updated=updated,
+        version=version,
     )
 
 
-def import_model(file: str) -> Model:
+def import_model(
+    file: str | None = None,
+    key: str | None = None,
+    reset_id: bool = False,
+    context: str | None = None,
+) -> Model:
     """
-    Import object from a YAML file and create a new object into the backend.
+    Import an object from a YAML file or from a storage key.
 
     Parameters
     ----------
     file : str
-        Path to YAML file.
+        Path to the YAML file.
+    key : str
+        Entity key (store://...).
+    reset_id : bool
+        Flag to determine if the ID of executable entities should be reset.
+    context : str
+        Project name to use for context resolution.
 
     Returns
     -------
@@ -255,7 +289,12 @@ def import_model(file: str) -> Model:
     --------
     >>> obj = import_model("my-model.yaml")
     """
-    return context_processor.import_context_entity(file)
+    return context_processor.import_context_entity(
+        file,
+        key,
+        reset_id,
+        context,
+    )
 
 
 def load_model(file: str) -> Model:
@@ -310,7 +349,7 @@ def delete_model(
     project: str | None = None,
     entity_id: str | None = None,
     delete_all_versions: bool = False,
-    **kwargs,
+    cascade: bool = True,
 ) -> dict:
     """
     Delete object from backend.
@@ -324,9 +363,10 @@ def delete_model(
     entity_id : str
         Entity ID.
     delete_all_versions : bool
-        Delete all versions of the named entity. If True, use entity name instead of entity key as identifier.
-    **kwargs : dict
-        Parameters to pass to the API call.
+        Delete all versions of the named entity.
+        If True, use entity name instead of entity key as identifier.
+    cascade : bool
+        Cascade delete.
 
     Returns
     -------
@@ -349,5 +389,5 @@ def delete_model(
         project=project,
         entity_id=entity_id,
         delete_all_versions=delete_all_versions,
-        **kwargs,
+        cascade=cascade,
     )

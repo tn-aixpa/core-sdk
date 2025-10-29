@@ -6,25 +6,32 @@ from __future__ import annotations
 
 from typing import Any
 
-from digitalhub.entities._base.entity._constructors.uuid import build_uuid
 from digitalhub.entities._base.material.utils import build_log_path_from_source, eval_local_source
 from digitalhub.entities._commons.enums import EntityTypes
+from digitalhub.entities._constructors.uuid import build_uuid
 
 
 def eval_source(
     source: str | list[str] | None = None,
 ) -> Any:
     """
-    Evaluate if source is local.
+    Evaluate whether the source is local or remote.
+
+    Determines if the provided source(s) reference local files or
+    remote resources. This evaluation affects how the model
+    will be processed and stored.
 
     Parameters
     ----------
-    source : str | list[str]
-        Source(s).
+    source : str, list[str], or None
+        The source specification(s) to evaluate. Can be a single
+        source string, a list of source strings, or None.
 
     Returns
     -------
-    None
+    Any
+        The result of the local source evaluation, indicating
+        whether the source is local or remote.
     """
     return eval_local_source(source)
 
@@ -37,25 +44,33 @@ def process_kwargs(
     **kwargs,
 ) -> dict:
     """
-    Process spec kwargs.
+    Process and enhance specification parameters for model creation.
+
+    Processes the keyword arguments for model specification, handling
+    path generation and UUID assignment. If no path is provided, generates
+    a unique path based on project, entity type, name, and source.
 
     Parameters
     ----------
     project : str
-        Project name.
+        The name of the project containing the model.
     name : str
-        Object name.
-    source : str
-        Source(s).
+        The name of the model entity.
+    source : str or list[str]
+        The source specification(s) for the model content.
+        Can be a single source or multiple sources.
     path : str
-        Destination path of the entity. If not provided, it's generated.
+        The destination path for the model entity.
+        If None, a path will be automatically generated.
     **kwargs : dict
-        Spec parameters.
+        Additional specification parameters to be processed
+        and passed to the model creation.
 
     Returns
     -------
     dict
-        Kwargs updated.
+        The updated kwargs dictionary with processed path
+        and UUID information included.
     """
     if path is None:
         uuid = build_uuid()

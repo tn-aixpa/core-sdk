@@ -24,29 +24,29 @@ from digitalhub.utils.io_utils import read_text
 
 def get_timestamp() -> str:
     """
-    Get the current timestamp timezoned.
+    Get the current timestamp in ISO format with timezone.
 
     Returns
     -------
     str
-        The current timestamp.
+        The current timestamp in ISO format with timezone.
     """
     return datetime.now().astimezone().isoformat()
 
 
 def decode_base64_string(string: str) -> str:
     """
-    Decode a string from base64.
+    Decode a string from base64 encoding.
 
     Parameters
     ----------
     string : str
-        The string to decode.
+        The base64-encoded string to decode.
 
     Returns
     -------
     str
-        The string decoded from base64.
+        The decoded string.
     """
     return base64.b64decode(string).decode()
 
@@ -63,14 +63,14 @@ def encode_string(string: str) -> str:
     Returns
     -------
     str
-        The string encoded in base64.
+        The base64-encoded string.
     """
     return base64.b64encode(string.encode()).decode()
 
 
 def encode_source(path: str) -> str:
     """
-    Read a file and encode in base64 the content.
+    Read a file and encode its content in base64.
 
     Parameters
     ----------
@@ -87,18 +87,14 @@ def encode_source(path: str) -> str:
 
 def requests_chunk_download(source: str, filename: Path) -> None:
     """
-    Download a file in chunks.
+    Download a file from a URL in chunks and save to disk.
 
     Parameters
     ----------
     source : str
-        URL to download the file.
+        URL to download the file from.
     filename : Path
-        Path where to save the file.
-
-    Returns
-    -------
-    None
+        Path where to save the downloaded file.
     """
     with requests.get(source, stream=True) as r:
         r.raise_for_status()
@@ -109,18 +105,14 @@ def requests_chunk_download(source: str, filename: Path) -> None:
 
 def extract_archive(path: Path, filename: Path) -> None:
     """
-    Extract a zip archive.
+    Extract a zip archive to a specified directory.
 
     Parameters
     ----------
     path : Path
-        Path where to extract the archive.
+        Directory where to extract the archive.
     filename : Path
-        Path to the archive.
-
-    Returns
-    -------
-    None
+        Path to the zip archive file.
     """
     with ZipFile(filename, "r") as zip_file:
         zip_file.extractall(path)
@@ -128,12 +120,12 @@ def extract_archive(path: Path, filename: Path) -> None:
 
 class CustomJsonEncoder(json.JSONEncoder):
     """
-    Custom JSON encoder to handle json dumps.
+    Custom JSON encoder to handle serialization of special types.
     """
 
     def default(self, obj: Any) -> Any:
         """
-        Convert an object to json.
+        Convert an object to a JSON-serializable format.
 
         Parameters
         ----------
@@ -143,7 +135,7 @@ class CustomJsonEncoder(json.JSONEncoder):
         Returns
         -------
         Any
-            The object converted to json.
+            The object converted to a JSON-serializable format.
         """
         if isinstance(obj, (int, str, float, list, dict)):
             return obj
@@ -160,24 +152,24 @@ class CustomJsonEncoder(json.JSONEncoder):
 
 def dump_json(struct: Any) -> str:
     """
-    Convert a dict to json.
+    Convert a Python object to a JSON string using CustomJsonEncoder.
 
     Parameters
     ----------
-    struct : dict
-        The dict to convert.
+    struct : Any
+        The object to convert to JSON.
 
     Returns
     -------
     str
-        The json string.
+        The JSON string representation of the object.
     """
     return json.dumps(struct, cls=CustomJsonEncoder)
 
 
 def slugify_string(filename: str) -> str:
     """
-    Sanitize a filename.
+    Sanitize a filename using slugify.
 
     Parameters
     ----------
@@ -187,26 +179,31 @@ def slugify_string(filename: str) -> str:
     Returns
     -------
     str
-        The sanitized filename.
+        The sanitized filename (max length 255).
     """
     return slugify(filename, max_length=255)
 
 
 def import_function(path: Path, handler: str) -> Callable:
     """
-    Import a function from a module.
+    Import a function from a Python module file.
 
     Parameters
     ----------
     path : Path
-        Path where the function source is located.
+        Path to the Python module file.
     handler : str
-        Function name.
+        Name of the function to import.
 
     Returns
     -------
     Callable
-        Function.
+        The imported function.
+
+    Raises
+    ------
+    RuntimeError
+        If the module or function cannot be loaded or is not callable.
     """
     spec = imputil.spec_from_file_location(path.stem, path)
     if spec is None:
@@ -226,7 +223,7 @@ def import_function(path: Path, handler: str) -> Callable:
 
 def list_enum(enum: EnumMeta) -> list[Any]:
     """
-    Get all values of an enum.
+    Get all values of an enum class.
 
     Parameters
     ----------
@@ -235,7 +232,7 @@ def list_enum(enum: EnumMeta) -> list[Any]:
 
     Returns
     -------
-    list[Any]
+    list
         List of enum values.
     """
     vals: MappingProxyType[str, Enum] = enum.__members__
@@ -244,16 +241,13 @@ def list_enum(enum: EnumMeta) -> list[Any]:
 
 def carriage_return_warn(string: str) -> None:
     """
-    Print a warning message if string contains a carriage return (\r\n).
+    Print a warning message if the string contains
+    a carriage return (\r\n).
 
     Parameters
     ----------
     string : str
         The string to check.
-
-    Returns
-    -------
-    None
     """
     if "\r\n" in string:
         warn("String contains a carriage return. It may not be parsed correctly from remote runtimes.")
@@ -261,17 +255,18 @@ def carriage_return_warn(string: str) -> None:
 
 def read_source(path: str) -> str:
     """
-    Read a file.
+    Read a file and encode its content in base64,
+    warning if carriage returns are present.
 
     Parameters
     ----------
-    path : Path
+    path : str
         Path to the file.
 
     Returns
     -------
     str
-        File content.
+        Base64-encoded file content.
     """
     text = read_text(path)
     carriage_return_warn(text)

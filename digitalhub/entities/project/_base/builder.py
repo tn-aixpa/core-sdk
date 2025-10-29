@@ -29,7 +29,6 @@ class ProjectProjectBuilder(EntityBuilder):
         kind: str,
         description: str | None = None,
         labels: list[str] | None = None,
-        local: bool = False,
         config: dict | None = None,
         context: str | None = None,
         **kwargs,
@@ -47,8 +46,6 @@ class ProjectProjectBuilder(EntityBuilder):
             Description of the object (human readable).
         labels : list[str]
             List of labels.
-        local : bool
-            If True, use local backend, if False use DHCore backend. Default to False.
         config : dict
             DHCore environment configuration.
         context : str
@@ -80,7 +77,6 @@ class ProjectProjectBuilder(EntityBuilder):
             metadata=metadata,
             spec=spec,
             status=status,
-            local=local,
         )
 
     def from_dict(self, obj: dict, validate: bool = True) -> Project:
@@ -120,7 +116,6 @@ class ProjectProjectBuilder(EntityBuilder):
         """
         name = self.build_name(obj.get("name"))
         kind = obj.get("kind")
-        local = obj.get("local", False)
         metadata = self.build_metadata(**obj.get("metadata", {}))
         spec = self.build_spec(validate=validate, **obj.get("spec", {}))
         status = self.build_status(**obj.get("status", {}))
@@ -132,5 +127,4 @@ class ProjectProjectBuilder(EntityBuilder):
             "spec": spec,
             "status": status,
             "user": user,
-            "local": local,
         }

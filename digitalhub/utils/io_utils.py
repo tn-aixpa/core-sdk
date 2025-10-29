@@ -15,18 +15,14 @@ import yaml
 
 def write_yaml(filepath: str | Path, obj: dict | list[dict]) -> None:
     """
-    Write a dict or a list of dict to a yaml file.
+    Write a dict or a list of dicts to a YAML file.
 
     Parameters
     ----------
-    filepath : str | Path
-        The yaml file path to write.
-    obj : dict
-        The dict to write.
-
-    Returns
-    -------
-    None
+    filepath : str or Path
+        The YAML file path to write.
+    obj : dict or list of dict
+        The dict or list of dicts to write.
     """
     if isinstance(obj, list):
         with open(filepath, "w", encoding="utf-8") as out_file:
@@ -46,10 +42,6 @@ def write_text(filepath: Path, text: str) -> None:
         The file path to write.
     text : str
         The text to write.
-
-    Returns
-    -------
-    None
     """
     filepath.write_text(text, encoding="utf-8")
 
@@ -61,7 +53,7 @@ def write_text(filepath: Path, text: str) -> None:
 
 class NoDatesSafeLoader(yaml.SafeLoader):
     """
-    Loader implementation to exclude implicit resolvers.
+    Loader implementation to exclude implicit resolvers for YAML timestamps.
 
     Taken from https://stackoverflow.com/a/37958106
     """
@@ -69,20 +61,17 @@ class NoDatesSafeLoader(yaml.SafeLoader):
     @classmethod
     def remove_implicit_resolver(cls, tag_to_remove: str) -> None:
         """
-        Remove implicit resolvers for a particular tag
+        Remove implicit resolvers for a particular tag.
+
         Takes care not to modify resolvers in super classes.
         We want to load datetimes as strings, not dates, because we
-        go on to serialise as json which doesn't have the advanced types
-        of yaml, and leads to incompatibilities down the track.
+        go on to serialize as JSON which doesn't have the advanced types
+        of YAML, and leads to incompatibilities down the track.
 
         Parameters
         ----------
         tag_to_remove : str
-            The tag to remove
-
-        Returns
-        -------
-        None
+            The tag to remove.
         """
         if "yaml_implicit_resolvers" not in cls.__dict__:
             cls.yaml_implicit_resolvers = cls.yaml_implicit_resolvers.copy()
@@ -98,17 +87,17 @@ NoDatesSafeLoader.remove_implicit_resolver("tag:yaml.org,2002:timestamp")
 
 def read_yaml(filepath: str | Path) -> dict | list[dict]:
     """
-    Read a yaml file and return a dict or a list of dict.
+    Read a YAML file and return its content as a dict or a list of dicts.
 
     Parameters
     ----------
-    filepath : str | Path
-        The yaml file path to read.
+    filepath : str or Path
+        The YAML file path to read.
 
     Returns
     -------
-    dict | list[dict]
-        The yaml file content.
+    dict or list of dict
+        The YAML file content.
     """
     try:
         with open(filepath, "r", encoding="utf-8") as in_file:
@@ -123,16 +112,16 @@ def read_yaml(filepath: str | Path) -> dict | list[dict]:
 
 def read_text(filepath: str | Path) -> str:
     """
-    Read a file and return the text.
+    Read a file and return its text content.
 
     Parameters
     ----------
-    filepath : str | Path
+    filepath : str or Path
         The file path to read.
 
     Returns
     -------
     str
-        The file content.
+        The file content as a string.
     """
     return Path(filepath).read_text(encoding="utf-8")

@@ -8,7 +8,7 @@ import typing
 
 from digitalhub.entities._base.versioned.entity import VersionedEntity
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._processors.context import context_processor
+from digitalhub.entities._processors.processors import context_processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -50,10 +50,6 @@ class Secret(VersionedEntity):
         ----------
         value : str
             Value of the secret.
-
-        Returns
-        -------
-        None
         """
         obj = {self.name: value}
         context_processor.update_secret_data(self.project, self.ENTITY_TYPE, obj)

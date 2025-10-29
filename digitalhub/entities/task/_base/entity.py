@@ -8,8 +8,8 @@ import typing
 
 from digitalhub.entities._base.unversioned.entity import UnversionedEntity
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._processors.context import context_processor
-from digitalhub.factory.factory import factory
+from digitalhub.entities._processors.processors import context_processor
+from digitalhub.factory.entity import entity_factory
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -67,8 +67,8 @@ class Task(UnversionedEntity):
         Run
             Run object.
         """
-        exec_kind = factory.get_executable_kind(self.kind)
-        exec_type = factory.get_entity_type_from_kind(exec_kind)
+        exec_kind = entity_factory.get_executable_kind(self.kind)
+        exec_type = entity_factory.get_entity_type_from_kind(exec_kind)
         kwargs[exec_type] = getattr(self.spec, exec_type)
         return self.new_run(
             save=save,
@@ -112,7 +112,7 @@ class Task(UnversionedEntity):
         """
         if save:
             return context_processor.create_context_entity(**kwargs)
-        return factory.build_entity_from_params(**kwargs)
+        return entity_factory.build_entity_from_params(**kwargs)
 
     def get_run(self, entity_key: str) -> Run:
         """

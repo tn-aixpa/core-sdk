@@ -1,6 +1,6 @@
 # DigitalHub SDK
 
-[![license](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/tn-aixpa/digitalhub-sdk/LICENSE) ![GitHub Release](https://img.shields.io/github/v/release/tn-aixpa/digitalhub-sdk)
+[![license](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/scc-digitalhub/digitalhub-sdk/LICENSE) ![GitHub Release](https://img.shields.io/github/v/release/scc-digitalhub/digitalhub-sdk)
 ![Status](https://img.shields.io/badge/status-stable-gold)
 
 The Digitalhub library is a python tool for managing projects, entities and executions in Digitalhub. It exposes CRUD methods to create, read, update and delete entities, tools to execute functions or workflows, collect or store execution results and data.
@@ -12,16 +12,17 @@ Explore the full documentation at the [link](https://scc-digitalhub.github.io/sd
 To install the Digitalhub, you can use pip:
 
 ```bash
-pip install digitalhub
+pip install digitalhub[full]
 ```
 
 To be able to create and execute functions or workflows, you need to install the runtime you want to use. The Digitalhub SDK supports multiple runtimes, each with its own installation instructions:
 
-- [Digitalhub SDK Runtime Python](https://github.com/tn-aixpa/digitalhub-sdk-runtime-python)
-- [Digitalhub SDK Runtime Dbt](https://github.com/tn-aixpa/digitalhub-sdk-runtime-dbt)
-- [Digitalhub SDK Runtime Container](https://github.com/tn-aixpa/digitalhub-sdk-runtime-container)
-- [Digitalhub SDK Runtime Kfp](https://github.com/tn-aixpa/digitalhub-sdk-runtime-kfp)
-- [Digitalhub SDK Runtime Modelserve](https://github.com/tn-aixpa/digitalhub-sdk-runtime-modelserve)
+- [Digitalhub SDK Runtime Python](https://github.com/scc-digitalhub/digitalhub-sdk-runtime-python)
+- [Digitalhub SDK Runtime Dbt](https://github.com/scc-digitalhub/digitalhub-sdk-runtime-dbt)
+- [Digitalhub SDK Runtime Container](https://github.com/scc-digitalhub/digitalhub-sdk-runtime-container)
+- [Digitalhub SDK Runtime Kfp](https://github.com/scc-digitalhub/digitalhub-sdk-runtime-kfp)
+- [Digitalhub SDK Runtime Hera](https://github.com/scc-digitalhub/digitalhub-sdk-runtime-hera)
+- [Digitalhub SDK Runtime Modelserve](https://github.com/scc-digitalhub/digitalhub-sdk-runtime-modelserve)
 
 ## Development
 

@@ -7,11 +7,11 @@ from __future__ import annotations
 import typing
 from abc import abstractmethod
 
-from digitalhub.entities._base.entity._constructors.metadata import build_metadata
-from digitalhub.entities._base.entity._constructors.name import build_name
-from digitalhub.entities._base.entity._constructors.spec import build_spec
-from digitalhub.entities._base.entity._constructors.status import build_status
-from digitalhub.entities._base.entity._constructors.uuid import build_uuid
+from digitalhub.entities._constructors.metadata import build_metadata
+from digitalhub.entities._constructors.name import build_name
+from digitalhub.entities._constructors.spec import build_spec
+from digitalhub.entities._constructors.status import build_status
+from digitalhub.entities._constructors.uuid import build_uuid
 from digitalhub.utils.exceptions import BuilderError
 
 if typing.TYPE_CHECKING:

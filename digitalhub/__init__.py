@@ -95,16 +95,11 @@ from digitalhub.entities.workflow.crud import (
     new_workflow,
     update_workflow,
 )
+from digitalhub.stores.client.utils import refresh_token
+from digitalhub.stores.credentials.api import get_current_profile, set_current_profile
+from digitalhub.utils.store_utils import get_s3_client, get_sql_engine
 
 try:
     from digitalhub.entities.model.mlflow.utils import from_mlflow_run, get_mlflow_model_metrics
 except ImportError:
     ...
-
-# Register entities into registry
-from digitalhub.factory.utils import register_entities, register_runtimes_entities
-from digitalhub.stores.client.dhcore.utils import refresh_token, set_dhcore_env
-from digitalhub.stores.configurator.api import get_current_env, set_current_env
-
-register_entities()
-register_runtimes_entities()

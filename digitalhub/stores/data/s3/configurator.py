@@ -4,127 +4,158 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from botocore.config import Config
 
-from digitalhub.stores.configurator.configurator import configurator
-from digitalhub.stores.configurator.enums import CredsOrigin
-from digitalhub.stores.data.s3.enums import S3StoreEnv
-from digitalhub.utils.exceptions import StoreError
+from digitalhub.stores.client.utils import refresh_token
+from digitalhub.stores.credentials.configurator import Configurator
+from digitalhub.stores.credentials.enums import CredsEnvVar
 
 
-class S3StoreConfigurator:
+class S3StoreConfigurator(Configurator):
     """
     Configure the store by getting the credentials from user
     provided config or from environment.
     """
 
-    required_vars = [
-        S3StoreEnv.ENDPOINT_URL,
-        S3StoreEnv.ACCESS_KEY_ID,
-        S3StoreEnv.SECRET_ACCESS_KEY,
+    keys = [
+        CredsEnvVar.S3_ENDPOINT_URL.value,
+        CredsEnvVar.S3_ACCESS_KEY_ID.value,
+        CredsEnvVar.S3_SECRET_ACCESS_KEY.value,
+        CredsEnvVar.S3_REGION.value,
+        CredsEnvVar.S3_SIGNATURE_VERSION.value,
+        CredsEnvVar.S3_SESSION_TOKEN.value,
+        CredsEnvVar.S3_PATH_STYLE.value,
+        CredsEnvVar.S3_CREDENTIALS_EXPIRATION.value,
     ]
-    optional_vars = [
-        S3StoreEnv.REGION,
-        S3StoreEnv.SIGNATURE_VERSION,
-        S3StoreEnv.SESSION_TOKEN,
+    required_keys = [
+        CredsEnvVar.S3_ENDPOINT_URL.value,
+        CredsEnvVar.S3_ACCESS_KEY_ID.value,
+        CredsEnvVar.S3_SECRET_ACCESS_KEY.value,
     ]
+
+    def __init__(self):
+        super().__init__()
+        self.load_configs()
 
     ##############################
     # Configuration methods
     ##############################
 
-    def get_boto3_client_config(self, origin: str) -> dict:
+    def load_env_vars(self) -> None:
         """
-        Get S3 credentials (access key, secret key,
-        session token and other config).
+        Loads the credentials from the environment variables.
+        """
+        env_creds = self._creds_handler.load_from_env(self.keys)
+        self._creds_handler.set_credentials(self._env, env_creds)
 
-        Parameters
-        ----------
-        origin : str
-            The origin of the credentials.
+    def load_file_vars(self) -> None:
+        """
+        Loads the credentials from a file.
+        """
+        file_creds = self._creds_handler.load_from_file(self.keys)
+        self._creds_handler.set_credentials(self._file, file_creds)
+
+    def get_client_config(self) -> dict:
+        """
+        Gets S3 credentials (access key, secret key, session token, and other config).
 
         Returns
         -------
         dict
-            The credentials.
+            Dictionary containing S3 credentials and configuration.
         """
-        if origin == CredsOrigin.ENV.value:
-            creds = self._get_env_config()
-        elif origin == CredsOrigin.FILE.value:
-            creds = self._get_file_config()
-        else:
-            raise StoreError(f"Unknown origin: {origin}")
+        creds = self.evaluate_credentials()
+        return self.get_creds_dict(creds)
+
+    def get_creds_dict(self, creds: dict) -> dict:
+        """
+        Returns a dictionary containing the S3 credentials.
+
+        Parameters
+        ----------
+        creds : dict
+            The credentials dictionary.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the S3 credentials.
+        """
         return {
-            "endpoint_url": creds[S3StoreEnv.ENDPOINT_URL.value],
-            "aws_access_key_id": creds[S3StoreEnv.ACCESS_KEY_ID.value],
-            "aws_secret_access_key": creds[S3StoreEnv.SECRET_ACCESS_KEY.value],
-            "aws_session_token": creds[S3StoreEnv.SESSION_TOKEN.value],
+            "endpoint_url": creds[CredsEnvVar.S3_ENDPOINT_URL.value],
+            "aws_access_key_id": creds[CredsEnvVar.S3_ACCESS_KEY_ID.value],
+            "aws_secret_access_key": creds[CredsEnvVar.S3_SECRET_ACCESS_KEY.value],
+            "aws_session_token": creds[CredsEnvVar.S3_SESSION_TOKEN.value],
             "config": Config(
-                region_name=creds[S3StoreEnv.REGION.value],
-                signature_version=creds[S3StoreEnv.SIGNATURE_VERSION.value],
+                region_name=creds[CredsEnvVar.S3_REGION.value],
+                signature_version=creds[CredsEnvVar.S3_SIGNATURE_VERSION.value],
             ),
         }
 
-    def _get_env_config(self) -> dict:
+    def evaluate_credentials(self) -> dict:
         """
-        Get the store configuration from environment variables.
+        Evaluates and returns the current valid credentials.
+        If the credentials are expired and were loaded from file,
+        it refreshes them.
 
         Returns
         -------
         dict
-            The credentials.
+            The current valid credentials.
         """
-        credentials = {
-            var.value: configurator.load_from_env(var.value) for var in self.required_vars + self.optional_vars
-        }
-        self._set_credentials(credentials)
-        return credentials
+        creds = self.get_credentials(self._origin)
+        expired = creds[CredsEnvVar.S3_CREDENTIALS_EXPIRATION.value]
+        if self._origin == self._file and self._is_expired(expired):
+            refresh_token()
+            self.load_file_vars()
+            creds = self.get_credentials(self._origin)
+        return creds
 
-    def _get_file_config(self) -> dict:
+    def get_file_config(self) -> dict:
         """
-        Get the store configuration from file.
+        Returns the credentials loaded from file.
 
         Returns
         -------
         dict
-            The credentials.
+            The credentials loaded from file.
         """
-        credentials = {
-            var.value: configurator.load_from_file(var.value) for var in self.required_vars + self.optional_vars
-        }
-        self._set_credentials(credentials)
-        return credentials
+        creds = self.get_credentials(self._file)
+        return self.get_creds_dict(creds)
 
-    def _check_credentials(self, credentials: dict) -> None:
+    def get_env_config(self) -> dict:
         """
-        Check for missing credentials.
-
-        Parameters
-        ----------
-        credentials : dict
-            The credentials.
+        Returns the credentials loaded from environment variables.
 
         Returns
         -------
-        None
+        dict
+            The credentials loaded from environment variables.
         """
-        missing_vars = [key for key, value in credentials.items() if value is None and key in self.required_vars]
-        if missing_vars:
-            raise StoreError(f"Missing credentials for S3 store: {', '.join(missing_vars)}")
+        creds = self.get_credentials(self._env)
+        return self.get_creds_dict(creds)
 
-    def _set_credentials(self, credentials: dict) -> None:
+    @staticmethod
+    def _is_expired(timestamp: str | None) -> bool:
         """
-        Set the store credentials into the configurator.
+        Determines whether a given timestamp is after the current UTC time.
 
         Parameters
         ----------
-        credentials : dict
-            The credentials.
+        timestamp : str or None
+            Timestamp string in the format 'YYYY-MM-DDTHH:MM:SSZ'.
 
         Returns
         -------
-        None
+        bool
+            True if the given timestamp is later than the current UTC time,
+            otherwise False.
         """
-        # Set credentials
-        for key, value in credentials.items():
-            configurator.set_credential(key, value)
+        if timestamp is None:
+            return False
+        dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+        dt = dt.replace(tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc) + timedelta(seconds=120)
+        return dt < now

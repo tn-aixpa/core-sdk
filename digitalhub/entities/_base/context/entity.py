@@ -8,8 +8,7 @@ import typing
 
 from digitalhub.context.api import get_context
 from digitalhub.entities._base.entity.entity import Entity
-from digitalhub.entities._processors.context import context_processor
-from digitalhub.utils.generic_utils import get_timestamp
+from digitalhub.entities._processors.processors import context_processor
 from digitalhub.utils.io_utils import write_yaml
 
 if typing.TYPE_CHECKING:
@@ -81,8 +80,6 @@ class ContextEntity(Entity):
         ContextEntity
             Entity updated.
         """
-        if self._context().local:
-            self.metadata.updated = self.metadata.updated = get_timestamp()
         new_obj = context_processor.update_context_entity(self.project, self.ENTITY_TYPE, self.id, self.to_dict())
         self._update_attributes(new_obj)
         return self

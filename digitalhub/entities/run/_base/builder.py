@@ -90,10 +90,6 @@ class RunBuilder(UnversionedBuilder, RuntimeEntityBuilder):
         ----------
         task : str
             Task string.
-
-        Returns
-        -------
-        None
         """
         task_kind = task.split("://")[0]
         if task_kind not in self.get_all_kinds():

@@ -12,6 +12,10 @@ from digitalhub.utils.generic_utils import import_function
 if typing.TYPE_CHECKING:
     from digitalhub.entities.project._base.entity import Project
 
+CHECK_FILENAME = ".CHECK"
+SETUP_MODULE = "setup_project.py"
+SETUP_FUNCTION = "setup"
+
 
 def setup_project(project: Project, setup_kwargs: dict | None = None) -> Project:
     """
@@ -30,10 +34,10 @@ def setup_project(project: Project, setup_kwargs: dict | None = None) -> Project
         Set up project.
     """
     setup_kwargs = setup_kwargs if setup_kwargs is not None else {}
-    check_pth = Path(project.spec.context, ".CHECK")
-    setup_pth = Path(project.spec.context, "setup_project.py")
+    check_pth = Path(project.spec.source, CHECK_FILENAME)
+    setup_pth = Path(project.spec.source, SETUP_MODULE)
     if setup_pth.exists() and not check_pth.exists():
-        setup_fnc = import_function(setup_pth, "setup")
+        setup_fnc = import_function(setup_pth, SETUP_FUNCTION)
         project = setup_fnc(project, **setup_kwargs)
         check_pth.touch()
     return project

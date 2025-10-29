@@ -9,7 +9,7 @@ import pkgutil
 import re
 from types import ModuleType
 
-from digitalhub.factory.factory import factory
+from digitalhub.factory.enums import FactoryEnum
 
 
 def import_module(package: str) -> ModuleType:
@@ -50,7 +50,7 @@ def list_runtimes() -> list[str]:
 
     Returns
     -------
-    list[str]
+    list of str
         List of runtime package names.
 
     Raises
@@ -58,54 +58,11 @@ def list_runtimes() -> list[str]:
     RuntimeError
         If an error occurs while scanning for runtime packages.
     """
-    pattern = r"digitalhub_runtime_.*"
-    runtimes: list[str] = []
     try:
+        runtimes: list[str] = []
         for _, name, _ in pkgutil.iter_modules():
-            if re.match(pattern, name):
+            if re.match(FactoryEnum.RGX_RUNTIMES.value, name):
                 runtimes.append(name)
         return runtimes
     except Exception as e:
         raise RuntimeError("Error listing installed runtimes.") from e
-
-
-def register_runtimes_entities() -> None:
-    """
-    Register all runtime builders and their entities into the factory.
-
-    Imports each runtime package and registers its entity and runtime
-    builders with the global factory instance.
-    """
-    for package in list_runtimes():
-        module = import_module(package)
-        entity_builders = getattr(module, "entity_builders")
-        for entity_builder_tuple in entity_builders:
-            kind, builder = entity_builder_tuple
-            factory.add_entity_builder(kind, builder)
-
-        runtime_builders = getattr(module, "runtime_builders")
-        for runtime_builder_tuple in runtime_builders:
-            kind, builder = runtime_builder_tuple
-            factory.add_runtime_builder(kind, builder)
-
-
-def register_entities() -> None:
-    """
-    Register core entity builders into the factory.
-
-    Imports the core entities module and registers all entity builders
-    with the global factory instance.
-
-    Raises
-    ------
-    RuntimeError
-        If registration of core entities fails.
-    """
-    try:
-        module = import_module("digitalhub.entities.builders")
-        entities_builders_list = getattr(module, "entity_builders")
-        for entity_builder_tuple in entities_builders_list:
-            kind, builder = entity_builder_tuple
-            factory.add_entity_builder(kind, builder)
-    except Exception as e:
-        raise RuntimeError("Error registering entities.") from e

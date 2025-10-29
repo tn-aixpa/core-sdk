@@ -7,8 +7,9 @@ from __future__ import annotations
 import typing
 from pathlib import Path
 
+from digitalhub.entities._base.material.utils import refresh_decorator
 from digitalhub.entities._base.versioned.entity import VersionedEntity
-from digitalhub.entities._processors.context import context_processor
+from digitalhub.entities._processors.processors import context_processor
 from digitalhub.stores.data.api import get_store
 from digitalhub.utils.types import SourcesOrListOfSources
 
@@ -55,7 +56,7 @@ class MaterialEntity(VersionedEntity):
         """
         # Evaluate files info list length
         files = None
-        if self.status.files is not None and len(self.status.files) > 5 and not self._context().local:
+        if self.status.files is not None and len(self.status.files) > 5:
             files = self.status.files
             self.status.files = []
 
@@ -72,6 +73,7 @@ class MaterialEntity(VersionedEntity):
     # I/O Methods
     ##############################
 
+    @refresh_decorator
     def as_file(self) -> list[str]:
         """
         Get object as file(s). It downloads the object from storage in
@@ -82,11 +84,11 @@ class MaterialEntity(VersionedEntity):
         list[str]
             List of file paths.
         """
-        store = get_store(self.project, self.spec.path)
-        paths = self.get_file_paths()
+        store = get_store(self.spec.path)
         dst = store._build_temp()
-        return store.download(self.spec.path, dst=dst, src=paths)
+        return store.download(self.spec.path, dst=dst)
 
+    @refresh_decorator
     def download(
         self,
         destination: str | None = None,
@@ -94,10 +96,7 @@ class MaterialEntity(VersionedEntity):
     ) -> str:
         """
         This function downloads one or more file from storage on local
-        machine.
-        It looks inside the object's status for the file(s) path under
-        files attribute. If it does not find it, it will try to download
-        what it can from spec.path.
+        machine from spec.path.
         The files are downloaded into a destination folder. If the destination
         is not specified, it will set by default under the context path
         as '<ctx-root>/<entity_type>', e.g. './dataitem'.
@@ -115,32 +114,26 @@ class MaterialEntity(VersionedEntity):
         Returns
         -------
         str
-            Downloaded path.
+            Download path.
 
         Examples
         --------
         Download a single file:
 
-        >>> entity.status.files[0]
-        {
-            "path ": "data.csv",
-            "name ": "data.csv",
-            "content_type ": "text/csv;charset=utf-8 "
-        }
         >>> path = entity.download()
         >>> print(path)
         dataitem/data.csv
         """
-        store = get_store(self.project, self.spec.path)
-        paths = self.get_file_paths()
+        store = get_store(self.spec.path)
 
         if destination is None:
             dst = self._context().root / self.ENTITY_TYPE
         else:
             dst = Path(destination)
 
-        return store.download(self.spec.path, dst=dst, src=paths, overwrite=overwrite)
+        return store.download(self.spec.path, dst, overwrite=overwrite)
 
+    @refresh_decorator
     def upload(self, source: SourcesOrListOfSources) -> None:
         """
         Upload object from given local path to spec path destination.
@@ -153,23 +146,19 @@ class MaterialEntity(VersionedEntity):
         source : str | list[str]
             Local filepath, directory or list of filepaths.
 
-        Returns
-        -------
-        None
-
         Examples
         --------
         Upload a single file:
 
-        >>> entity.spec.path = 's3://bucket/data.csv'
-        >>> entity.upload('./data.csv')
+        >>> entity.spec.path = "s3://bucket/data.csv"
+        >>> entity.upload("./data.csv")
 
         Upload a folder:
-        >>> entity.spec.path = 's3://bucket/data/'
-        >>> entity.upload('./data')
+        >>> entity.spec.path = "s3://bucket/data/"
+        >>> entity.upload("./data")
         """
         # Get store and upload object
-        store = get_store(self.project, self.spec.path)
+        store = get_store(self.spec.path)
         paths = store.upload(source, self.spec.path)
 
         # Update files info
@@ -188,11 +177,11 @@ class MaterialEntity(VersionedEntity):
         ----------
         files : list[dict]
             Files to add.
-
-        Returns
-        -------
-        None
         """
+        available = 100 - len(self.status.files)
+        if len(files) > available:
+            files = files[:available]
+
         path_list = self.get_file_paths()
         for f in files:
             if f.get("path") not in path_list:
@@ -221,10 +210,6 @@ class MaterialEntity(VersionedEntity):
         ----------
         files_info : list[dict] | None
             Files info.
-
-        Returns
-        -------
-        None
         """
         if files_info is None:
             return
@@ -236,12 +221,8 @@ class MaterialEntity(VersionedEntity):
     def _get_files_info(self) -> None:
         """
         Get files info from backend.
-
-        Returns
-        -------
-        None
         """
-        if not self._context().local and not self.status.files:
+        if not self.status.files:
             files = context_processor.read_files_info(
                 project=self.project,
                 entity_type=self.ENTITY_TYPE,

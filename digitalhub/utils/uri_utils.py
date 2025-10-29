@@ -13,7 +13,7 @@ from digitalhub.utils.generic_utils import list_enum
 
 class S3Schemes(Enum):
     """
-    S3 schemes.
+    S3 URI schemes.
     """
 
     S3 = "s3"
@@ -24,7 +24,7 @@ class S3Schemes(Enum):
 
 class LocalSchemes(Enum):
     """
-    Local schemes.
+    Local URI schemes.
     """
 
     LOCAL = ""
@@ -32,7 +32,7 @@ class LocalSchemes(Enum):
 
 class InvalidLocalSchemes(Enum):
     """
-    Local schemes.
+    Invalid local URI schemes.
     """
 
     FILE = "file"
@@ -41,7 +41,7 @@ class InvalidLocalSchemes(Enum):
 
 class RemoteSchemes(Enum):
     """
-    Remote schemes.
+    Remote URI schemes.
     """
 
     HTTP = "http"
@@ -52,7 +52,7 @@ class RemoteSchemes(Enum):
 
 class SqlSchemes(Enum):
     """
-    Sql schemes.
+    SQL URI schemes.
     """
 
     SQL = "sql"
@@ -61,7 +61,7 @@ class SqlSchemes(Enum):
 
 class GitSchemes(Enum):
     """
-    Git schemes.
+    Git URI schemes.
     """
 
     GIT = "git"
@@ -71,7 +71,7 @@ class GitSchemes(Enum):
 
 class SchemeCategory(Enum):
     """
-    Scheme types.
+    URI scheme categories.
     """
 
     S3 = "s3"
@@ -83,17 +83,17 @@ class SchemeCategory(Enum):
 
 def map_uri_scheme(uri: str) -> str:
     """
-    Map an URI scheme to a common scheme.
+    Map a URI scheme to a common scheme category.
 
     Parameters
     ----------
     uri : str
-        URI.
+        URI string.
 
     Returns
     -------
     str
-        Mapped scheme type.
+        Mapped scheme category (e.g., 'local', 'remote', 's3', 'sql', 'git').
 
     Raises
     ------
@@ -122,118 +122,118 @@ def map_uri_scheme(uri: str) -> str:
 
 def has_local_scheme(uri: str) -> bool:
     """
-    Check if uri is local.
+    Check if a URI has a local scheme.
 
     Parameters
     ----------
     uri : str
-        Uri of some source.
+        URI string.
 
     Returns
     -------
     bool
-        True if uri is local.
+        True if the URI is local, False otherwise.
     """
     return map_uri_scheme(uri) == SchemeCategory.LOCAL.value
 
 
 def has_remote_scheme(uri: str) -> bool:
     """
-    Check if uri is remote.
+    Check if a URI has a remote scheme.
 
     Parameters
     ----------
     uri : str
-        Uri of some source.
+        URI string.
 
     Returns
     -------
     bool
-        True if uri is remote.
+        True if the URI is remote, False otherwise.
     """
     return map_uri_scheme(uri) == SchemeCategory.REMOTE.value
 
 
 def has_s3_scheme(uri: str) -> bool:
     """
-    Check if uri is s3.
+    Check if a URI has an S3 scheme.
 
     Parameters
     ----------
     uri : str
-        Uri of some source.
+        URI string.
 
     Returns
     -------
     bool
-        True if uri is s3.
+        True if the URI is S3, False otherwise.
     """
     return map_uri_scheme(uri) == SchemeCategory.S3.value
 
 
 def has_sql_scheme(uri: str) -> bool:
     """
-    Check if uri is sql.
+    Check if a URI has an SQL scheme.
 
     Parameters
     ----------
     uri : str
-        Uri of some source.
+        URI string.
 
     Returns
     -------
     bool
-        True if uri is sql.
+        True if the URI is SQL, False otherwise.
     """
     return map_uri_scheme(uri) == SchemeCategory.SQL.value
 
 
 def has_git_scheme(uri: str) -> bool:
     """
-    Check if uri is git.
+    Check if a URI has a git scheme.
 
     Parameters
     ----------
     uri : str
-        Uri of some source.
+        URI string.
 
     Returns
     -------
     bool
-        True if uri is git.
+        True if the URI is git, False otherwise.
     """
     return map_uri_scheme(uri) == SchemeCategory.GIT.value
 
 
 def has_zip_scheme(uri: str) -> bool:
     """
-    Check if uri is zip.
+    Check if a URI has a zip scheme.
 
     Parameters
     ----------
     uri : str
-        Uri of some source.
+        URI string.
 
     Returns
     -------
     bool
-        True if uri is zip.
+        True if the URI is zip, False otherwise.
     """
     return uri.startswith("zip+")
 
 
 def get_filename_from_uri(uri: str) -> str:
     """
-    Get filename from uri.
+    Get the filename from a URI.
 
     Parameters
     ----------
     uri : str
-        Uri of some source.
+        URI string.
 
     Returns
     -------
     str
-        Filename.
+        Filename extracted from the URI.
     """
     return unquote(urlparse(uri).path).split("/")[-1]

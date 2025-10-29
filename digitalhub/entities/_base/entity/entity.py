@@ -67,10 +67,6 @@ class Entity(Base):
         ----------
         obj : dict
             Mapping representation of object.
-
-        Returns
-        -------
-        None
         """
         self.metadata = obj.metadata
         self.spec = obj.spec
@@ -95,10 +91,6 @@ class Entity(Base):
             The target entity.
         source : str
             The source entity.
-
-        Returns
-        -------
-        None
         """
         if self.metadata.relationships is None:
             self.metadata.relationships = []

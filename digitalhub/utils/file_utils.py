@@ -16,6 +16,21 @@ from pydantic import BaseModel
 class FileInfo(BaseModel):
     """
     File info class.
+
+    Attributes
+    ----------
+    path : str or None
+        Path to the file.
+    name : str or None
+        Name of the file.
+    content_type : str or None
+        MIME type of the file.
+    size : int or None
+        Size of the file in bytes.
+    hash : str or None
+        Hash of the file contents.
+    last_modified : str or None
+        Last modified date/time in ISO format.
     """
 
     path: Optional[str] = None
@@ -25,13 +40,21 @@ class FileInfo(BaseModel):
     hash: Optional[str] = None
     last_modified: Optional[str] = None
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
+        """
+        Convert FileInfo to dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary representation of the FileInfo object.
+        """
         return self.model_dump()
 
 
 def calculate_blob_hash(data_path: str) -> str:
     """
-    Calculate the hash of a file.
+    Calculate the SHA-256 hash of a file.
 
     Parameters
     ----------
@@ -41,7 +64,7 @@ def calculate_blob_hash(data_path: str) -> str:
     Returns
     -------
     str
-        The hash of the file.
+        The SHA-256 hash of the file, prefixed with 'sha256:'.
     """
     with open(data_path, "rb") as f:
         data = f.read()
@@ -50,7 +73,7 @@ def calculate_blob_hash(data_path: str) -> str:
 
 def get_file_size(data_path: str) -> int:
     """
-    Get the size of a file.
+    Get the size of a file in bytes.
 
     Parameters
     ----------
@@ -60,14 +83,14 @@ def get_file_size(data_path: str) -> int:
     Returns
     -------
     int
-        The size of the file.
+        Size of the file in bytes.
     """
     return Path(data_path).stat().st_size
 
 
 def get_file_mime_type(data_path: str) -> str | None:
     """
-    Get the mime type of a file.
+    Get the MIME type of a file.
 
     Parameters
     ----------
@@ -76,15 +99,15 @@ def get_file_mime_type(data_path: str) -> str | None:
 
     Returns
     -------
-    str
-        The mime type of the file.
+    str or None
+        The MIME type of the file, or None if unknown.
     """
     return guess_type(data_path)[0]
 
 
 def get_path_name(data_path: str) -> str:
     """
-    Get the name of a file.
+    Get the name of a file from its path.
 
     Parameters
     ----------
@@ -101,7 +124,7 @@ def get_path_name(data_path: str) -> str:
 
 def get_last_modified(data_path: str) -> str:
     """
-    Get the last modified date of a file.
+    Get the last modified date/time of a file in ISO format.
 
     Parameters
     ----------
@@ -111,45 +134,28 @@ def get_last_modified(data_path: str) -> str:
     Returns
     -------
     str
-        The last modified date of the file.
+        The last modified date/time in ISO format.
     """
     path = Path(data_path)
     timestamp = path.stat().st_mtime
     return datetime.fromtimestamp(timestamp).astimezone().isoformat()
 
 
-def get_s3_path(src_path: str) -> str:
-    """
-    Get the S3 path of a file.
-
-    Parameters
-    ----------
-    src_path : str
-        Path to the file.
-
-    Returns
-    -------
-    str
-        The S3 path of the file.
-    """
-    return Path(src_path).as_uri()
-
-
 def get_file_info_from_local(path: str, src_path: str) -> None | dict:
     """
-    Get file info from path.
+    Get file info from a local path.
 
     Parameters
     ----------
     path : str
         Target path of the object.
     src_path : str
-        Local path of some source.
+        Local path of the source file.
 
     Returns
     -------
-    dict
-        File info.
+    dict or None
+        File info dictionary, or None if an error occurs.
     """
     try:
         name = get_path_name(path)
@@ -172,19 +178,19 @@ def get_file_info_from_local(path: str, src_path: str) -> None | dict:
 
 def get_file_info_from_s3(path: str, metadata: dict) -> None | dict:
     """
-    Get file info from path.
+    Get file info from S3 metadata.
 
     Parameters
     ----------
     path : str
         Object source path.
     metadata : dict
-        Metadata of the object from S3.
+        Metadata dictionary of the object from S3.
 
     Returns
     -------
-    dict
-        File info.
+    dict or None
+        File info dictionary, or None if an error occurs.
     """
     try:
         size = metadata["ContentLength"]
@@ -214,17 +220,17 @@ def get_file_info_from_s3(path: str, metadata: dict) -> None | dict:
 
 def eval_zip_type(source: str) -> bool:
     """
-    Evaluate zip type.
+    Evaluate whether the source is a zip file.
 
     Parameters
     ----------
     source : str
-        Source.
+        Source file path.
 
     Returns
     -------
     bool
-        True if path is zip.
+        True if the path is a zip file, False otherwise.
     """
     extension = source.endswith(".zip")
     mime_zip = get_file_mime_type(source) == "application/zip"
@@ -233,34 +239,34 @@ def eval_zip_type(source: str) -> bool:
 
 def eval_text_type(source: str) -> bool:
     """
-    Evaluate text type.
+    Evaluate whether the source is a plain text file.
 
     Parameters
     ----------
     source : str
-        Source.
+        Source file path.
 
     Returns
     -------
     bool
-        True if path is text.
+        True if the path is a plain text file, False otherwise.
     """
     return get_file_mime_type(source) == "text/plain"
 
 
 def eval_py_type(source: str) -> bool:
     """
-    Evaluate python type.
+    Evaluate whether the source is a Python file.
 
     Parameters
     ----------
     source : str
-        Source.
+        Source file path.
 
     Returns
     -------
     bool
-        True if path is python.
+        True if the path is a Python file, False otherwise.
     """
     extension = source.endswith(".py")
     mime_py = get_file_mime_type(source) == "text/x-python"

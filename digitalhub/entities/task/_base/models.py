@@ -17,6 +17,8 @@ class VolumeType(Enum):
 
     PERSISTENT_VOLUME_CLAIM = "persistent_volume_claim"
     EMPTY_DIR = "empty_dir"
+    EPHEMERAL = "ephemeral"
+    SHARED_VOLUME = "shared_volume"
 
 
 class SpecEmptyDir(BaseModel):
@@ -24,7 +26,7 @@ class SpecEmptyDir(BaseModel):
     Spec empty dir model.
     """
 
-    size_limit: str
+    size_limit: Optional[str] = None
 
     medium: Optional[str] = None
 
@@ -34,7 +36,23 @@ class SpecPVC(BaseModel):
     Spec PVC model.
     """
 
-    size: str
+    size: Optional[str] = None
+
+
+class SpecEphemeral(BaseModel):
+    """
+    Ephemeral volume model.
+    """
+
+    size: Optional[str] = None
+
+
+class SharedVolumeSpec(BaseModel):
+    """
+    Shared volume spec model.
+    """
+
+    size: Optional[str] = None
 
 
 class Volume(BaseModel):
@@ -53,7 +71,7 @@ class Volume(BaseModel):
     mount_path: str
     """Volume mount path inside the container."""
 
-    spec: Optional[Union[SpecEmptyDir, SpecPVC]] = None
+    spec: Optional[Union[SpecEmptyDir, SpecPVC, SpecEphemeral, SharedVolumeSpec]] = None
     """Volume spec."""
 
 
@@ -69,30 +87,18 @@ class NodeSelector(BaseModel):
     """Node selector value."""
 
 
-class ResourceItem(BaseModel):
-    """
-    Resource item model.
-    """
-
-    requests: str = Field(default=None, pattern=r"[\d]+|^([0-9])+([a-zA-Z])+$")
-    """Resource requests."""
-
-    limits: str = Field(default=None, pattern=r"[\d]+|^([0-9])+([a-zA-Z])+$")
-    """Resource limits."""
-
-
 class Resource(BaseModel):
     """
     Resource model.
     """
 
-    cpu: Optional[ResourceItem] = None
+    cpu: Optional[str] = Field(default=None, pattern=r"[\d]+|^([0-9])+([a-zA-Z])+$")
     """CPU resource model."""
 
-    mem: Optional[ResourceItem] = None
+    mem: Optional[str] = Field(default=None, pattern=r"[\d]+|^([0-9])+([a-zA-Z])+$")
     """Memory resource model."""
 
-    gpu: Optional[ResourceItem] = None
+    gpu: Optional[str] = Field(default=None, pattern=r"[\d]+|^([0-9])+([a-zA-Z])+$")
     """GPU resource model."""
 
 

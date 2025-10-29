@@ -21,6 +21,15 @@ except ImportError as e:
 class GitCredentialsType(Enum):
     """
     Supported git credentials types.
+
+    Attributes
+    ----------
+    USERNAME : str
+        Environment variable name for git username.
+    PASSWORD : str
+        Environment variable name for git password.
+    TOKEN : str
+        Environment variable name for git token.
     """
 
     USERNAME = "GIT_USERNAME"
@@ -30,7 +39,7 @@ class GitCredentialsType(Enum):
 
 def clone_repository(path: Path, url: str) -> None:
     """
-    Clone git repository.
+    Clone a git repository to a local path.
 
     Parameters
     ----------
@@ -38,10 +47,6 @@ def clone_repository(path: Path, url: str) -> None:
         Path where to save the repository.
     url : str
         URL of the repository.
-
-    Returns
-    -------
-    None
     """
     clean_path(path)
     checkout_object = get_checkout_object(url)
@@ -53,7 +58,7 @@ def clone_repository(path: Path, url: str) -> None:
 
 def get_checkout_object(url: str) -> str:
     """
-    Get checkout object from url fragment.
+    Get checkout object (branch, tag, commit) from URL fragment.
 
     Parameters
     ----------
@@ -63,22 +68,19 @@ def get_checkout_object(url: str) -> str:
     Returns
     -------
     str
-        Checkout object (branch, tag, commit).
+        Checkout object (branch, tag, commit) or empty string if not present.
     """
     return urlparse(url).fragment
 
 
 def clean_path(path: Path) -> None:
     """
-    Clean path from any files.
+    Remove all files and directories at the given path.
 
     Parameters
     ----------
     path : Path
-
-    Returns
-    -------
-    None
+        Path to clean.
     """
 
     shutil.rmtree(path, ignore_errors=True)
@@ -86,12 +88,12 @@ def clean_path(path: Path) -> None:
 
 def get_git_username_password_from_token(token: str) -> tuple[str, str]:
     """
-    Parse token to get username and password. The token
-    can be one of the following:
+    Parse a token to get username and password for git authentication.
 
-    - GitHub/GitLab personal access token (github_pat_.../glpat...)
-    - GitHub/GitLab access token
-    - Other generic token
+    The token can be one of the following:
+        - GitHub/GitLab personal access token (github_pat_.../glpat...)
+        - GitHub/GitLab access token
+        - Other generic token
 
     Parameters
     ----------
@@ -101,7 +103,7 @@ def get_git_username_password_from_token(token: str) -> tuple[str, str]:
     Returns
     -------
     tuple[str, str]
-        Username and password.
+        Username and password for git authentication.
     """
     # Mutued from mlrun
     if token.startswith("github_pat_") or token.startswith("glpat"):
@@ -111,7 +113,7 @@ def get_git_username_password_from_token(token: str) -> tuple[str, str]:
 
 def add_credentials_git_remote_url(url: str) -> str:
     """
-    Add credentials to git remote url.
+    Add credentials to a git remote URL using environment variables or token.
 
     Parameters
     ----------
@@ -121,7 +123,7 @@ def add_credentials_git_remote_url(url: str) -> str:
     Returns
     -------
     str
-        URL with credentials.
+        URL with credentials included if available.
     """
     url_obj = urlparse(url)
 
@@ -142,7 +144,7 @@ def add_credentials_git_remote_url(url: str) -> str:
 
 def clone_from_url(url: str, path: Path) -> Repo:
     """
-    Clone repository from url. Wraps git.Repo.clone_from.
+    Clone a git repository from a URL to a local path.
 
     Parameters
     ----------
@@ -154,6 +156,6 @@ def clone_from_url(url: str, path: Path) -> Repo:
     Returns
     -------
     Repo
-        Cloned repository.
+        The cloned git repository object.
     """
     return Repo.clone_from(url=url, to_path=path)

@@ -10,8 +10,9 @@ import typing
 from digitalhub.entities._base.unversioned.entity import UnversionedEntity
 from digitalhub.entities._commons.enums import EntityTypes, State
 from digitalhub.entities._commons.metrics import MetricType, set_metrics, validate_metric_value
-from digitalhub.entities._processors.context import context_processor
-from digitalhub.factory.factory import factory
+from digitalhub.entities._processors.processors import context_processor
+from digitalhub.factory.entity import entity_factory
+from digitalhub.factory.runtime import runtime_factory
 from digitalhub.utils.exceptions import EntityError
 from digitalhub.utils.logger import LOGGER
 
@@ -51,15 +52,11 @@ class Run(UnversionedEntity):
     def build(self) -> None:
         """
         Build run.
-
-        Returns
-        -------
-        None
         """
         executable = self._get_executable()
         task = self._get_task()
         new_spec = self._get_runtime().build(executable, task, self.to_dict())
-        self.spec = factory.build_spec(self.kind, **new_spec)
+        self.spec = entity_factory.build_spec(self.kind, **new_spec)
         self._set_state(State.BUILT.value)
         self.save(update=True)
 
@@ -141,24 +138,16 @@ class Run(UnversionedEntity):
     def stop(self) -> None:
         """
         Stop run.
-
-        Returns
-        -------
-        None
         """
         if not self.spec.local_execution:
-            return context_processor.stop_run(self.project, self.ENTITY_TYPE, self.id)
+            return context_processor.stop_entity(self.project, self.ENTITY_TYPE, self.id)
 
     def resume(self) -> None:
         """
         Resume run.
-
-        Returns
-        -------
-        None
         """
         if not self.spec.local_execution:
-            return context_processor.resume_run(self.project, self.ENTITY_TYPE, self.id)
+            return context_processor.resume_entity(self.project, self.ENTITY_TYPE, self.id)
 
     def log_metric(
         self,
@@ -184,10 +173,6 @@ class Run(UnversionedEntity):
         single_value : bool
             If True, value is a single value.
 
-        Returns
-        -------
-        None
-
         Examples
         --------
         Log a new value in a list
@@ -197,13 +182,27 @@ class Run(UnversionedEntity):
         >>> entity.log_metric("loss", 0.0019)
 
         Log a list of values and append them to existing metric:
-        >>> entity.log_metric("loss", [0.0018, 0.0015])
+        >>> entity.log_metric(
+        ...     "loss",
+        ...     [
+        ...         0.0018,
+        ...         0.0015,
+        ...     ],
+        ... )
 
         Log a single value (not represented as list):
-        >>> entity.log_metric("accuracy", 0.9, single_value=True)
+        >>> entity.log_metric(
+        ...     "accuracy",
+        ...     0.9,
+        ...     single_value=True,
+        ... )
 
         Log a list of values and overwrite existing metric:
-        >>> entity.log_metric("accuracy", [0.8, 0.9], overwrite=True)
+        >>> entity.log_metric(
+        ...     "accuracy",
+        ...     [0.8, 0.9],
+        ...     overwrite=True,
+        ... )
         """
         self._set_metrics(key, value, overwrite, single_value)
         context_processor.update_metric(self.project, self.ENTITY_TYPE, self.id, key, self.status.metrics[key])
@@ -224,19 +223,59 @@ class Run(UnversionedEntity):
         overwrite : bool
             If True, overwrite existing metrics.
 
-        Returns
-        -------
-        None
+        Examples
+        --------
+        Log multiple metrics at once
+        >>> entity.log_metrics(
+        ...     {
+        ...         "loss": 0.002,
+        ...         "accuracy": 0.95,
+        ...     }
+        ... )
+
+        Log metrics with lists and single values
+        >>> entity.log_metrics(
+        ...     {
+        ...         "loss": [
+        ...             0.1,
+        ...             0.05,
+        ...         ],
+        ...         "epoch": 10,
+        ...     }
+        ... )
+
+        Append to existing metrics (default behavior)
+        >>> entity.log_metrics(
+        ...     {
+        ...         "loss": 0.001,
+        ...         "accuracy": 0.96,
+        ...     }
+        ... )  # Appends to existing
+
+        Overwrite existing metrics
+        >>> entity.log_metrics(
+        ...     {
+        ...         "loss": 0.0005,
+        ...         "accuracy": 0.98,
+        ...     },
+        ...     overwrite=True,
+        ... )
 
         See also
         --------
         log_metric
         """
         for key, value in metrics.items():
+            # For lists, use log_metric which handles appending correctly
             if isinstance(value, list):
                 self.log_metric(key, value, overwrite)
+
+            # For single values, check if we should append or create new
             else:
-                self.log_metric(key, value, overwrite, single_value=True)
+                if not overwrite and key in self.status.metrics:
+                    self.log_metric(key, value)
+                else:
+                    self.log_metric(key, value, overwrite, single_value=True)
 
     ##############################
     #  Helpers
@@ -245,19 +284,11 @@ class Run(UnversionedEntity):
     def _setup_execution(self) -> None:
         """
         Setup run execution.
-
-        Returns
-        -------
-        None
         """
 
     def _start_execution(self) -> None:
         """
         Start run execution.
-
-        Returns
-        -------
-        None
         """
         self._context().set_run(f"{self.key}:{self.id}")
         if self.spec.local_execution:
@@ -269,10 +300,6 @@ class Run(UnversionedEntity):
     def _finish_execution(self) -> None:
         """
         Finish run execution.
-
-        Returns
-        -------
-        None
         """
         self._context().unset_run()
 
@@ -285,7 +312,7 @@ class Run(UnversionedEntity):
         bool
             True if run is in runnable state, False otherwise.
         """
-        return (self.status.state == State.BUILT.value) or (self.status.state == State.STOPPED.value)
+        return self.status.state in (State.BUILT.value, State.STOPPED.value)
 
     def _set_status(self, status: dict) -> None:
         """
@@ -295,12 +322,8 @@ class Run(UnversionedEntity):
         ----------
         status : dict
             Status to set.
-
-        Returns
-        -------
-        None
         """
-        self.status: RunStatus = factory.build_status(self.kind, **status)
+        self.status: RunStatus = entity_factory.build_status(self.kind, **status)
 
     def _set_state(self, state: str) -> None:
         """
@@ -310,10 +333,6 @@ class Run(UnversionedEntity):
         ----------
         state : str
             State to set.
-
-        Returns
-        -------
-        None
         """
         self.status.state = state
 
@@ -325,10 +344,6 @@ class Run(UnversionedEntity):
         ----------
         message : str
             Message to set.
-
-        Returns
-        -------
-        None
         """
         self.status.message = message
 
@@ -341,7 +356,7 @@ class Run(UnversionedEntity):
         Runtime
             Runtime object.
         """
-        return factory.build_runtime(self.kind, self.project)
+        return runtime_factory.build_runtime(self.kind, self.project)
 
     def _get_executable(self) -> dict:
         """
@@ -353,8 +368,8 @@ class Run(UnversionedEntity):
         dict
             Executable (function or workflow) from backend.
         """
-        exec_kind = factory.get_executable_kind(self.kind)
-        exec_type = factory.get_entity_type_from_kind(exec_kind)
+        exec_kind = entity_factory.get_executable_kind(self.kind)
+        exec_type = entity_factory.get_entity_type_from_kind(exec_kind)
         string_to_split = getattr(self.spec, exec_type)
         exec_name, exec_id = string_to_split.split("://")[-1].split("/")[-1].split(":")
         return context_processor.read_context_entity(
@@ -384,10 +399,6 @@ class Run(UnversionedEntity):
     def _get_metrics(self) -> None:
         """
         Get model metrics from backend.
-
-        Returns
-        -------
-        None
         """
         self.status.metrics = context_processor.read_metrics(
             project=self.project,
@@ -415,10 +426,6 @@ class Run(UnversionedEntity):
             If True, overwrite existing metric.
         single_value : bool
             If True, value is a single value.
-
-        Returns
-        -------
-        None
         """
         value = validate_metric_value(value)
         self.status.metrics = set_metrics(

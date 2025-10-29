@@ -32,6 +32,7 @@ class Relationship(Enum):
     PRODUCEDBY = "produced_by"
     CONSUMES = "consumes"
     RUN_OF = "run_of"
+    STEP_OF = "step_of"
 
 
 class State(Enum):
@@ -61,37 +62,6 @@ class State(Enum):
     SUCCESS = "SUCCESS"
     UNKNOWN = "UNKNOWN"
     UPLOADING = "UPLOADING"
-
-
-class ApiCategories(Enum):
-    """
-    Entity categories.
-    """
-
-    BASE = "base"
-    CONTEXT = "context"
-
-
-class BackendOperations(Enum):
-    """
-    Backend operations.
-    """
-
-    CREATE = "create"
-    READ = "read"
-    READ_ALL_VERSIONS = "read_all_versions"
-    UPDATE = "update"
-    DELETE = "delete"
-    LIST = "list"
-    LIST_FIRST = "list_first"
-    STOP = "stop"
-    RESUME = "resume"
-    DATA = "data"
-    FILES = "files"
-    LOGS = "logs"
-    SEARCH = "search"
-    SHARE = "share"
-    METRICS = "metrics"
 
 
 class EntityKinds(Enum):

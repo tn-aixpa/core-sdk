@@ -16,6 +16,7 @@ from digitalhub.utils.types import SourcesOrListOfSources
 from digitalhub.utils.uri_utils import has_local_scheme
 
 if typing.TYPE_CHECKING:
+    from digitalhub.stores.credentials.configurator import Configurator
     from digitalhub.stores.readers.data._base.reader import DataframeReader
 
 
@@ -24,6 +25,9 @@ class Store:
     Store abstract class.
     """
 
+    def __init__(self, configurator: Configurator | None = None) -> None:
+        self._configurator = configurator
+
     ##############################
     # I/O methods
     ##############################
@@ -31,19 +35,22 @@ class Store:
     @abstractmethod
     def download(
         self,
-        root: str,
+        src: str,
         dst: Path,
-        src: list[str],
         overwrite: bool = False,
     ) -> str:
         """
-        Method to download artifact from storage.
+        Method to download material entity from storage.
         """
 
     @abstractmethod
-    def upload(self, src: SourcesOrListOfSources, dst: str) -> list[tuple[str, str]]:
+    def upload(
+        self,
+        src: SourcesOrListOfSources,
+        dst: str,
+    ) -> list[tuple[str, str]]:
         """
-        Method to upload artifact to storage.
+        Method to upload material entity to storage.
         """
 
     @abstractmethod
@@ -83,7 +90,13 @@ class Store:
         """
 
     @abstractmethod
-    def write_df(self, df: Any, dst: str, extension: str | None = None, **kwargs) -> str:
+    def write_df(
+        self,
+        df: Any,
+        dst: str,
+        extension: str | None = None,
+        **kwargs,
+    ) -> str:
         """
         Write DataFrame as parquet or csv.
         """
@@ -101,10 +114,6 @@ class Store:
         src : str
             The source path.
 
-        Returns
-        -------
-        None
-
         Raises
         ------
         StoreError
@@ -121,10 +130,6 @@ class Store:
         ----------
         dst : str
             The destination path.
-
-        Returns
-        -------
-        None
 
         Raises
         ------
@@ -145,10 +150,6 @@ class Store:
         overwrite : bool
             Specify if overwrite an existing file.
 
-        Returns
-        -------
-        None
-
         Raises
         ------
         StoreError
@@ -166,16 +167,17 @@ class Store:
         ----------
         path : str | Path
             The path to build.
-
-        Returns
-        -------
-        None
         """
         if not isinstance(path, Path):
             path = Path(path)
-        if path.suffix != "":
-            path = path.parent
-        path.mkdir(parents=True, exist_ok=True)
+        # If the path does not exist, we need to infer if it's a file or directory
+        if path.suffix and not path.name.startswith("."):
+            # Looks like a file, use parent
+            dir_path = path.parent
+        else:
+            # Looks like a directory (even if it contains dots)
+            dir_path = path
+        dir_path.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def _build_temp() -> Path:

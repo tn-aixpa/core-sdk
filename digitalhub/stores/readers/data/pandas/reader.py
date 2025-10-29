@@ -104,10 +104,6 @@ class DataframeReaderPandas(DataframeReader):
             The destination of the dataframe.
         **kwargs : dict
             Keyword arguments.
-
-        Returns
-        -------
-        None
         """
         if extension == FileExtensions.CSV.value:
             return self.write_csv(df, dst, **kwargs)
@@ -128,12 +124,10 @@ class DataframeReaderPandas(DataframeReader):
             The destination of the dataframe.
         **kwargs : dict
             Keyword arguments.
-
-        Returns
-        -------
-        None
         """
-        df.to_csv(dst, index=False, **kwargs)
+        if "index" not in kwargs:
+            kwargs["index"] = False
+        df.to_csv(dst, **kwargs)
 
     @staticmethod
     def write_parquet(df: pd.DataFrame, dst: str | BytesIO, **kwargs) -> None:
@@ -148,12 +142,10 @@ class DataframeReaderPandas(DataframeReader):
             The destination of the dataframe.
         **kwargs : dict
             Keyword arguments.
-
-        Returns
-        -------
-        None
         """
-        df.to_parquet(dst, index=False, **kwargs)
+        if "index" not in kwargs:
+            kwargs["index"] = False
+        df.to_parquet(dst, **kwargs)
 
     @staticmethod
     def write_table(df: pd.DataFrame, table: str, engine: Any, schema: str | None = None, **kwargs) -> None:
@@ -172,12 +164,10 @@ class DataframeReaderPandas(DataframeReader):
             The destination schema.
         **kwargs : dict
             Keyword arguments.
-
-        Returns
-        -------
-        None
         """
-        df.to_sql(table, engine, schema=schema, index=False, **kwargs)
+        if "index" not in kwargs:
+            kwargs["index"] = False
+        df.to_sql(table, engine, schema=schema, **kwargs)
 
     ##############################
     # Utils

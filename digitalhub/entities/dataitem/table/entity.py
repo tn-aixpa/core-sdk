@@ -4,11 +4,10 @@
 
 from __future__ import annotations
 
-import shutil
 import typing
-from pathlib import Path
 from typing import Any
 
+from digitalhub.entities._base.material.utils import refresh_decorator
 from digitalhub.entities.dataitem._base.entity import Dataitem
 from digitalhub.stores.data.api import get_store
 from digitalhub.utils.uri_utils import has_sql_scheme
@@ -65,6 +64,7 @@ class DataitemTable(Dataitem):
         self._query = query
         return self
 
+    @refresh_decorator
     def as_df(
         self,
         file_format: str | None = None,
@@ -93,20 +93,21 @@ class DataitemTable(Dataitem):
             DataFrame.
         """
         if self._query is not None:
-            df = get_store(self.project, self.spec.path).query(
+            df = get_store(self.spec.path).query(
                 self._query,
                 self.spec.path,
                 engine,
             )
             self._query = None
             return df
-        return get_store(self.project, self.spec.path).read_df(
+        return get_store(self.spec.path).read_df(
             self.spec.path,
             file_format,
             engine,
             **kwargs,
         )
 
+    @refresh_decorator
     def write_df(
         self,
         df: Any,
@@ -117,13 +118,17 @@ class DataitemTable(Dataitem):
         Write DataFrame as parquet/csv/table into dataitem spec.path.
         keyword arguments will be passed to the DataFrame reader function such as
         pandas's to_csv or to_parquet.
+        Note that by default the index is dropped when writing the dataframe. To
+        keep the index, you can pass index=True as a keyword argument.
+        If the dataitem path is a SQL scheme, the dataframe will be written to the
+        table specified in the path (sql://<database_name>(/<schema_name>)/<table_name>).
 
         Parameters
         ----------
         df : Any
             DataFrame to write.
         extension : str
-            Extension of the file.
+            Extension of the file (supported parquet and csv).
         **kwargs : dict
             Keyword arguments passed to the write_df function.
 
@@ -131,29 +136,29 @@ class DataitemTable(Dataitem):
         -------
         str
             Path to the written dataframe.
+
+        Examples
+        --------
+        >>> import digitalhub as dh
+        >>> import pandas as pd
+        >>>
+        >>> p = dh.get_project("my_project")
+        >>> df = pd.read_df("data/my_data.csv")
+        >>> di = p.new_dataitem(
+        ...     name="my_dataitem",
+        ...     kind="table",
+        ...     path="s3://my-bucket/my-data.parquet",
+        ... )
+        >>> di.write_df(
+        ...     df,
+        ...     extension="parquet",
+        ...     index=True,
+        ... )
+        's3://my-bucket/my-data.parquet'
         """
-        return get_store(self.project, self.spec.path).write_df(
+        return get_store(self.spec.path).write_df(
             df,
             self.spec.path,
             extension=extension,
             **kwargs,
         )
-
-    @staticmethod
-    def _clean_tmp_path(pth: Path | None, clean: bool) -> None:
-        """
-        Clean temporary path.
-
-        Parameters
-        ----------
-        pth : Path | None
-            Path to clean.
-        clean : bool
-            If True, the path will be cleaned.
-
-        Returns
-        -------
-        None
-        """
-        if pth is not None and clean:
-            shutil.rmtree(pth)

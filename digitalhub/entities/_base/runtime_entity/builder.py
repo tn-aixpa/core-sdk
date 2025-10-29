@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from digitalhub.entities._commons.utils import KindAction
 from digitalhub.utils.exceptions import EntityError
 
 
@@ -13,16 +14,40 @@ class RuntimeEntityBuilder:
     """
 
     EXECUTABLE_KIND: str = None
-    TASKS_KINDS: dict = None
-    RUN_KIND: str = None
+    TASKS_KINDS: list[KindAction] = None
+    RUN_KINDS: list[KindAction] = None
 
     def __init__(self) -> None:
-        if self.EXECUTABLE_KIND is None:
-            raise EntityError("EXECUTABLE_KIND must be set")
-        if self.TASKS_KINDS is None:
-            raise EntityError("TASKS_KINDS must be set")
-        if self.RUN_KIND is None:
-            raise EntityError("RUN_KIND must be set")
+        self._validate()
+
+    def _validate(self) -> None:
+        """
+        Validate the entity.
+        """
+        for attr_name in ["EXECUTABLE_KIND", "TASKS_KINDS", "RUN_KINDS"]:
+            value = getattr(self, attr_name)
+            if value is None:
+                raise EntityError(f"{attr_name} must be set")
+
+        for attr_name in ["TASKS_KINDS", "RUN_KINDS"]:
+            self._instance_validation(getattr(self, attr_name))
+
+    def _instance_validation(self, attribute: list[KindAction]) -> None:
+        """
+        Validate if the attribute is a list of KindAction.
+
+        Parameters
+        ----------
+        attribute : list[KindAction]
+            Attribute to validate.
+        """
+        if not isinstance(attribute, list):
+            raise EntityError(f"{attribute} must be a list")
+        for i in attribute:
+            if not isinstance(i, KindAction):
+                raise EntityError(f"{attribute} must be a list of KindAction")
+            if i.kind is None:
+                raise EntityError(f"{attribute} must be a list of KindAction with kind set")
 
     def get_action_from_task_kind(self, task_kind: str) -> str:
         """
@@ -39,8 +64,8 @@ class RuntimeEntityBuilder:
             Action.
         """
         for task in self.TASKS_KINDS:
-            if task["kind"] == task_kind:
-                return task["action"]
+            if task.kind == task_kind:
+                return task.action
         msg = f"Task kind {task_kind} not allowed."
         raise EntityError(msg)
 
@@ -59,21 +84,30 @@ class RuntimeEntityBuilder:
             Task kinds.
         """
         for task in self.TASKS_KINDS:
-            if task["action"] == action:
-                return task["kind"]
+            if task.action == action:
+                return task.kind
         msg = f"Action {action} not allowed."
         raise EntityError(msg)
 
-    def get_run_kind(self) -> str:
+    def get_run_kind_from_action(self, action: str) -> str:
         """
-        Get run kind.
+        Get run kind from action.
+
+        Parameters
+        ----------
+        action : str
+            Action.
 
         Returns
         -------
         str
             Run kind.
         """
-        return self.RUN_KIND
+        for run in self.RUN_KINDS:
+            if run.action == action:
+                return run.kind
+        msg = f"Action {action} not allowed."
+        raise EntityError(msg)
 
     def get_executable_kind(self) -> str:
         """
@@ -95,8 +129,9 @@ class RuntimeEntityBuilder:
         list[str]
             All kinds.
         """
-        task_kinds = [i["kind"] for i in self.TASKS_KINDS]
-        return [self.EXECUTABLE_KIND, self.RUN_KIND, *task_kinds]
+        task_kinds = [i.kind for i in self.TASKS_KINDS]
+        run_kinds = [i.kind for i in self.RUN_KINDS]
+        return [self.EXECUTABLE_KIND, *run_kinds, *task_kinds]
 
     def get_all_actions(self) -> list[str]:
         """
@@ -107,4 +142,4 @@ class RuntimeEntityBuilder:
         list[str]
             All actions.
         """
-        return [i["action"] for i in self.TASKS_KINDS]
+        return [i.action for i in self.TASKS_KINDS]

@@ -7,7 +7,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._processors.context import context_processor
+from digitalhub.entities._processors.processors import context_processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities.function._base.entity import Function
@@ -76,7 +76,6 @@ def get_function(
     identifier: str,
     project: str | None = None,
     entity_id: str | None = None,
-    **kwargs,
 ) -> Function:
     """
     Get object from backend.
@@ -89,8 +88,6 @@ def get_function(
         Project name.
     entity_id : str
         Entity ID.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
     Returns
     -------
@@ -108,18 +105,16 @@ def get_function(
     >>>                    entity_id="my-function-id")
     """
     return context_processor.read_context_entity(
-        identifier,
+        identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
         entity_id=entity_id,
-        **kwargs,
     )
 
 
 def get_function_versions(
     identifier: str,
     project: str | None = None,
-    **kwargs,
 ) -> list[Function]:
     """
     Get object versions from backend.
@@ -130,8 +125,6 @@ def get_function_versions(
         Entity key (store://...) or entity name.
     project : str
         Project name.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
     Returns
     -------
@@ -148,14 +141,23 @@ def get_function_versions(
     >>>                             project="my-project")
     """
     return context_processor.read_context_entity_versions(
-        identifier,
+        identifier=identifier,
         entity_type=ENTITY_TYPE,
         project=project,
-        **kwargs,
     )
 
 
-def list_functions(project: str, **kwargs) -> list[Function]:
+def list_functions(
+    project: str,
+    q: str | None = None,
+    name: str | None = None,
+    kind: str | None = None,
+    user: str | None = None,
+    state: str | None = None,
+    created: str | None = None,
+    updated: str | None = None,
+    version: str | None = None,
+) -> list[Function]:
     """
     List all latest version objects from backend.
 
@@ -163,8 +165,22 @@ def list_functions(project: str, **kwargs) -> list[Function]:
     ----------
     project : str
         Project name.
-    **kwargs : dict
-        Parameters to pass to the API call.
+    q : str
+        Query string to filter objects.
+    name : str
+        Object name.
+    kind : str
+        Kind of the object.
+    user : str
+        User that created the object.
+    state : str
+        Object state.
+    created : str
+        Creation date filter.
+    updated : str
+        Update date filter.
+    version : str
+        Object version, default is latest.
 
     Returns
     -------
@@ -178,18 +194,36 @@ def list_functions(project: str, **kwargs) -> list[Function]:
     return context_processor.list_context_entities(
         project=project,
         entity_type=ENTITY_TYPE,
-        **kwargs,
+        q=q,
+        name=name,
+        kind=kind,
+        user=user,
+        state=state,
+        created=created,
+        updated=updated,
+        version=version,
     )
 
 
-def import_function(file: str) -> Function:
+def import_function(
+    file: str | None = None,
+    key: str | None = None,
+    reset_id: bool = False,
+    context: str | None = None,
+) -> Function:
     """
-    Import object from a YAML file and create a new object into the backend.
+    Import an object from a YAML file or from a storage key.
 
     Parameters
     ----------
     file : str
-        Path to YAML file.
+        Path to the YAML file.
+    key : str
+        Entity key (store://...).
+    reset_id : bool
+        Flag to determine if the ID of executable entities should be reset.
+    context : str
+        Project name to use for context resolution.
 
     Returns
     -------
@@ -200,7 +234,7 @@ def import_function(file: str) -> Function:
     --------
     >>> obj = import_function("my-function.yaml")
     """
-    return context_processor.import_executable_entity(file)
+    return context_processor.import_executable_entity(file, key, reset_id, context)
 
 
 def load_function(file: str) -> Function:
@@ -256,7 +290,6 @@ def delete_function(
     entity_id: str | None = None,
     delete_all_versions: bool = False,
     cascade: bool = True,
-    **kwargs,
 ) -> dict:
     """
     Delete object from backend.
@@ -270,11 +303,10 @@ def delete_function(
     entity_id : str
         Entity ID.
     delete_all_versions : bool
-        Delete all versions of the named entity. If True, use entity name instead of entity key as identifier.
+        Delete all versions of the named entity.
+        If True, use entity name instead of entity key as identifier.
     cascade : bool
         Cascade delete.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
     Returns
     -------
@@ -298,5 +330,4 @@ def delete_function(
         entity_id=entity_id,
         delete_all_versions=delete_all_versions,
         cascade=cascade,
-        **kwargs,
     )

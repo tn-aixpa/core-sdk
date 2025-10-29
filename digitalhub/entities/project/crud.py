@@ -7,8 +7,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._commons.enums import EntityTypes
-from digitalhub.entities._processors.base import base_processor
-from digitalhub.entities._processors.context import context_processor
+from digitalhub.entities._processors.processors import base_processor, context_processor
 from digitalhub.entities.project.utils import setup_project
 from digitalhub.utils.exceptions import BackendError
 
@@ -24,11 +23,9 @@ def new_project(
     name: str,
     description: str | None = None,
     labels: list[str] | None = None,
-    local: bool = False,
     config: dict | None = None,
     context: str | None = None,
     setup_kwargs: dict | None = None,
-    **kwargs,
 ) -> Project:
     """
     Create a new object.
@@ -41,16 +38,12 @@ def new_project(
         Description of the object (human readable).
     labels : list[str]
         List of labels.
-    local : bool
-        If True, use local backend, if False use DHCore backend. Default to False.
     config : dict
         DHCore environment configuration.
     context : str
         The context local folder of the project.
     setup_kwargs : dict
         Setup keyword arguments passed to setup_project() function.
-    **kwargs : dict
-        Keyword arguments.
 
     Returns
     -------
@@ -65,22 +58,18 @@ def new_project(
         context = "./"
     obj = base_processor.create_project_entity(
         name=name,
-        kind="project",
+        kind=EntityTypes.PROJECT.value,
         description=description,
         labels=labels,
-        local=local,
         config=config,
         context=context,
-        **kwargs,
     )
     return setup_project(obj, setup_kwargs)
 
 
 def get_project(
     name: str,
-    local: bool = False,
     setup_kwargs: dict | None = None,
-    **kwargs,
 ) -> Project:
     """
     Retrieves project details from backend.
@@ -89,12 +78,8 @@ def get_project(
     ----------
     name : str
         The Project name.
-    local : bool
-        Flag to determine if backend is local.
     setup_kwargs : dict
         Setup keyword arguments passed to setup_project() function.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
     Returns
     -------
@@ -108,16 +93,14 @@ def get_project(
     obj = base_processor.read_project_entity(
         entity_type=ENTITY_TYPE,
         entity_name=name,
-        local=local,
-        **kwargs,
     )
     return setup_project(obj, setup_kwargs)
 
 
 def import_project(
     file: str,
-    local: bool = False,
     setup_kwargs: dict | None = None,
+    reset_id: bool = False,
 ) -> Project:
     """
     Import object from a YAML file and create a new object into the backend.
@@ -126,10 +109,10 @@ def import_project(
     ----------
     file : str
         Path to YAML file.
-    local : bool
-        Flag to determine if backend is local.
     setup_kwargs : dict
         Setup keyword arguments passed to setup_project() function.
+    reset_id : bool
+        Flag to determine if the ID of project entities should be reset.
 
     Returns
     -------
@@ -140,13 +123,15 @@ def import_project(
     --------
     >>> obj = import_project("my-project.yaml")
     """
-    obj = base_processor.import_project_entity(file=file, local=local)
+    obj = base_processor.import_project_entity(
+        file=file,
+        reset_id=reset_id,
+    )
     return setup_project(obj, setup_kwargs)
 
 
 def load_project(
     file: str,
-    local: bool = False,
     setup_kwargs: dict | None = None,
 ) -> Project:
     """
@@ -156,8 +141,6 @@ def load_project(
     ----------
     file : str
         Path to YAML file.
-    local : bool
-        Flag to determine if backend is local.
     setup_kwargs : dict
         Setup keyword arguments passed to setup_project() function.
 
@@ -170,36 +153,30 @@ def load_project(
     --------
     >>> obj = load_project("my-project.yaml")
     """
-    obj = base_processor.load_project_entity(file=file, local=local)
+    obj = base_processor.load_project_entity(file=file)
     return setup_project(obj, setup_kwargs)
 
 
-def list_projects(local: bool = False, **kwargs) -> list[Project]:
+def list_projects() -> list[Project]:
     """
     List projects in backend.
 
-    Parameters
-    ----------
-    local : bool
-        Flag to determine if backend is local.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
     Returns
     -------
     list
         List of objects.
     """
-    return base_processor.list_project_entities(local=local, **kwargs)
+    return base_processor.list_project_entities()
 
 
 def get_or_create_project(
     name: str,
-    local: bool = False,
+    description: str | None = None,
+    labels: list[str] | None = None,
     config: dict | None = None,
     context: str | None = None,
     setup_kwargs: dict | None = None,
-    **kwargs,
 ) -> Project:
     """
     Try to get project. If not exists, create it.
@@ -208,8 +185,6 @@ def get_or_create_project(
     ----------
     name : str
         Project name.
-    local : bool
-        Flag to determine if backend is local.
     config : dict
         DHCore environment configuration.
     context : str
@@ -227,22 +202,20 @@ def get_or_create_project(
     try:
         return get_project(
             name,
-            local=local,
             setup_kwargs=setup_kwargs,
-            **kwargs,
         )
     except BackendError:
         return new_project(
             name,
-            local=local,
+            description=description,
+            labels=labels,
             config=config,
             setup_kwargs=setup_kwargs,
             context=context,
-            **kwargs,
         )
 
 
-def update_project(entity: Project, **kwargs) -> Project:
+def update_project(entity: Project) -> Project:
     """
     Update object. Note that object spec are immutable.
 
@@ -250,8 +223,6 @@ def update_project(entity: Project, **kwargs) -> Project:
     ----------
     entity : Project
         Object to update.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
     Returns
     -------
@@ -266,8 +237,6 @@ def update_project(entity: Project, **kwargs) -> Project:
         entity_type=entity.ENTITY_TYPE,
         entity_name=entity.name,
         entity_dict=entity.to_dict(),
-        local=entity._client.is_local(),
-        **kwargs,
     )
 
 
@@ -275,8 +244,6 @@ def delete_project(
     name: str,
     cascade: bool = True,
     clean_context: bool = True,
-    local: bool = False,
-    **kwargs,
 ) -> dict:
     """
     Delete a project.
@@ -289,10 +256,6 @@ def delete_project(
         Flag to determine if delete is cascading.
     clean_context : bool
         Flag to determine if context will be deleted.
-    local : bool
-        Flag to determine if backend is local.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
     Returns
     -------
@@ -306,10 +269,8 @@ def delete_project(
     return base_processor.delete_project_entity(
         entity_type=ENTITY_TYPE,
         entity_name=name,
-        local=local,
         cascade=cascade,
         clean_context=clean_context,
-        **kwargs,
     )
 
 
@@ -323,7 +284,6 @@ def search_entity(
     updated: str | None = None,
     description: str | None = None,
     labels: list[str] | None = None,
-    **kwargs,
 ) -> list[ContextEntity]:
     """
     Search objects from backend.
@@ -348,13 +308,11 @@ def search_entity(
         Entity description.
     labels : list[str]
         Entity labels.
-    **kwargs : dict
-        Parameters to pass to the API call.
 
-        Returns
-        -------
-        list[ContextEntity]
-            List of object instances.
+    Returns
+    -------
+    list[ContextEntity]
+        List of object instances.
     """
     return context_processor.search_entity(
         project_name,
@@ -366,5 +324,4 @@ def search_entity(
         updated=updated,
         description=description,
         labels=labels,
-        **kwargs,
     )

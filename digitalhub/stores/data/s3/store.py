@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import typing
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Type
@@ -11,19 +12,24 @@ from urllib.parse import urlparse
 
 import boto3
 import botocore.client  # pylint: disable=unused-import
+from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, NoCredentialsError
 
-from digitalhub.stores.configurator.enums import CredsOrigin
 from digitalhub.stores.data._base.store import Store
-from digitalhub.stores.data.s3.configurator import S3StoreConfigurator
-from digitalhub.stores.data.s3.utils import get_bucket_name
 from digitalhub.stores.readers.data.api import get_reader_by_object
-from digitalhub.utils.exceptions import StoreError
+from digitalhub.utils.exceptions import ConfigError, StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
 from digitalhub.utils.types import SourcesOrListOfSources
 
+if typing.TYPE_CHECKING:
+    from digitalhub.stores.credentials.configurator import Configurator
+    from digitalhub.stores.data.s3.configurator import S3StoreConfigurator
+
+
 # Type aliases
 S3Client = Type["botocore.client.S3"]
+
+MULTIPART_THRESHOLD = 100 * 1024 * 1024
 
 
 class S3Store(Store):
@@ -32,8 +38,9 @@ class S3Store(Store):
     artifacts on S3 based storage.
     """
 
-    def __init__(self) -> None:
-        self._configurator = S3StoreConfigurator()
+    def __init__(self, configurator: Configurator | None = None) -> None:
+        super().__init__(configurator)
+        self._configurator: S3StoreConfigurator
 
     ##############################
     # I/O methods
@@ -41,9 +48,8 @@ class S3Store(Store):
 
     def download(
         self,
-        root: str,
+        src: str,
         dst: Path,
-        src: list[str],
         overwrite: bool = False,
     ) -> str:
         """
@@ -51,21 +57,19 @@ class S3Store(Store):
 
         Parameters
         ----------
-        root : str
-            The root path of the artifact.
+        src : str
+            Path of the material entity.
         dst : str
-            The destination of the artifact on local filesystem.
-        src : list[str]
-            List of sources.
+            The destination of the material entity on local filesystem.
         overwrite : bool
             Specify if overwrite existing file(s).
 
         Returns
         -------
         str
-            Destination path of the downloaded artifact.
+            Destination path of the downloaded files.
         """
-        client, bucket = self._check_factory(root)
+        client, bucket = self._check_factory(src)
 
         # Build destination directory
         if dst.suffix == "":
@@ -74,20 +78,13 @@ class S3Store(Store):
             dst.parent.mkdir(parents=True, exist_ok=True)
 
         # Handle src and tree destination
-        if self.is_partition(root):
-            if not src:
-                keys = self._list_objects(client, bucket, root)
-                strip_root = self._get_key(root)
-                trees = [k.removeprefix(strip_root) for k in keys]
-            else:
-                keys = self._build_key_from_root(root, src)
-                trees = [s for s in src]
+        if self.is_partition(src):
+            keys = self._list_objects(client, bucket, src)
+            strip_root = self._get_key(src)
+            trees = [k.removeprefix(strip_root) for k in keys]
         else:
-            keys = [self._get_key(root)]
-            if not src:
-                trees = [Path(self._get_key(root)).name]
-            else:
-                trees = [s for s in src]
+            keys = [self._get_key(src)]
+            trees = [Path(self._get_key(src)).name]
 
         if len(keys) != len(trees):
             raise StoreError("Keys and trees must have the same length.")
@@ -128,7 +125,7 @@ class S3Store(Store):
         src : SourcesOrListOfSources
             Source(s).
         dst : str
-            The destination of the artifact on storage.
+            The destination of the material entity on storage.
 
         Returns
         -------
@@ -336,10 +333,50 @@ class S3Store(Store):
         str
             The S3 path where the dataframe was saved.
         """
-        fileobj = BytesIO()
         reader = get_reader_by_object(df)
-        reader.write_df(df, fileobj, extension=extension, **kwargs)
-        return self.upload_fileobject(fileobj, dst)
+        with BytesIO() as fileobj:
+            reader.write_df(df, fileobj, extension=extension, **kwargs)
+            fileobj.seek(0)
+            return self.upload_fileobject(fileobj, dst)
+
+    ##############################
+    # Wrapper methods
+    ##############################
+
+    def get_s3_source(self, src: str, filename: Path) -> None:
+        """
+        Download a file from S3 and save it to a local file.
+
+        Parameters
+        ----------
+        src : str
+            S3 path of the object to be downloaded (e.g., 's3://bucket
+        filename : Path
+            Local path where the downloaded object will be saved.
+        """
+        client, bucket = self._check_factory(src)
+        key = self._get_key(src)
+        self._download_file(key, filename, client, bucket)
+
+    def get_s3_client(self, file: bool = True) -> S3Client:
+        """
+        Get an S3 client object.
+
+        Parameters
+        ----------
+        file : bool
+            Whether to use file-based credentials. Default is True.
+
+        Returns
+        -------
+        S3Client
+            Returns a client object that interacts with the S3 storage service.
+        """
+        if file:
+            cfg = self._configurator.get_file_config()
+        else:
+            cfg = self._configurator.get_env_config()
+        return self._get_client(cfg)
 
     ##############################
     # Private I/O methods
@@ -414,7 +451,7 @@ class S3Store(Store):
         src : str
             List of sources.
         dst : str
-            The destination of the artifact on storage.
+            The destination of the material entity on storage.
         client : S3Client
             The S3 client object.
         bucket : str
@@ -457,7 +494,7 @@ class S3Store(Store):
         src : list
             List of sources.
         dst : str
-            The destination of the artifact on storage.
+            The destination of the material entity on storage.
         client : S3Client
             The S3 client object.
         bucket : str
@@ -497,7 +534,7 @@ class S3Store(Store):
         src : str
             List of sources.
         dst : str
-            The destination of the artifact on storage.
+            The destination of the material entity on storage.
         client : S3Client
             The S3 client object.
         bucket : str
@@ -537,16 +574,18 @@ class S3Store(Store):
             The S3 client object.
         bucket : str
             The name of the S3 bucket.
-
-        Returns
-        -------
-        None
         """
         extra_args = {}
         mime_type = get_file_mime_type(src)
         if mime_type is not None:
             extra_args["ContentType"] = mime_type
-        client.upload_file(Filename=src, Bucket=bucket, Key=key, ExtraArgs=extra_args)
+        client.upload_file(
+            Filename=src,
+            Bucket=bucket,
+            Key=key,
+            ExtraArgs=extra_args,
+            Config=TransferConfig(multipart_threshold=MULTIPART_THRESHOLD),
+        )
 
     @staticmethod
     def _upload_fileobject(
@@ -568,12 +607,13 @@ class S3Store(Store):
             The S3 client object.
         bucket : str
             The name of the S3 bucket.
-
-        Returns
-        -------
-        None
         """
-        client.put_object(Bucket=bucket, Key=key, Body=fileobj.getvalue())
+        client.upload_fileobj(
+            Fileobj=fileobj,
+            Bucket=bucket,
+            Key=key,
+            Config=TransferConfig(multipart_threshold=MULTIPART_THRESHOLD),
+        )
 
     ##############################
     # Helper methods
@@ -588,7 +628,7 @@ class S3Store(Store):
         str
             The name of the S3 bucket.
         """
-        return get_bucket_name(root)
+        return urlparse(root).netloc
 
     def _get_client(self, cfg: dict) -> S3Client:
         """
@@ -606,55 +646,59 @@ class S3Store(Store):
         """
         return boto3.client("s3", **cfg)
 
-    def _check_factory(self, root: str) -> tuple[S3Client, str]:
+    def _check_factory(self, s3_path: str, retry: bool = True) -> tuple[S3Client, str]:
         """
-        Check if the S3 bucket is accessible by sending a head_bucket request.
+        Checks if the S3 bucket collected from the URI is accessible.
+
+        Parameters
+        ----------
+        s3_path : str
+            Path to the S3 bucket (e.g., 's3://bucket/path').
+        retry : bool
+            Whether to retry the operation if a ConfigError is raised. Default is True.
 
         Returns
         -------
-        tuple[S3Client, str]
-            A tuple containing the S3 client object and the name of the S3 bucket.
+        tuple of S3Client and str
+            Tuple containing the S3 client object and the name of the S3 bucket.
+
+        Raises
+        ------
+        ConfigError
+            If access to the specified bucket is not available and retry is False.
         """
-        bucket = self._get_bucket(root)
-
-        # Try to get client from environment variables
+        bucket = self._get_bucket(s3_path)
         try:
-            cfg = self._configurator.get_boto3_client_config(CredsOrigin.ENV.value)
+            cfg = self._configurator.get_client_config()
             client = self._get_client(cfg)
             self._check_access_to_storage(client, bucket)
-
-        # Fallback to file
-        except StoreError:
-            cfg = self._configurator.get_boto3_client_config(CredsOrigin.FILE.value)
-            client = self._get_client(cfg)
-            self._check_access_to_storage(client, bucket)
-
-        return client, bucket
+            return client, bucket
+        except ConfigError as e:
+            if retry:
+                self._configurator.eval_change_origin()
+                return self._check_factory(s3_path, False)
+            raise e
 
     def _check_access_to_storage(self, client: S3Client, bucket: str) -> None:
         """
-        Check if the S3 bucket is accessible by sending a head_bucket request.
+        Checks if the S3 bucket is accessible by sending a head_bucket request.
 
         Parameters
         ----------
         client : S3Client
-            The S3 client object.
+            S3 client object.
         bucket : str
-            The name of the S3 bucket.
-
-        Returns
-        -------
-        None
+            Name of the S3 bucket.
 
         Raises
         ------
-        ClientError:
+        ConfigError
             If access to the specified bucket is not available.
         """
         try:
             client.head_bucket(Bucket=bucket)
         except (ClientError, NoCredentialsError) as err:
-            raise StoreError(f"No access to s3 bucket! Error: {err}")
+            raise ConfigError(f"No access to s3 bucket! Error: {err}")
 
     @staticmethod
     def _get_key(path: str) -> str:
@@ -675,29 +719,6 @@ class S3Store(Store):
         if key.startswith("/"):
             key = key[1:]
         return key
-
-    def _build_key_from_root(self, root: str, paths: list[str]) -> list[str]:
-        """
-        Method to build object path.
-
-        Parameters
-        ----------
-        root : str
-            The root of the object path.
-        paths : list[str]
-            The path to build.
-
-        Returns
-        -------
-        list[str]
-            List of keys.
-        """
-        keys = []
-        for path in paths:
-            clean_path = self._get_key(path)
-            key = self._get_key(f"{root}{clean_path}")
-            keys.append(key)
-        return keys
 
     def _list_objects(self, client: S3Client, bucket: str, partition: str) -> list[str]:
         """

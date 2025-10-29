@@ -34,12 +34,29 @@ class RuntimeBuilder:
     RUNTIME_CLASS: Runtime = None
 
     def __init__(self) -> None:
+        """
+        Initialize a RuntimeBuilder instance.
+
+        Raises
+        ------
+        BuilderError
+            If RUNTIME_CLASS is not set in the implementing class.
+        """
         if self.RUNTIME_CLASS is None:
             raise BuilderError("RUNTIME_CLASS must be set")
 
     def build(self, project: str, *args, **kwargs) -> Runtime:
         """
-        Build runtime object.
+        Build a runtime object.
+
+        Parameters
+        ----------
+        project : str
+            The project identifier for the runtime instance.
+        *args
+            Additional positional arguments to pass to the Runtime constructor.
+        **kwargs
+            Additional keyword arguments to pass to the Runtime constructor.
 
         Returns
         -------

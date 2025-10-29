@@ -4,51 +4,41 @@
 
 from __future__ import annotations
 
-import typing
-
-from digitalhub.stores.client.dhcore.client import ClientDHCore
-from digitalhub.stores.client.local.client import ClientLocal
-
-if typing.TYPE_CHECKING:
-    from digitalhub.stores.client._base.client import Client
+from digitalhub.stores.client.client import Client
 
 
 class ClientBuilder:
     """
-    Client builder class.
-
-    This class is used to create two possible client instances:
-    Local and DHCore.
-    It saves the client instances in the class attributes using
-    singleton pattern.
+    Client builder class. Creates and returns client instance.
     """
 
     def __init__(self) -> None:
-        self._local = None
-        self._dhcore = None
+        self._client: Client = None
 
-    def build(self, local: bool = False, config: dict | None = None) -> Client:
+    def build(self) -> Client:
         """
         Method to create a client instance.
-
-        Parameters
-        ----------
-        local : bool
-            Whether to create a local client or not.
 
         Returns
         -------
         Client
             Returns the client instance.
         """
-        if local:
-            if self._local is None:
-                self._local = ClientLocal()
-            return self._local
-
-        if self._dhcore is None:
-            self._dhcore = ClientDHCore(config)
-        return self._dhcore
+        if self._client is None:
+            self._client = Client()
+        return self._client
 
 
 client_builder = ClientBuilder()
+
+
+def get_client() -> Client:
+    """
+    Wrapper around ClientBuilder.build.
+
+    Returns
+    -------
+    Client
+        The client instance.
+    """
+    return client_builder.build()

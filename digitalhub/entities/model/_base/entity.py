@@ -9,7 +9,7 @@ import typing
 from digitalhub.entities._base.material.entity import MaterialEntity
 from digitalhub.entities._commons.enums import EntityTypes
 from digitalhub.entities._commons.metrics import MetricType, set_metrics, validate_metric_value
-from digitalhub.entities._processors.context import context_processor
+from digitalhub.entities._processors.processors import context_processor
 
 if typing.TYPE_CHECKING:
     from digitalhub.entities._base.entity.metadata import Metadata
@@ -81,10 +81,6 @@ class Model(MaterialEntity):
         single_value : bool
             If True, value is a single value.
 
-        Returns
-        -------
-        None
-
         Examples
         --------
         Log a new value in a list
@@ -94,13 +90,27 @@ class Model(MaterialEntity):
         >>> entity.log_metric("loss", 0.0019)
 
         Log a list of values and append them to existing metric:
-        >>> entity.log_metric("loss", [0.0018, 0.0015])
+        >>> entity.log_metric(
+        ...     "loss",
+        ...     [
+        ...         0.0018,
+        ...         0.0015,
+        ...     ],
+        ... )
 
         Log a single value (not represented as list):
-        >>> entity.log_metric("accuracy", 0.9, single_value=True)
+        >>> entity.log_metric(
+        ...     "accuracy",
+        ...     0.9,
+        ...     single_value=True,
+        ... )
 
         Log a list of values and overwrite existing metric:
-        >>> entity.log_metric("accuracy", [0.8, 0.9], overwrite=True)
+        >>> entity.log_metric(
+        ...     "accuracy",
+        ...     [0.8, 0.9],
+        ...     overwrite=True,
+        ... )
         """
         self._set_metrics(key, value, overwrite, single_value)
         context_processor.update_metric(self.project, self.ENTITY_TYPE, self.id, key, self.status.metrics[key])
@@ -121,19 +131,59 @@ class Model(MaterialEntity):
         overwrite : bool
             If True, overwrite existing metrics.
 
-        Returns
-        -------
-        None
+        Examples
+        --------
+        Log multiple metrics at once
+        >>> entity.log_metrics(
+        ...     {
+        ...         "loss": 0.002,
+        ...         "accuracy": 0.95,
+        ...     }
+        ... )
+
+        Log metrics with lists and single values
+        >>> entity.log_metrics(
+        ...     {
+        ...         "loss": [
+        ...             0.1,
+        ...             0.05,
+        ...         ],
+        ...         "epoch": 10,
+        ...     }
+        ... )
+
+        Append to existing metrics (default behavior)
+        >>> entity.log_metrics(
+        ...     {
+        ...         "loss": 0.001,
+        ...         "accuracy": 0.96,
+        ...     }
+        ... )  # Appends to existing
+
+        Overwrite existing metrics
+        >>> entity.log_metrics(
+        ...     {
+        ...         "loss": 0.0005,
+        ...         "accuracy": 0.98,
+        ...     },
+        ...     overwrite=True,
+        ... )
 
         See also
         --------
         log_metric
         """
         for key, value in metrics.items():
+            # For lists, use log_metric which handles appending correctly
             if isinstance(value, list):
                 self.log_metric(key, value, overwrite)
+
+            # For single values, check if we should append or create new
             else:
-                self.log_metric(key, value, overwrite, single_value=True)
+                if not overwrite and key in self.status.metrics:
+                    self.log_metric(key, value)
+                else:
+                    self.log_metric(key, value, overwrite, single_value=True)
 
     ##############################
     # Helper methods
@@ -142,10 +192,6 @@ class Model(MaterialEntity):
     def _get_metrics(self) -> None:
         """
         Get model metrics from backend.
-
-        Returns
-        -------
-        None
         """
         self.status.metrics = context_processor.read_metrics(
             project=self.project,
@@ -173,10 +219,6 @@ class Model(MaterialEntity):
             If True, overwrite existing metric.
         single_value : bool
             If True, value is a single value.
-
-        Returns
-        -------
-        None
         """
         value = validate_metric_value(value)
         self.status.metrics = set_metrics(

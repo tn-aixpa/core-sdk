@@ -81,3 +81,9 @@ class ClientError(Exception):
     """
     Raised when incontered errors on clients.
     """
+
+
+class ConfigError(Exception):
+    """
+    Raised when incontered errors on configs.
+    """

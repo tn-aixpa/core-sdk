@@ -54,7 +54,6 @@ class HttpRequestHandler:
         self,
         method: str,
         url: str,
-        refresh: bool = True,
         **kwargs,
     ) -> dict:
         """
@@ -70,9 +69,6 @@ class HttpRequestHandler:
             HTTP method (GET, POST, PUT, DELETE, etc.).
         url : str
             Complete URL to request.
-        refresh : bool, default True
-            Whether to attempt token refresh on authentication errors.
-            Set to False during refresh to prevent infinite recursion.
         **kwargs : dict
             Additional HTTP request arguments (headers, params, data, etc.).
 
@@ -89,10 +85,9 @@ class HttpRequestHandler:
             return self._response_processor.process(response)
         except BackendError as e:
             # Handle authentication errors with token refresh
-            if response.status_code == 401 and refresh and self._configurator.refreshable_auth_types():
-                self._configurator.refresh_credentials(change_origin=True)
+            if response.status_code == 401 and self._configurator.evaluate_refresh():
                 kwargs = self._configurator.get_auth_parameters(kwargs)
-                return self._execute_request(method, url, refresh=False, **kwargs)
+                return self._execute_request(method, url, **kwargs)
             raise e
 
     def _set_auth(self, **kwargs) -> dict:
@@ -109,7 +104,6 @@ class HttpRequestHandler:
         dict
             kwargs enhanced with authentication parameters.
         """
-        self._configurator.check_config()
         return self._configurator.get_auth_parameters(kwargs)
 
     def _build_url(self, api: str) -> str:
@@ -131,3 +125,28 @@ class HttpRequestHandler:
         """
         endpoint = self._configurator.get_endpoint()
         return f"{endpoint}/{api.removeprefix('/')}"
+
+    ###############################
+    # Utility methods
+    ###############################
+
+    def refresh_token(self) -> None:
+        """
+        Manually trigger OAuth2 token refresh.
+        """
+        self._configurator.evaluate_refresh()
+
+    def get_credentials_and_config(self) -> dict:
+        """
+        Get current authentication credentials and configuration.
+
+        Returns
+        -------
+        dict
+            Current authentication credentials and configuration.
+        """
+        creds = self._configurator.get_credentials_and_config()
+
+        # Test connection to ensure validity
+        self.prepare_request("GET", "/api/auth")
+        return creds

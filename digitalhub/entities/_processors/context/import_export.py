@@ -7,7 +7,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._constructors.uuid import build_uuid
-from digitalhub.entities._processors.utils import get_context_from_identifier, get_context_from_project
+from digitalhub.entities._processors.utils import get_context, get_context_from_identifier
 from digitalhub.factory.entity import entity_factory
 from digitalhub.utils.exceptions import EntityAlreadyExistsError, EntityError, EntityNotExistsError
 from digitalhub.utils.io_utils import read_yaml
@@ -75,7 +75,7 @@ class ContextEntityImportExportProcessor:
         if context is None:
             context = dict_obj["project"]
 
-        ctx = get_context_from_project(context)
+        ctx = get_context(context)
         obj = entity_factory.build_entity_from_dict(dict_obj)
         if reset_id:
             new_id = build_uuid()
@@ -147,7 +147,7 @@ class ContextEntityImportExportProcessor:
         if context is None:
             context = exec_dict["project"]
 
-        ctx = get_context_from_project(context)
+        ctx = get_context(context)
         obj: ExecutableEntity = entity_factory.build_entity_from_dict(exec_dict)
 
         if reset_id:
@@ -190,7 +190,7 @@ class ContextEntityImportExportProcessor:
             The loaded and updated context entity.
         """
         dict_obj: dict = read_yaml(file)
-        context = get_context_from_project(dict_obj["project"])
+        context = get_context(dict_obj["project"])
         obj: ContextEntity = entity_factory.build_entity_from_dict(dict_obj)
         try:
             crud_processor._update_context_entity(context, obj.ENTITY_TYPE, obj.id, obj.to_dict())
@@ -231,7 +231,7 @@ class ContextEntityImportExportProcessor:
             exec_dict = dict_obj
             tsk_dicts = []
 
-        context = get_context_from_project(exec_dict["project"])
+        context = get_context(exec_dict["project"])
         obj: ExecutableEntity = entity_factory.build_entity_from_dict(exec_dict)
 
         try:

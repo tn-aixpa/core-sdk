@@ -21,3 +21,15 @@ def refresh_token() -> None:
         If client not properly configured or token refresh fails.
     """
     get_client().refresh_token()
+
+
+def get_credentials_and_config() -> dict:
+    """
+    Get current client credentials and configuration.
+
+    Returns
+    -------
+    dict
+        Current client credentials and configuration details.
+    """
+    return get_client().get_credentials_and_config()

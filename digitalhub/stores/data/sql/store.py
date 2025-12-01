@@ -15,6 +15,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 from digitalhub.stores.data._base.store import Store
+from digitalhub.stores.data.sql.configurator import SqlStoreConfigurator
 from digitalhub.stores.readers.data.api import get_reader_by_object
 from digitalhub.utils.exceptions import ConfigError, StoreError
 from digitalhub.utils.types import SourcesOrListOfSources
@@ -22,8 +23,8 @@ from digitalhub.utils.types import SourcesOrListOfSources
 if typing.TYPE_CHECKING:
     from sqlalchemy.engine.row import Row
 
-    from digitalhub.stores.credentials.configurator import Configurator
-    from digitalhub.stores.data.sql.configurator import SqlStoreConfigurator
+
+ENGINE_CONNECTION_TIMEOUT = 30
 
 
 class SqlStore(Store):
@@ -41,9 +42,9 @@ class SqlStore(Store):
         and connection parameters.
     """
 
-    def __init__(self, configurator: Configurator | None = None) -> None:
-        super().__init__(configurator)
-        self._configurator: SqlStoreConfigurator
+    def __init__(self) -> None:
+        super().__init__()
+        self._configurator: SqlStoreConfigurator = SqlStoreConfigurator()
 
     ##############################
     # I/O methods
@@ -70,7 +71,7 @@ class SqlStore(Store):
         dst : Path
             The destination path on the local filesystem where the
             Parquet file will be saved.
-        overwrite : bool, default False
+        overwrite : bool
             Whether to overwrite existing files at the destination path.
 
         Returns
@@ -350,22 +351,7 @@ class SqlStore(Store):
     # Helper methods
     ##############################
 
-    def _get_connection_string(self) -> str:
-        """
-        Retrieve the database connection string from the configurator.
-
-        Gets the PostgreSQL connection string using the configured
-        database credentials (username, password, host, port, database).
-
-        Returns
-        -------
-        str
-            The PostgreSQL connection string in the format
-            'postgresql://username:password@host:port/database'.
-        """
-        return self._configurator.get_sql_conn_string()
-
-    def _get_engine(self, schema: str | None = None) -> Engine:
+    def _get_engine(self, connection_string: str, schema: str | None = None) -> Engine:
         """
         Create a SQLAlchemy engine from the connection string.
 
@@ -374,6 +360,8 @@ class SqlStore(Store):
 
         Parameters
         ----------
+        connection_string : str
+            The database connection string.
         schema : str
             The database schema to set in the search path.
             If provided, sets the PostgreSQL search_path option.
@@ -382,36 +370,18 @@ class SqlStore(Store):
         -------
         Engine
             A configured SQLAlchemy engine instance.
-
-        Raises
-        ------
-        StoreError
-            If the connection string is invalid or engine creation fails.
         """
-        connection_string = self._get_connection_string()
-        if not isinstance(connection_string, str):
-            raise StoreError("Connection string must be a string.")
-        try:
-            connect_args = {"connect_timeout": 30}
-            if schema is not None:
-                connect_args["options"] = f"-csearch_path={schema}"
-            return create_engine(connection_string, connect_args=connect_args)
-        except Exception as ex:
-            raise StoreError(f"Something wrong with connection string. Arguments: {str(ex.args)}")
+        connect_args = {"connect_timeout": ENGINE_CONNECTION_TIMEOUT}
+        if schema is not None:
+            connect_args["options"] = f"-csearch_path={schema}"
+        return create_engine(connection_string, connect_args=connect_args)
 
-    def _check_factory(self, retry: bool = True, schema: str | None = None) -> Engine:
+    def _check_factory(self, schema: str | None = None) -> Engine:
         """
         Validate database accessibility and return a working engine.
 
-        Creates and tests a database engine, with retry capability if
-        the initial connection fails. Handles configuration changes
-        and ensures the database is accessible before returning.
-
         Parameters
         ----------
-        retry : bool, default True
-            Whether to attempt a retry with different configuration
-            if the initial connection fails.
         schema : str
             The database schema to configure in the engine.
 
@@ -419,20 +389,15 @@ class SqlStore(Store):
         -------
         Engine
             A validated SQLAlchemy engine with confirmed database access.
-
-        Raises
-        ------
-        ConfigError
-            If database access fails and retry is exhausted or disabled.
         """
+        connection_string = self._configurator.get_sql_conn_string()
+        engine = self._get_engine(connection_string, schema)
         try:
-            engine = self._get_engine(schema)
             self._check_access_to_storage(engine)
             return engine
         except ConfigError as e:
-            if retry:
-                self._configurator.eval_change_origin()
-                return self._check_factory(retry=False, schema=schema)
+            if self._configurator.eval_retry():
+                return self._check_factory(schema=schema)
             raise e
 
     @staticmethod

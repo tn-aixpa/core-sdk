@@ -16,7 +16,6 @@ from digitalhub.utils.types import SourcesOrListOfSources
 from digitalhub.utils.uri_utils import has_local_scheme
 
 if typing.TYPE_CHECKING:
-    from digitalhub.stores.credentials.configurator import Configurator
     from digitalhub.stores.readers.data._base.reader import DataframeReader
 
 
@@ -24,9 +23,6 @@ class Store:
     """
     Store abstract class.
     """
-
-    def __init__(self, configurator: Configurator | None = None) -> None:
-        self._configurator = configurator
 
     ##############################
     # I/O methods

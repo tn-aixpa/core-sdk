@@ -212,7 +212,7 @@ def list_artifacts(
     state: str | None = None,
     created: str | None = None,
     updated: str | None = None,
-    version: str | None = None,
+    versions: str | None = None,
 ) -> list[Artifact]:
     """
     List all latest version objects from backend.
@@ -235,7 +235,7 @@ def list_artifacts(
         Creation date filter.
     updated : str
         Update date filter.
-    version : str
+    versions : str
         Object version, default is latest.
 
     Returns
@@ -257,7 +257,7 @@ def list_artifacts(
         state=state,
         created=created,
         updated=updated,
-        version=version,
+        versions=versions,
     )
 
 

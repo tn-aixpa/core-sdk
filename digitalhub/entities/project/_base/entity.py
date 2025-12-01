@@ -106,7 +106,6 @@ class Project(Entity):
         spec: ProjectSpec,
         status: ProjectStatus,
         user: str | None = None,
-        local: bool = False,
     ) -> None:
         super().__init__(kind, metadata, spec, status, user)
         self.spec: ProjectSpec
@@ -596,7 +595,7 @@ class Project(Entity):
         state: str | None = None,
         created: str | None = None,
         updated: str | None = None,
-        version: str | None = None,
+        versions: str | None = None,
     ) -> list[Artifact]:
         """
         List all latest version objects from backend.
@@ -638,7 +637,7 @@ class Project(Entity):
             state=state,
             created=created,
             updated=updated,
-            version=version,
+            versions=versions,
         )
 
     def import_artifact(
@@ -925,7 +924,7 @@ class Project(Entity):
         state: str | None = None,
         created: str | None = None,
         updated: str | None = None,
-        version: str | None = None,
+        versions: str | None = None,
     ) -> list[Dataitem]:
         """
         List all latest version objects from backend.
@@ -967,7 +966,7 @@ class Project(Entity):
             state=state,
             created=created,
             updated=updated,
-            version=version,
+            versions=versions,
         )
 
     def import_dataitem(
@@ -1243,7 +1242,7 @@ class Project(Entity):
         state: str | None = None,
         created: str | None = None,
         updated: str | None = None,
-        version: str | None = None,
+        versions: str | None = None,
     ) -> list[Model]:
         """
         List all latest version objects from backend.
@@ -1285,7 +1284,7 @@ class Project(Entity):
             state=state,
             created=created,
             updated=updated,
-            version=version,
+            versions=versions,
         )
 
     def import_model(
@@ -1512,7 +1511,7 @@ class Project(Entity):
         state: str | None = None,
         created: str | None = None,
         updated: str | None = None,
-        version: str | None = None,
+        versions: str | None = None,
     ) -> list[Function]:
         """
         List all latest version objects from backend.
@@ -1554,7 +1553,7 @@ class Project(Entity):
             state=state,
             created=created,
             updated=updated,
-            version=version,
+            versions=versions,
         )
 
     def import_function(
@@ -1784,7 +1783,7 @@ class Project(Entity):
         state: str | None = None,
         created: str | None = None,
         updated: str | None = None,
-        version: str | None = None,
+        versions: str | None = None,
     ) -> list[Workflow]:
         """
         List all latest version objects from backend.
@@ -1826,7 +1825,7 @@ class Project(Entity):
             state=state,
             created=created,
             updated=updated,
-            version=version,
+            versions=versions,
         )
 
     def import_workflow(

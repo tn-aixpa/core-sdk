@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import typing
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Type
@@ -16,15 +15,11 @@ from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, NoCredentialsError
 
 from digitalhub.stores.data._base.store import Store
+from digitalhub.stores.data.s3.configurator import S3StoreConfigurator
 from digitalhub.stores.readers.data.api import get_reader_by_object
 from digitalhub.utils.exceptions import ConfigError, StoreError
 from digitalhub.utils.file_utils import get_file_info_from_s3, get_file_mime_type
 from digitalhub.utils.types import SourcesOrListOfSources
-
-if typing.TYPE_CHECKING:
-    from digitalhub.stores.credentials.configurator import Configurator
-    from digitalhub.stores.data.s3.configurator import S3StoreConfigurator
-
 
 # Type aliases
 S3Client = Type["botocore.client.S3"]
@@ -38,9 +33,9 @@ class S3Store(Store):
     artifacts on S3 based storage.
     """
 
-    def __init__(self, configurator: Configurator | None = None) -> None:
-        super().__init__(configurator)
-        self._configurator: S3StoreConfigurator
+    def __init__(self) -> None:
+        super().__init__()
+        self._configurator: S3StoreConfigurator = S3StoreConfigurator()
 
     ##############################
     # I/O methods
@@ -646,7 +641,7 @@ class S3Store(Store):
         """
         return boto3.client("s3", **cfg)
 
-    def _check_factory(self, s3_path: str, retry: bool = True) -> tuple[S3Client, str]:
+    def _check_factory(self, s3_path: str) -> tuple[S3Client, str]:
         """
         Checks if the S3 bucket collected from the URI is accessible.
 
@@ -654,29 +649,21 @@ class S3Store(Store):
         ----------
         s3_path : str
             Path to the S3 bucket (e.g., 's3://bucket/path').
-        retry : bool
-            Whether to retry the operation if a ConfigError is raised. Default is True.
 
         Returns
         -------
         tuple of S3Client and str
             Tuple containing the S3 client object and the name of the S3 bucket.
-
-        Raises
-        ------
-        ConfigError
-            If access to the specified bucket is not available and retry is False.
         """
         bucket = self._get_bucket(s3_path)
+        cfg = self._configurator.get_client_config()
+        client = self._get_client(cfg)
         try:
-            cfg = self._configurator.get_client_config()
-            client = self._get_client(cfg)
             self._check_access_to_storage(client, bucket)
             return client, bucket
         except ConfigError as e:
-            if retry:
-                self._configurator.eval_change_origin()
-                return self._check_factory(s3_path, False)
+            if self._configurator.eval_retry():
+                return self._check_factory(s3_path)
             raise e
 
     def _check_access_to_storage(self, client: S3Client, bucket: str) -> None:

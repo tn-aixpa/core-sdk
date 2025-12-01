@@ -7,7 +7,7 @@ from __future__ import annotations
 import typing
 
 from digitalhub.entities._commons.enums import Relationship, State
-from digitalhub.entities._processors.utils import get_context_from_project
+from digitalhub.entities._processors.utils import get_context
 from digitalhub.factory.entity import entity_factory
 from digitalhub.utils.exceptions import EntityError
 from digitalhub.utils.types import SourcesOrListOfSources
@@ -59,7 +59,7 @@ class ContextEntityMaterialProcessor:
             If file upload fails during the process.
         """
         source: SourcesOrListOfSources = kwargs.pop("source")
-        context = get_context_from_project(kwargs["project"])
+        context = get_context(kwargs["project"])
         obj = entity_factory.build_entity_from_params(**kwargs)
         if context.is_running:
             obj.add_relationship(Relationship.PRODUCEDBY.value, context.get_run_ctx())

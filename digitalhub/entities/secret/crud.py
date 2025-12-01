@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import typing
 
-from digitalhub.entities._commons.enums import EntityTypes
+from digitalhub.entities._commons.enums import EntityKinds, EntityTypes
 from digitalhub.entities._commons.utils import is_valid_key
 from digitalhub.entities._processors.processors import context_processor
 from digitalhub.utils.exceptions import EntityNotExistsError
@@ -66,7 +66,7 @@ def new_secret(
     obj: Secret = context_processor.create_context_entity(
         project=project,
         name=name,
-        kind="secret",
+        kind=EntityKinds.SECRET_SECRET.value,
         uuid=uuid,
         description=description,
         labels=labels,

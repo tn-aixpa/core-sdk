@@ -4,19 +4,19 @@
 
 from __future__ import annotations
 
-from digitalhub.stores.credentials.handler import creds_handler
+from digitalhub.stores.configurator.configurator import configurator
 
 
-def set_current_profile(environment: str) -> None:
+def set_current_profile(profile: str) -> None:
     """
     Set the current credentials profile.
 
     Parameters
     ----------
-    environment : str
+    profile : str
         Name of the credentials profile to set.
     """
-    creds_handler.set_current_profile(environment)
+    configurator.set_current_profile(profile)
 
 
 def get_current_profile() -> str:
@@ -28,4 +28,4 @@ def get_current_profile() -> str:
     str
         Name of the current credentials profile.
     """
-    return creds_handler.get_current_profile()
+    return configurator.get_current_profile()

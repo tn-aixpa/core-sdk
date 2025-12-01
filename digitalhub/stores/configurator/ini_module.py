@@ -117,6 +117,37 @@ def write_config(creds: dict, environment: str) -> None:
         raise ClientError(f"Failed to write env file: {e}")
 
 
+def write_file(variables: dict, profile: str) -> None:
+    """
+    Write variables to the .dhcore.ini file for the specified profile.
+    Overwrites any existing values for that profile.
+
+    Parameters
+    ----------
+    variables : dict
+        Dictionary of variables to write.
+    profile : str
+        Name of the credentials profile to write to.
+    """
+    try:
+        cfg = load_file()
+
+        sections = cfg.sections()
+        if profile not in sections:
+            cfg.add_section(profile)
+
+        cfg["DEFAULT"]["current_environment"] = profile
+        for k, v in variables.items():
+            cfg[profile][k] = str(v)
+
+        ENV_FILE.touch(exist_ok=True)
+        with open(ENV_FILE, "w") as inifile:
+            cfg.write(inifile)
+
+    except Exception as e:
+        raise ClientError(f"Failed to write env file: {e}")
+
+
 def set_current_profile(environment: str) -> None:
     """
     Set the current credentials profile in the .dhcore.ini file.

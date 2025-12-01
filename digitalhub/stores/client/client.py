@@ -307,5 +307,16 @@ class Client:
         """
         Manually trigger OAuth2 token refresh.
         """
-        self._http_handler._configurator.check_config()
-        self._http_handler._configurator.refresh_credentials()
+        self._http_handler.refresh_token()
+
+    def get_credentials_and_config(self) -> dict:
+        """
+        Get current authentication credentials and configuration.
+        Eventually refreshes token if expired.
+
+        Returns
+        -------
+        dict
+            Current authentication credentials and configuration.
+        """
+        return self._http_handler.get_credentials_and_config()

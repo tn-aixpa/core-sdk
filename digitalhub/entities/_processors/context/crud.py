@@ -8,8 +8,8 @@ import typing
 
 from digitalhub.entities._commons.utils import is_valid_key, sanitize_unversioned_key
 from digitalhub.entities._processors.utils import (
+    get_context,
     get_context_from_identifier,
-    get_context_from_project,
     parse_identifier,
 )
 from digitalhub.factory.entity import entity_factory
@@ -93,7 +93,7 @@ class ContextEntityCRUDProcessor:
             context = _entity._context()
             obj = _entity
         else:
-            context = get_context_from_project(kwargs["project"])
+            context = get_context(kwargs["project"])
             obj: ContextEntity = entity_factory.build_entity_from_params(**kwargs)
         new_obj = self._create_context_entity(context, obj.ENTITY_TYPE, obj.to_dict())
         return entity_factory.build_entity_from_dict(new_obj)
@@ -423,7 +423,7 @@ class ContextEntityCRUDProcessor:
         list[ContextEntity]
             List of context entity objects (latest versions only).
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         objs = self._list_context_entities(context, entity_type, **kwargs)
         objects = []
         for o in objs:
@@ -507,7 +507,7 @@ class ContextEntityCRUDProcessor:
         ContextEntity
             The updated context entity object.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         obj = self._update_context_entity(
             context,
             entity_type,

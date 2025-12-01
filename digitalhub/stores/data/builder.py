@@ -8,36 +8,13 @@ import typing
 
 from digitalhub.stores.data.local.store import LocalStore
 from digitalhub.stores.data.remote.store import RemoteStore
-from digitalhub.stores.data.s3.configurator import S3StoreConfigurator
 from digitalhub.stores.data.s3.store import S3Store
-from digitalhub.stores.data.sql.configurator import SqlStoreConfigurator
 from digitalhub.stores.data.sql.store import SqlStore
 from digitalhub.utils.uri_utils import SchemeCategory, map_uri_scheme
 
 if typing.TYPE_CHECKING:
-    from digitalhub.stores.credentials.configurator import Configurator
     from digitalhub.stores.data._base.store import Store
     from digitalhub.utils.exceptions import StoreError
-
-
-class StoreInfo:
-    """
-    Container for store class and configurator information.
-
-    Holds store class references and their associated configurators
-    for registration and instantiation in the store builder system.
-
-    Attributes
-    ----------
-    _store : Store
-        The store class to be instantiated.
-    _configurator : Configurator or None
-        The configurator class for store configuration, if required.
-    """
-
-    def __init__(self, store: Store, configurator: Configurator | None = None) -> None:
-        self._store = store
-        self._configurator = configurator
 
 
 class StoreBuilder:
@@ -58,14 +35,13 @@ class StoreBuilder:
     """
 
     def __init__(self) -> None:
-        self._builders: dict[str, StoreInfo] = {}
+        self._builders: dict[str, Store] = {}
         self._instances: dict[str, dict[str, Store]] = {}
 
     def register(
         self,
         store_type: str,
         store: Store,
-        configurator: Configurator | None = None,
     ) -> None:
         """
         Register a store type with its class and optional configurator.
@@ -89,7 +65,7 @@ class StoreBuilder:
             If the store type is already registered in the builder.
         """
         if store_type not in self._builders:
-            self._builders[store_type] = StoreInfo(store, configurator)
+            self._builders[store_type] = store
         else:
             raise StoreError(f"Store type {store_type} already registered")
 
@@ -122,21 +98,13 @@ class StoreBuilder:
 
         # Build the store instance if not already present
         if store_type not in self._instances:
-            store_info = self._builders[store_type]
-            store_cls = store_info._store
-            cfgrt_cls = store_info._configurator
-
-            if cfgrt_cls is None:
-                store = store_cls()
-            else:
-                store = store_cls(cfgrt_cls())
-            self._instances[store_type] = store
+            self._instances[store_type] = self._builders[store_type]()
 
         return self._instances[store_type]
 
 
 store_builder = StoreBuilder()
-store_builder.register(SchemeCategory.S3.value, S3Store, S3StoreConfigurator)
-store_builder.register(SchemeCategory.SQL.value, SqlStore, SqlStoreConfigurator)
+store_builder.register(SchemeCategory.S3.value, S3Store)
+store_builder.register(SchemeCategory.SQL.value, SqlStore)
 store_builder.register(SchemeCategory.LOCAL.value, LocalStore)
 store_builder.register(SchemeCategory.REMOTE.value, RemoteStore)

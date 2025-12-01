@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import typing
 
-from digitalhub.entities._commons.enums import EntityTypes
+from digitalhub.entities._commons.enums import EntityKinds, EntityTypes
 from digitalhub.entities._processors.processors import base_processor, context_processor
 from digitalhub.entities.project.utils import setup_project
 from digitalhub.utils.exceptions import BackendError
@@ -24,7 +24,7 @@ def new_project(
     description: str | None = None,
     labels: list[str] | None = None,
     config: dict | None = None,
-    context: str | None = None,
+    source: str | None = None,
     setup_kwargs: dict | None = None,
 ) -> Project:
     """
@@ -40,7 +40,7 @@ def new_project(
         List of labels.
     config : dict
         DHCore environment configuration.
-    context : str
+    source : str
         The context local folder of the project.
     setup_kwargs : dict
         Setup keyword arguments passed to setup_project() function.
@@ -54,15 +54,15 @@ def new_project(
     --------
     >>> obj = new_project("my-project")
     """
-    if context is None:
-        context = "./"
+    if source is None:
+        source = "./"
     obj = base_processor.create_project_entity(
         name=name,
-        kind=EntityTypes.PROJECT.value,
+        kind=EntityKinds.PROJECT_PROJECT.value,
         description=description,
         labels=labels,
         config=config,
-        context=context,
+        source=source,
     )
     return setup_project(obj, setup_kwargs)
 
@@ -167,7 +167,7 @@ def list_projects() -> list[Project]:
     list
         List of objects.
     """
-    return base_processor.list_project_entities()
+    return base_processor.list_project_entities(ENTITY_TYPE)
 
 
 def get_or_create_project(
@@ -211,7 +211,7 @@ def get_or_create_project(
             labels=labels,
             config=config,
             setup_kwargs=setup_kwargs,
-            context=context,
+            source=context,
         )
 
 

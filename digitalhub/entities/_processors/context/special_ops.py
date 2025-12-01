@@ -7,7 +7,7 @@ from __future__ import annotations
 import typing
 from typing import Any
 
-from digitalhub.entities._processors.utils import get_context_from_project
+from digitalhub.entities._processors.utils import get_context
 from digitalhub.stores.client.enums import ApiCategories, BackendOperations
 
 if typing.TYPE_CHECKING:
@@ -55,7 +55,7 @@ class ContextEntitySpecialOpsProcessor:
         str
             The constructed context entity key string.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         return context.client.build_key(
             ApiCategories.CONTEXT.value,
             project=context.name,
@@ -91,7 +91,7 @@ class ContextEntitySpecialOpsProcessor:
         dict
             Secret data retrieved from the backend.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.DATA.value,
@@ -124,7 +124,7 @@ class ContextEntitySpecialOpsProcessor:
         **kwargs : dict
             Additional parameters to pass to the API call.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.DATA.value,
@@ -162,7 +162,7 @@ class ContextEntitySpecialOpsProcessor:
         dict
             Log data retrieved from the backend.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.LOGS.value,
@@ -196,7 +196,7 @@ class ContextEntitySpecialOpsProcessor:
         **kwargs : dict
             Additional parameters to pass to the API call.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.STOP.value,
@@ -204,7 +204,7 @@ class ContextEntitySpecialOpsProcessor:
             entity_type=entity_type,
             entity_id=entity_id,
         )
-        context.client.create_object(api, **kwargs)
+        context.client.create_object(api, obj={}, **kwargs)
 
     def resume_entity(
         self,
@@ -230,7 +230,7 @@ class ContextEntitySpecialOpsProcessor:
         **kwargs : dict
             Additional parameters to pass to the API call.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.RESUME.value,
@@ -238,7 +238,7 @@ class ContextEntitySpecialOpsProcessor:
             entity_type=entity_type,
             entity_id=entity_id,
         )
-        context.client.create_object(api, **kwargs)
+        context.client.create_object(api, obj={}, **kwargs)
 
     def read_files_info(
         self,
@@ -269,7 +269,7 @@ class ContextEntitySpecialOpsProcessor:
         list[dict]
             List of file information dictionaries from the backend.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.FILES.value,
@@ -303,7 +303,7 @@ class ContextEntitySpecialOpsProcessor:
         **kwargs : dict
             Parameters to pass to the API call.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.FILES.value,
@@ -347,7 +347,7 @@ class ContextEntitySpecialOpsProcessor:
         dict
             Dictionary containing metric data from the backend.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.METRICS.value,
@@ -390,7 +390,7 @@ class ContextEntitySpecialOpsProcessor:
         **kwargs : dict
             Additional parameters to pass to the API call.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         api = context.client.build_api(
             ApiCategories.CONTEXT.value,
             BackendOperations.METRICS.value,
@@ -453,7 +453,7 @@ class ContextEntitySpecialOpsProcessor:
         list[ContextEntity]
             List of matching entity instances from the search.
         """
-        context = get_context_from_project(project)
+        context = get_context(project)
         kwargs = context.client.build_parameters(
             ApiCategories.CONTEXT.value,
             BackendOperations.SEARCH.value,

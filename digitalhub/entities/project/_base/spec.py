@@ -39,6 +39,7 @@ class ProjectValidator(SpecValidator):
     """
     ProjectValidator validator.
     """
+
     source: Optional[str] = None
     """The project's source."""
 

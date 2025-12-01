@@ -247,7 +247,6 @@ class BaseEntityOperationsProcessor:
     def build_project_key(
         self,
         entity_id: str,
-        **kwargs,
     ) -> str:
         """
         Build a storage key for a project entity.
@@ -259,15 +258,13 @@ class BaseEntityOperationsProcessor:
         ----------
         entity_id : str
             The unique identifier of the project entity.
-        **kwargs : dict
-            Additional parameters including 'local' flag.
 
         Returns
         -------
         str
             The constructed project entity key string.
         """
-        return self.special_ops_processor.build_project_key(entity_id, **kwargs)
+        return self.special_ops_processor.build_project_key(entity_id)
 
     def share_project_entity(
         self,

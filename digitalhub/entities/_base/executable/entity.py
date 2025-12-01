@@ -462,8 +462,9 @@ class ExecutableEntity(VersionedEntity):
     def trigger(
         self,
         action: str,
-        trigger_kind: str,
-        trigger_name: str,
+        kind: str,
+        name: str,
+        template: dict | None = None,
         **kwargs,
     ) -> Trigger:
         """
@@ -473,10 +474,14 @@ class ExecutableEntity(VersionedEntity):
         ----------
         action : str
             Action to execute.
-        trigger_kind : str
+        kind : str
             Trigger kind.
+        name : str
+            Trigger name.
+        template : dict
+            Template for the trigger.
         **kwargs : dict
-            Keyword arguments passed to Run builder.
+            Keyword arguments passed to trigger builder.
 
         Returns
         -------
@@ -487,17 +492,30 @@ class ExecutableEntity(VersionedEntity):
         task_kind = entity_factory.get_task_kind_from_action(self.kind, action)
         task = self._get_or_create_task(task_kind)
         task_string = task._get_task_string()
+        exec_string = self._get_executable_string()
 
         # Get run validator for building trigger template
         run_kind = entity_factory.get_run_kind_from_action(self.kind, action)
         run_validator: SpecValidator = entity_factory.get_spec_validator(run_kind)
+
         # Override kwargs
         kwargs["project"] = self.project
-        kwargs["kind"] = trigger_kind
-        kwargs["name"] = trigger_name
-        kwargs[self.ENTITY_TYPE] = self._get_executable_string()
+        kwargs["kind"] = kind
+        kwargs["name"] = name
+
+        # Template handling
+        if template is None:
+            template = {}
+        if not isinstance(template, dict):
+            raise EntityError("Template must be a dictionary")
+
+        template["task"] = task_string
+        template[self.ENTITY_TYPE] = exec_string
+        template = run_validator(**template).to_dict()
+
+        kwargs[self.ENTITY_TYPE] = exec_string
         kwargs["task"] = task_string
-        kwargs["template"] = run_validator(**kwargs).to_dict()
+        kwargs["template"] = template
 
         # Create object instance
         trigger: Trigger = entity_factory.build_entity_from_params(**kwargs)
@@ -535,7 +553,7 @@ class ExecutableEntity(VersionedEntity):
         user: str | None = None,
         created: str | None = None,
         updated: str | None = None,
-        version: str | None = None,
+        versions: str | None = None,
         task: str | None = None,
     ) -> list[Trigger]:
         """
@@ -555,7 +573,7 @@ class ExecutableEntity(VersionedEntity):
             Creation date filter.
         updated : str
             Update date filter.
-        version : str
+        versions : str
             Object version, default is latest.
         task : str
             Task string filter.
@@ -572,7 +590,7 @@ class ExecutableEntity(VersionedEntity):
             user=user,
             created=created,
             updated=updated,
-            version=version,
+            versions=versions,
             task=task,
         )
 

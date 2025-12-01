@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "digitalhub"
-version = "0.14.0"
+version = "0.14.7"
 description = "Python SDK for Digitalhub"
 readme = "README.md"
 authors = [
@@ -70,7 +70,7 @@ docstring-code-line-length = 120
 convention = "numpy"
 
 [tool.bumpver]
-current_version = "0.14.0"
+current_version = "0.14.7"
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message  = "Bump version {old_version} -> {new_version}"
 commit          = false
